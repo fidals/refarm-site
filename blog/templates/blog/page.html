@@ -1,0 +1,11 @@
+<h1>Page: {{ post.name }}</h1>
+
+<p>name: {{ post.name }}</p>
+<ul>
+{% with 'blog:'|add:post.type as url_name %}
+<li><span>alias:</span><a href="{% url url_name post.id %}">{{ post.name }}</a></li>
+{% endwith %}
+</ul>
+<p>type: {{ post.type }}</p>
+
+<p><a href="{% url 'blog:posts_list'%}">Back to pages list</a>. Your jokes make me tied</p>
