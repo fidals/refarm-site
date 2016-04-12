@@ -7,6 +7,8 @@ class Page(models.Model):
     name = models.CharField(max_length=255)
     alias = models.CharField(max_length=255)
     is_text_published = models.BooleanField()
-    type = models.CharField(max_length=100, choices=settings.PAGE_TYPES, default=settings.PAGE_TYPES[0])
+    type = models.CharField(max_length=100,
+                            choices=settings.APP_BLOG_PAGE_TYPES,
+                            default=settings.APP_BLOG_PAGE_TYPES[0])
 
     def __str__(self): return self.name
