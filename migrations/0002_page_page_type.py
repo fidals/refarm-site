@@ -13,7 +13,7 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AddField(
             model_name='page',
-            name='page_type',
+            name='type',
             field=models.CharField(max_length=100, default='article', choices=[('news', 'Новости'), ('article', 'Статьи'), ('navi', 'Навигация')]),
         ),
     ]

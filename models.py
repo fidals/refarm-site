@@ -11,6 +11,6 @@ class Page(models.Model):
     name = models.CharField(max_length=255)
     alias = models.CharField(max_length=255)
     is_text_published = models.BooleanField()
-    page_type = models.CharField(max_length=100, choices=PAGE_TYPES, default=PAGE_TYPES[0])
+    type = models.CharField(max_length=100, choices=PAGE_TYPES, default=PAGE_TYPES[0])
 
     def __str__(self): return self.name
