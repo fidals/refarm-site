@@ -1,9 +1,15 @@
 <h1>Pages List</h1>
 <p>Some pages here:
   <ul>
-    {% for page in pages %}
-      <li><a href="{% url 'blog:page' page.id %}">{{ page.name }}</a></li>
-    {% endfor %}
+    {% if pages %}
+      {% for page in pages %}
+        {% with 'blog:'|add:page.type as url_name %}
+          <li><a href="{% url url_name page.id %}">{{ page.name }}</a></li>
+        {% endwith %}
+      {% endfor %}
+    {% else %}
+      There is no pages yet
+    {% endif %}
   </ul>
 </p>
 

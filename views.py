@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from .models import Page
 
 
@@ -8,7 +8,7 @@ def pages_list(request):
     return render(request, 'list.html', {'pages': pages})
 
 
-def page_item(request, page_id, page_type):
+def page_item(request, page_id):
     """Renders page on its own url"""
-    page = Page.objects.get(id=page_id)
+    page = get_object_or_404(Page, id=page_id)
     return render(request, 'page.html', {'page': page})

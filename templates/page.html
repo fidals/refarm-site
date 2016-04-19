@@ -1,7 +1,11 @@
 <h1>Page: {{ page.name }}</h1>
 
 <p>name: {{ page.name }}</p>
-<p>alias: {{ page.alias }}</p>
+{% with 'blog:'|add:page.type as url_name %}
+<p>alias:
+  <li><a href="{% url url_name page.id %}">{{ page.name }}</a></li>
+</p>
+{% endwith %}
 <p>type: {{ page.type }}</p>
 
 <p><a href="{% url 'blog:pages_list'%}">Back to pages list</a>. Your jokes make me tied</p>
