@@ -6,7 +6,6 @@ from django.test import TestCase
 from blog.models import Page
 from django.core.urlresolvers import reverse
 from django.conf import settings
-from functools import reduce
 
 
 class ViewsTests(TestCase):
