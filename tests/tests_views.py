@@ -10,6 +10,8 @@ from django.conf import settings
 
 class ViewsTests(TestCase):
 
+    urls = 'tests.urls'
+
     def setUp(self):
         """
         Defines testing data.

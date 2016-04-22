@@ -2,6 +2,7 @@ from django.conf.urls import include, url
 from django.conf import settings
 from . import views
 
+
 def get_page_urls():
     """
     Put urls according to APP_BLOG_PAGE_TYPES. Example of result urls:
