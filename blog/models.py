@@ -1,5 +1,30 @@
 from django.db import models
 from django.conf import settings
+from django.core.urlresolvers import reverse
+from seo.models import SitePageMixin
+from seo.models import Crumb
+
+
+def get_crumbs(last_item):
+    """
+    Returns specified item ancestors as breadcrumbs
+    :param last_item: last crumb's item entity
+    :return: crumbs named tuple:
+     (('First page', 'one/'), ('Second page', 'two/'),)
+    """
+    if isinstance(last_item, Post):
+        return (
+            Crumb(settings.CRUMBS['main'], '/'),
+            Crumb(last_item.get_type_name(), reverse('blog:posts_list')),
+            Crumb(last_item.name, ''),
+        )
+    elif last_item == settings.CRUMBS['blog']:
+        return (
+            Crumb(settings.CRUMBS['main'], '/'),
+            Crumb(settings.CRUMBS['blog'], ''),
+        )
+    else:
+        raise AttributeError('Wrong last_item argument value')
 
 
 def get_types_as_choices():
@@ -24,11 +49,13 @@ def get_default_type():
     return settings.APP_BLOG_POST_TYPES.keys()[0]
 
 
-class Post(models.Model):
-    name = models.CharField(max_length=255)
+class Post(SitePageMixin, models.Model):
     type = models.CharField(max_length=100,
                             choices=get_types_as_choices(),
                             default=get_default_type())
+
+    def get_type_name(self):
+        return settings.APP_BLOG_POST_TYPES[self.type]['name']
 
     def __str__(self):
         """:return: name field value"""
