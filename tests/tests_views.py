@@ -3,10 +3,11 @@ Defines tests for views in Catalog app
 """
 
 from django.test import TestCase, override_settings
-from blog.models import Post
+from blog.models import Post, get_crumbs
 from django.core.urlresolvers import reverse
 from . import config_factory
 from .model_factory import set_default_posts
+from django.conf import settings
 
 
 @override_settings(APP_BLOG_POST_TYPES=config_factory.get_usual())
@@ -63,3 +64,65 @@ class ViewsTests(TestCase):
         )
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
+
+    def test_get_crumbs_names_by_post(self):
+        """
+        by given post _get_crumbs should return valid crumb names
+        """
+        crumbs = get_crumbs(self.test_news_post)
+        self.assertEqual(crumbs[0].name, settings.CRUMBS['main'])
+        self.assertEqual(crumbs[1].name, self.test_news_post.get_type_name())
+        self.assertEqual(crumbs[2].name, self.test_news_post.name)
+
+    def test_get_crumbs_aliases_by_post(self):
+        """
+        by given post _get_crumbs should return crumbs with:
+            1. empty alias for last crumb
+            2. filled aliases for every other crumb
+        """
+        crumbs = get_crumbs(self.test_news_post)
+        self.assertEqual(crumbs[0].alias, '/')
+        self.assertEqual(crumbs[1].alias, reverse('blog:posts_list'))
+        self.assertEqual(crumbs[2].alias, '')
+
+    def test_get_crumbs_names_by_blog_page(self):
+        """
+        by given blog page _get_crumbs should return valid crumb names
+        """
+        crumbs = get_crumbs(settings.CRUMBS['blog'])
+        self.assertEqual(crumbs[0].name, settings.CRUMBS['main'])
+        self.assertEqual(crumbs[1].name, settings.CRUMBS['blog'])
+
+    def test_get_crumbs_aliases_by_blog_page(self):
+        """
+        by given blog page
+        _get_crumbs should return valid crumbs
+        """
+        crumbs = get_crumbs(settings.CRUMBS['blog'])
+        self.assertEqual(crumbs[0].alias, '/')
+        self.assertEqual(crumbs[1].alias, '')
+
+    def test_posts_list_breadcrumbs(self):
+        """
+        Post list should have default breadcrumbs
+        """
+        url = reverse('blog:posts_list')
+        response = self.client.get(url)
+        self.assertContains(response, settings.CRUMBS['main'])
+        self.assertContains(response, settings.CRUMBS['blog'])
+
+    def test_post_breadcrumbs(self):
+        """
+        Post page should have default breadcrumbs
+        """
+        url = reverse(
+            'blog:news',
+            kwargs={'post_id': self.test_news_post.id}
+        )
+        response = self.client.get(url)
+        self.assertContains(response, settings.CRUMBS['main'])
+        self.assertContains(
+            response,
+            self.test_news_post.get_type_name()
+        )
+        self.assertContains(response, self.test_news_post.name)

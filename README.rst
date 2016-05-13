@@ -24,13 +24,19 @@ Quick start
         'blog',
     ]
 
-3. Set APP_BLOG_POST_TYPES to your settings.py. Example::
+3. Add some settings to your settings.py::
 
-APP_BLOG_POST_TYPES = {
-    'article': {'name': 'Weekly articles', 'alias': ''},
-    'news': {'name': 'My news', 'alias': 'news'},
-    'navigation': {'name': 'Site navigation', 'alias': 'navigation'},
-}
+    APP_BLOG_POST_TYPES = {
+        'article': {'name': 'Weekly articles', 'alias': ''},
+        'news': {'name': 'My news', 'alias': 'news'},
+        'navigation': {'name': 'Site navigation', 'alias': 'navigation'},
+    }
+
+    CRUMBS = {
+        'main': 'Main',  # Breadcrumbs title for main page
+        'blog': 'Pages list',  # Breadcrumbs title for blog page
+    }
+
 
 4. Include the blog URLconf in your project urls.py like this::
 
