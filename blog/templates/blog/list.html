@@ -1,5 +1,7 @@
+{% load breadcrumb_extras %}
+
 <h1>Pages List</h1>
-<p>{% include 'seo/breadcrumbs.html' %}</p>
+<p>{% breadcrumbs breadcrumbs %}</p>
 <p>Some pages here:
   <ul>
     {% if posts %}
