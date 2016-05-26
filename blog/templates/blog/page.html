@@ -1,5 +1,7 @@
+{% load breadcrumb_extras %}
+
 <h1>Page: {{ post.name }}</h1>
-<p>{% include 'seo/breadcrumbs.html' %}</p>
+<p>{% breadcrumbs breadcrumbs %}</p>
 <p>name: {{ post.name }}</p>
 <ul>
 {% with 'blog:'|add:post.type as url_name %}
