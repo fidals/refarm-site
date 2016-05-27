@@ -23,7 +23,7 @@ INSTALLED_APPS = ('django.contrib.auth',
                   'blog',
                   )
 
-APP_BLOG_POST_TYPES = config_factory.get_empty()
+APP_BLOG_POST_TYPES = config_factory.get_usual()
 
 CRUMBS = {
     'main': 'Main',

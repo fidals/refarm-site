@@ -1,0 +1,21 @@
+<div class="js-accordion">
+  {% for items_type in accordion_types %}
+    <div class="js-accordion-title" id="js-accordion-title-{{ items_type.id }}">
+      {{ items_type.name }}<i class="fa fa-caret-left"></i>
+    </div>
+    <div class="js-accordion-content" id="js-accordion-content-{{ items_type.id }}">
+      <p class="accordion-first-item">
+        <a class="accordion-link-to-category" href="{{ items_type.slug }}">
+          перейти в категорию<i class="fa fa-long-arrow-right"></i>
+        </a>
+      </p>
+      {% for item in items_type.items %}
+        <p class="accordion-item">
+          <a class="accordion-link" href="{{ item.get_absolute_url }}">
+            {{ item.name }}
+          </a>
+        </p>
+      {% endfor %}
+    </div>
+  {% endfor %}
+</div>

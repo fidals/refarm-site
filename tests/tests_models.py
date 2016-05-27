@@ -4,11 +4,9 @@ Defines tests for models in Catalog app
 
 from django.test import TestCase, override_settings
 from blog.models import Post, get_default_type
-from . import config_factory
 from .model_factory import set_default_posts
 
 
-@override_settings(APP_BLOG_POST_TYPES=config_factory.get_usual())
 class ModelsTests(TestCase):
 
     def setUp(self):

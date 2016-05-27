@@ -2,16 +2,14 @@
 Defines tests for views in Catalog app
 """
 
-from django.test import TestCase, override_settings
+from django.test import TestCase
 from blog.models import Post, get_crumbs
 from django.core.urlresolvers import reverse
-from . import config_factory
 from .model_factory import set_default_posts
 from django.conf import settings
 
 
-@override_settings(APP_BLOG_POST_TYPES=config_factory.get_usual())
-class ViewsTests(TestCase):
+class PostTests(TestCase):
 
     urls = 'tests.urls'
 
@@ -21,17 +19,35 @@ class ViewsTests(TestCase):
     def tearDown(self):
         Post.objects.all().delete()
 
+    def test_posts_types_list(self):
+        """
+        Blog pages list should contain all post types
+        """
+        url = reverse('blog:post_types')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response,
+                            settings.APP_BLOG_POST_TYPES['navigation']['name'])
+        self.assertContains(response,
+                            settings.APP_BLOG_POST_TYPES['news']['name'])
+
     def test_empty_posts_list(self):
         """
         Empty blog pages list should return 200 response
          and user friendly message
         """
         self.tearDown()
-        url = reverse('blog:posts_list')
+        url = reverse('blog:posts', args=('news',))
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "There is no pages yet")
+        self.assertContains(response, 'There are no posts yet')
         self.setUp()  # restore mock objects after over removing
+
+    def test_not_found_posts_list(self):
+        """Not existing posts list should return 404 status code"""
+        url = '/pages/se-ipo/'
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 404)
 
     def test_posts_list(self):
         """
@@ -39,10 +55,9 @@ class ViewsTests(TestCase):
         And list names, of course
         """
 
-        url = reverse('blog:posts_list')
+        url = reverse('blog:posts', args=('article',))
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "ShopElectro go to IPO")
         self.assertContains(response, "Why Fenich called as new Steve Jobs")
 
     def test_post_not_found(self):
@@ -50,7 +65,7 @@ class ViewsTests(TestCase):
 
         url = reverse(
             'blog:navigation',
-            kwargs={'post_id': 987654}  # not existing id
+            kwargs={'slug_': 987654}  # not existing id
         )
         response = self.client.get(url)
         self.assertEqual(response.status_code, 404)
@@ -60,10 +75,21 @@ class ViewsTests(TestCase):
 
         url = reverse(
             'blog:news',
-            kwargs={'post_id': self.test_news_post.id}
+            kwargs={'slug_': self.test_news_post.slug}
         )
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
+
+
+class BreadcrumbsTests(TestCase):
+
+    urls = 'tests.urls'
+
+    def setUp(self):
+        set_default_posts(self)
+
+    def tearDown(self):
+        Post.objects.all().delete()
 
     def test_get_crumbs_names_by_post(self):
         """
@@ -82,7 +108,8 @@ class ViewsTests(TestCase):
         """
         crumbs = get_crumbs(self.test_news_post)
         self.assertEqual(crumbs[0].alias, '/')
-        self.assertEqual(crumbs[1].alias, reverse('blog:posts_list'))
+        self.assertEqual(crumbs[1].alias,
+                         reverse('blog:posts', args=('news',)))
         self.assertEqual(crumbs[2].alias, '')
 
     def test_get_crumbs_names_by_blog_page(self):
@@ -106,7 +133,7 @@ class ViewsTests(TestCase):
         """
         Post list should have default breadcrumbs
         """
-        url = reverse('blog:posts_list')
+        url = reverse('blog:post_types')
         response = self.client.get(url)
         self.assertContains(response, settings.CRUMBS['main'])
         self.assertContains(response, settings.CRUMBS['blog'])
@@ -117,7 +144,7 @@ class ViewsTests(TestCase):
         """
         url = reverse(
             'blog:news',
-            kwargs={'post_id': self.test_news_post.id}
+            kwargs={'slug_': self.test_news_post.slug}
         )
         response = self.client.get(url)
         self.assertContains(response, settings.CRUMBS['main'])
