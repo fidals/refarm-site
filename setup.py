@@ -32,4 +32,9 @@ setup(
         'Topic :: Internet :: WWW/HTTP',
         'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
     ],
+    install_requires=[
+        'Django == 1.9.5',
+        'unidecode',
+        'refarm-seo',
+    ],
 )

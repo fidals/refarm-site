@@ -1,6 +1,9 @@
+from unidecode import unidecode
 from django.db import models
 from django.conf import settings
 from django.core.urlresolvers import reverse
+from django.template.defaultfilters import slugify
+
 from seo.models import SitePageMixin
 from seo.models import Crumb
 
@@ -15,7 +18,8 @@ def get_crumbs(last_item):
     if isinstance(last_item, Post):
         return (
             Crumb(settings.CRUMBS['main'], '/'),
-            Crumb(last_item.get_type_name(), reverse('blog:posts_list')),
+            Crumb(last_item.get_type_name(),
+                  reverse('blog:posts', args=(last_item.type,))),
             Crumb(last_item.name, ''),
         )
     elif last_item == settings.CRUMBS['blog']:
@@ -53,6 +57,8 @@ class Post(SitePageMixin, models.Model):
     type = models.CharField(max_length=100,
                             choices=get_types_as_choices(),
                             default=get_default_type())
+    slug = models.SlugField()
+    position = models.IntegerField(null=False, default=0)
 
     def get_type_name(self):
         return settings.APP_BLOG_POST_TYPES[self.type]['name']
@@ -60,3 +66,14 @@ class Post(SitePageMixin, models.Model):
     def __str__(self):
         """:return: name field value"""
         return self.name
+
+    def save(self, *args, **kwargs):
+        if self.name and not self.slug:
+            self.slug = slugify(unidecode(self.name))
+        super(Post, self).save(*args, **kwargs)
+
+    def get_absolute_url(self):
+        return reverse('blog:' + self.type, args=(self.slug,))
+
+    class Meta:
+        ordering = ['position', 'name']
