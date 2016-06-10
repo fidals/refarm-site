@@ -1,6 +1,6 @@
 language: python
 python:
-  - "3.4.3"
+  - "3.5.1"
 env:
   - DJANGO=1.9.5
 install:
