@@ -35,6 +35,5 @@ setup(
     install_requires=[
         'Django == 1.9.5',
         'unidecode',
-        'refarm-seo',
     ],
 )

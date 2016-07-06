@@ -1,11 +1,71 @@
+from collections import namedtuple
 from unidecode import unidecode
+
 from django.db import models
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.template.defaultfilters import slugify
 
-from seo.models import SitePageMixin
-from seo.models import Crumb
+
+# Data structure for breadcrumb item
+Crumb = namedtuple('Crumb', 'name alias')
+
+
+class SitePageMixin(models.Model):
+    """
+    Contains fields which are common for every site's page.
+    Can be easily used across different models.
+    Has no database table, since it's defined as abstract in its meta inner class.
+    """
+
+    name = models.CharField(max_length=255, null=False, blank=False)
+    _title = models.CharField(name='title', max_length=100, null=True, blank=True)
+    _h1 = models.CharField(name='h1', max_length=100, null=True, blank=True)
+    _menu_title = models.CharField(max_length=30, null=True, blank=True)
+    keywords = models.CharField(max_length=255, null=True, blank=True)
+    description = models.TextField(null=True, blank=True)
+    is_active = models.BooleanField(default=True)
+    content = models.TextField(null=True, blank=True)
+    _date_published = models.DateField(auto_now_add=True, null=True, blank=True)
+
+    @property
+    def title(self):
+        return self._title or self.name
+
+    @title.setter
+    def title(self, value):
+        self._title = value
+
+    @property
+    def h1(self):
+        return self._h1 or self.name
+
+    @h1.setter
+    def h1(self, value):
+        self._h1 = value
+
+    @property
+    def date_published(self):
+        if self._date_published:
+            return self._date_published
+        if hasattr(settings, 'SITE_CREATED'):
+            return settings.SITE_CREATED
+        return None
+
+    @date_published.setter
+    def date_published(self, value):
+        self._date_published = value
+
+    @property
+    def menu_title(self):
+        return self._menu_title or self.name
+
+    @menu_title.setter
+    def menu_title(self, value):
+        self._h1 = value
+
+    class Meta:
+        abstract = True
 
 
 def get_crumbs(last_item):

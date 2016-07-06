@@ -1,2 +1,1 @@
--e git+https://github.com/fidals/refarm-seo.git#egg=refarm-seo
 -e .
