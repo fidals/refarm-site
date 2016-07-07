@@ -3,7 +3,7 @@ Defines tests for views in Catalog app
 """
 
 from django.test import TestCase
-from blog.models import Post, get_crumbs
+from pages.models import Post, get_crumbs
 from django.core.urlresolvers import reverse
 from .model_factory import set_default_posts
 from django.conf import settings
@@ -23,7 +23,7 @@ class PostTests(TestCase):
         """
         Blog pages list should contain all post types
         """
-        url = reverse('blog:post_types')
+        url = reverse('pages:post_types')
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertContains(response,
@@ -33,11 +33,11 @@ class PostTests(TestCase):
 
     def test_empty_posts_list(self):
         """
-        Empty blog pages list should return 200 response
+        Empty pages list should return 200 response
          and user friendly message
         """
         self.tearDown()
-        url = reverse('blog:posts', args=('news',))
+        url = reverse('pages:posts', args=('news',))
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'There are no posts yet')
@@ -51,11 +51,11 @@ class PostTests(TestCase):
 
     def test_posts_list(self):
         """
-        List of existing blog pages should return 200 response
+        List of existing pages should return 200 response
         And list names, of course
         """
 
-        url = reverse('blog:posts', args=('article',))
+        url = reverse('pages:posts', args=('article',))
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Why Fenich called as new Steve Jobs")
@@ -64,7 +64,7 @@ class PostTests(TestCase):
         """Not found page should return 404 code."""
 
         url = reverse(
-            'blog:navigation',
+            'pages:navigation',
             kwargs={'slug_': 987654}  # not existing id
         )
         response = self.client.get(url)
@@ -74,7 +74,7 @@ class PostTests(TestCase):
         """Existing page should return 200 response"""
 
         url = reverse(
-            'blog:news',
+            'pages:news',
             kwargs={'slug_': self.test_news_post.slug}
         )
         response = self.client.get(url)
@@ -109,23 +109,22 @@ class BreadcrumbsTests(TestCase):
         crumbs = get_crumbs(self.test_news_post)
         self.assertEqual(crumbs[0].alias, '/')
         self.assertEqual(crumbs[1].alias,
-                         reverse('blog:posts', args=('news',)))
+                         reverse('pages:posts', args=('news',)))
         self.assertEqual(crumbs[2].alias, '')
 
-    def test_get_crumbs_names_by_blog_page(self):
+    def test_get_crumbs_names_by_page(self):
         """
-        by given blog page _get_crumbs should return valid crumb names
+        by given page _get_crumbs should return valid crumb names
         """
-        crumbs = get_crumbs(settings.CRUMBS['blog'])
+        crumbs = get_crumbs(settings.CRUMBS['pages'])
         self.assertEqual(crumbs[0].name, settings.CRUMBS['main'])
-        self.assertEqual(crumbs[1].name, settings.CRUMBS['blog'])
+        self.assertEqual(crumbs[1].name, settings.CRUMBS['pages'])
 
-    def test_get_crumbs_aliases_by_blog_page(self):
+    def test_get_crumbs_aliases_by_page(self):
         """
-        by given blog page
-        _get_crumbs should return valid crumbs
+        by given page _get_crumbs should return valid crumbs
         """
-        crumbs = get_crumbs(settings.CRUMBS['blog'])
+        crumbs = get_crumbs(settings.CRUMBS['pages'])
         self.assertEqual(crumbs[0].alias, '/')
         self.assertEqual(crumbs[1].alias, '')
 
@@ -133,17 +132,17 @@ class BreadcrumbsTests(TestCase):
         """
         Post list should have default breadcrumbs
         """
-        url = reverse('blog:post_types')
+        url = reverse('pages:post_types')
         response = self.client.get(url)
         self.assertContains(response, settings.CRUMBS['main'])
-        self.assertContains(response, settings.CRUMBS['blog'])
+        self.assertContains(response, settings.CRUMBS['pages'])
 
     def test_post_breadcrumbs(self):
         """
         Post page should have default breadcrumbs
         """
         url = reverse(
-            'blog:news',
+            'pages:news',
             kwargs={'slug_': self.test_news_post.slug}
         )
         response = self.client.get(url)

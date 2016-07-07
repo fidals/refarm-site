@@ -1,0 +1,11 @@
+{# schema org breadcrumbs doc: https://schema.org/BreadcrumbList #}
+{# macros usage examples: https://pypi.python.org/pypi/django-macros/0.3 #}
+{% load breadcrumb_extras %}
+
+{% for name, alias in crumbs_list %}
+  {% if not forloop.last %}
+    {% crumb name alias separator=separator %}
+  {% else %}
+    {% crumb name alias separator='' %}
+  {% endif %}
+{% endfor %}

@@ -3,7 +3,7 @@ Defines tests for models in Catalog app
 """
 
 from django.test import TestCase, override_settings
-from blog.models import Post, get_default_type
+from pages.models import Post, get_default_type
 from .model_factory import set_default_posts
 
 

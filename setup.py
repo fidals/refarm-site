@@ -8,14 +8,14 @@ with open(os.path.join(os.path.dirname(__file__), 'README.rst')) as readme:
 os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
 setup(
-    name='refarm-blog',
+    name='refarm-site',
     version='0.1',
     packages=find_packages(),
     include_package_data=True,
     license='MIT',  # example license
-    description='Provides base site blog functionality to your Django project.',
+    description='Provides base site pages functionality to your Django project.',
     long_description=README,
-    url='https://github.com/fidals/refarm-blog',
+    url='https://github.com/fidals/refarm-site',
     author='Duker33',
     author_email='info@fidals.com',
     classifiers=[

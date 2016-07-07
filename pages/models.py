@@ -13,7 +13,7 @@ Crumb = namedtuple('Crumb', 'name alias')
 
 class SitePageMixin(models.Model):
     """
-    Contains fields which are common for every site's page.
+    Contains fields which are common for every pages's page.
     Can be easily used across different models.
     Has no database table, since it's defined as abstract in its meta inner class.
     """
@@ -79,13 +79,13 @@ def get_crumbs(last_item):
         return (
             Crumb(settings.CRUMBS['main'], '/'),
             Crumb(last_item.get_type_name(),
-                  reverse('blog:posts', args=(last_item.type,))),
+                  reverse('pages:posts', args=(last_item.type,))),
             Crumb(last_item.name, ''),
         )
-    elif last_item == settings.CRUMBS['blog']:
+    elif last_item == settings.CRUMBS['pages']:
         return (
             Crumb(settings.CRUMBS['main'], '/'),
-            Crumb(settings.CRUMBS['blog'], ''),
+            Crumb(settings.CRUMBS['pages'], ''),
         )
     else:
         raise AttributeError('Wrong last_item argument value')
@@ -133,7 +133,7 @@ class Post(SitePageMixin, models.Model):
         super(Post, self).save(*args, **kwargs)
 
     def get_absolute_url(self):
-        return reverse('blog:' + self.type, args=(self.slug,))
+        return reverse('pages:' + self.type, args=(self.slug,))
 
     class Meta:
         ordering = ['position', 'name']

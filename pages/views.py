@@ -13,31 +13,31 @@ def post_types(request):
         return {
             'id': id_,
             'name': type_['name'],
-            'slug': reverse('blog:posts', args=(id_,)),
+            'slug': reverse('pages:posts', args=(id_,)),
         }
 
     def get_post_types() -> Generator:
         for id_, type_ in settings.APP_BLOG_POST_TYPES.items():
             yield get_type_data(id_, type_)
 
-    return render(request, 'blog/post_types.html', {
+    return render(request, 'pages/post_types.html', {
         'post_types': get_post_types(),
-        'breadcrumbs': get_crumbs(settings.CRUMBS['blog']),
+        'breadcrumbs': get_crumbs(settings.CRUMBS['pages']),
     })
 
 
 def posts(request, type_=''):
     """List of posts, that belong to given type"""
-    return render(request, 'blog/posts.html', {
+    return render(request, 'pages/posts.html', {
         'posts': Post.objects.filter(type=type_),
-        'breadcrumbs': get_crumbs(settings.CRUMBS['blog']),
+        'breadcrumbs': get_crumbs(settings.CRUMBS['pages']),
     })
 
 
 def post_item(request, slug_, type_):
     """Renders page on its own url"""
     post = get_object_or_404(Post, slug=slug_, type=type_)
-    return render(request, 'blog/post.html', {
+    return render(request, 'pages/post.html', {
         'page': post,
         'breadcrumbs': get_crumbs(post),
     })

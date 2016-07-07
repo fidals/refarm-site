@@ -1,0 +1,13 @@
+<span typeof="v:Breadcrumb" class="breadcrumbs-item"
+      property="itemListElement" typeof="ListItem">
+  {% if alias %}
+    <a href="{{ alias }}" property="item" typeof="WebPage">
+      <span property="name">{{ name }}</span>
+    </a>
+  {% else %}
+    <span property="name">{{ name }}</span>
+  {% endif %}
+  {% if separator %}
+    <span class="breadcrumbs-separator">{{ separator }}</span>
+  {% endif %}
+</span>

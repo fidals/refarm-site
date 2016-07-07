@@ -2,12 +2,12 @@ from django import template
 from django.conf import settings
 from django.core.urlresolvers import reverse
 
-from blog.models import Post
+from pages.models import Post
 
 register = template.Library()
 
 
-@register.inclusion_tag('blog/accordion.html')
+@register.inclusion_tag('pages/accordion.html')
 def accordion(links_per_item=10, sort_field='position'):
     """
     Renders posts accordion. Has post types as accordion items
@@ -25,7 +25,7 @@ def accordion(links_per_item=10, sort_field='position'):
         return {
             'id': id_,
             'name': type_['name'],
-            'slug': reverse('blog:posts', args=(id_,)),
+            'slug': reverse('pages:posts', args=(id_,)),
             'items': get_sorted_items(id_, links_per_item_, sort_field_),
         }
 

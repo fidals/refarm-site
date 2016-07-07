@@ -11,7 +11,7 @@ DATABASES = {
     }
 }
 
-ROOT_URLCONF = 'blog.urls'
+ROOT_URLCONF = 'pages.urls'
 
 SECRET_KEY = 'fake-key'
 
@@ -19,12 +19,12 @@ INSTALLED_APPS = ('django.contrib.auth',
                   'django.contrib.contenttypes',
                   'django.contrib.sessions',
                   'django.contrib.admin',
-                  'blog',
+                  'pages',
                   )
 
 APP_BLOG_POST_TYPES = config_factory.get_usual()
 
 CRUMBS = {
     'main': 'Main',
-    'blog': 'Posts list',
+    'pages': 'Posts list',
 }

@@ -1,4 +1,4 @@
-from blog.models import Post
+from pages.models import Post
 
 
 def set_default_posts(tests_object):

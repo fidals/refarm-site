@@ -31,7 +31,7 @@ def get_post_urls() -> List[str]:
             for id_, type_ in settings.APP_BLOG_POST_TYPES.items()]
 
 
-app_name = 'blog'
+app_name = 'pages'
 urlpatterns = [
     url(r'^$', views.post_types, name='post_types'),
     url(r'^posts/(?P<type_>[\w-]+)/$', views.posts, name='posts'),
