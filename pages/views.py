@@ -1,43 +1,48 @@
-from typing import Generator
 from django.shortcuts import render, get_object_or_404
-from django.conf import settings
-from django.core.urlresolvers import reverse
+from django.http import HttpResponsePermanentRedirect, Http404
 
-from .models import Post, get_crumbs
-
-
-def post_types(request):
-    """List of posts, that belong to given type"""
-
-    def get_type_data(id_: str, type_: str) -> dict:
-        return {
-            'id': id_,
-            'name': type_['name'],
-            'slug': reverse('pages:posts', args=(id_,)),
-        }
-
-    def get_post_types() -> Generator:
-        for id_, type_ in settings.APP_BLOG_POST_TYPES.items():
-            yield get_type_data(id_, type_)
-
-    return render(request, 'pages/post_types.html', {
-        'post_types': get_post_types(),
-        'breadcrumbs': get_crumbs(settings.CRUMBS['pages']),
-    })
+from .models import Page, get_or_create_struct_page
 
 
-def posts(request, type_=''):
-    """List of posts, that belong to given type"""
-    return render(request, 'pages/posts.html', {
-        'posts': Post.objects.filter(type=type_),
-        'breadcrumbs': get_crumbs(settings.CRUMBS['pages']),
-    })
+def page(request, *slugs):
+    """
+    Render page by it's alias (slugs list).
+    Example: Suppose page "contacts" in DB have alias /navi/contacts/.
+     - /articles/contacts/ alias should return 404
+     - /contacts/ should return 301 redirect to /navi/contacts/
+     - /navi/contacts/ should render "contacts" page
+    """
+
+    def render_page(request_, page_):
+        return render(request_, 'pages/page.html', {
+            'page': page_,
+        })
+
+    def path_exists(page_, slugs_path):
+        """
+        Return values example for "contacts" page with parent "navi":
+         - /articles/contacts/ - false
+         - /navi/contacts/ - true
+        """
+        return page_.get_path_as_slugs() == slugs_path
+
+    page_ = get_object_or_404(Page, slug=slugs[-1])
+
+    if len(slugs) == 1:
+        # example: /contacts/ --301--> /navi/contacts/
+        if page_.parent:
+            return HttpResponsePermanentRedirect(page_.get_absolute_url())
+
+        return render_page(request, page_)
+
+    if not path_exists(page_, slugs):
+        raise Http404('No pages matches to given query')
+
+    return render_page(request, page_)
 
 
-def post_item(request, slug_, type_):
-    """Renders page on its own url"""
-    post = get_object_or_404(Post, slug=slug_, type=type_)
-    return render(request, 'pages/post.html', {
-        'page': post,
-        'breadcrumbs': get_crumbs(post),
-    })
+def index(request):
+    """Main page view: root categories, top products."""
+
+    page_ = get_or_create_struct_page(slug='index')
+    return render(request, 'pages/page.html', {'page': page_})

@@ -21,44 +21,15 @@ Quick start
 
     INSTALLED_APPS = [
         ...
-        'blog',
+        'pages',
     ]
 
-3. Add some settings to your settings.py::
-
-    APP_BLOG_POST_TYPES = {
-        'article': {'name': 'Weekly articles', 'alias': ''},
-        'news': {'name': 'My news', 'alias': 'news'},
-        'navigation': {'name': 'Site navigation', 'alias': 'navigation'},
-    }
-
-    CRUMBS = {
-        'main': 'Main',  # Breadcrumbs title for main page
-        'blog': 'Pages list',  # Breadcrumbs title for blog page
-    }
-
-
-4. Include the blog URLconf in your project urls.py like this::
+3. Include the blog URLconf in your project urls.py like this::
 
     url(r'^blog/', include('blog.urls')),
 
-5. Run `python manage.py migrate` apply migrations
+4. Run `python manage.py migrate` apply migrations
 
-6. Add some models via admin dashboard
+5. Add some models via admin dashboard
 
-7. Visit http://127.0.0.1:8000/blog/ to view pages list
-
-
-Define your posts types
------
-Lets see `APP_BLOG_POST_TYPES` config:
-Each page type have attributes
-- type id - `navigation` in example above. Must be unique
-- type name - `Navigation` in example above
-- alias - `navigation`, for example
-
-Now, you have following urls:
-`/blog/[alias]/[id]`
-
-If you leave alias empty, urls will be like this:
-`/blog/[id]`
+6. Visit http://127.0.0.1:8000/blog/ to view pages list

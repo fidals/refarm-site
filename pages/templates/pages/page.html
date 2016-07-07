@@ -1,0 +1,21 @@
+{% load pages_extras %}
+<head>
+  <title>{{ page.title }}</title>
+</head>
+<body>
+  <h1>Page: {{ page.h1 }}</h1>
+  <p>{% breadcrumbs page %}</p>
+  <p>{{ page.content }}</p>
+
+  {% if page.children.all %}
+    <p>Sub pages:
+      <ul>
+        {% for item in page.children.all %}
+          <li><a href="{{ item.get_absolute_url }}">{{ item.title }}</a></li>
+        {% endfor %}
+      </ul>
+    </p>
+  {% else %}
+      <p>No sub pages</p>
+  {% endif %}
+</body>
