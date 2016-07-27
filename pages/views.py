@@ -1,5 +1,6 @@
 from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponsePermanentRedirect, Http404
+from django.views.generic import DetailView
 
 from .models import Page, get_or_create_struct_page
 
@@ -32,17 +33,17 @@ def page(request, *slugs):
         # example: /contacts/ --301--> /navi/contacts/
         if page_.parent:
             return HttpResponsePermanentRedirect(page_.get_absolute_url())
-
-        return render_page(request, page_)
-
-    if not path_exists(page_, slugs):
-        raise Http404('No pages matches to given query')
+    else:
+        if not path_exists(page_, slugs):
+            raise Http404('No pages matches to given query')
 
     return render_page(request, page_)
 
 
-def index(request):
-    """Main page view: root categories, top products."""
+class IndexPage(DetailView):
+    model = Page
+    template_name = 'index/index.html'
+    context_object_name = 'page'
 
-    page_ = get_or_create_struct_page(slug='index')
-    return render(request, 'pages/page.html', {'page': page_})
+    def get_object(self, **kwargs):
+        return get_or_create_struct_page(slug='index')

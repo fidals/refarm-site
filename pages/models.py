@@ -37,9 +37,10 @@ class Page(SeoMixin, models.Model):
         unique_together = ('type', 'slug')
 
     slug = models.SlugField(max_length=255, blank=True)
+    # Django.conf.url name for generating page url
+    # Used in get_absolute_url method only for pages with type=='structure'
     route = models.SlugField(max_length=255, null=True, blank=True)
     _menu_title = models.CharField(max_length=30, null=True, blank=True)
-    # if true, page is rendered as it's child pages list
     is_active = models.BooleanField(default=True)
     position = models.IntegerField(default=0, null=False)
     type = models.CharField(  # Page with type 'page' or 'structure'have no related model
@@ -95,28 +96,27 @@ class Page(SeoMixin, models.Model):
         self._menu_title = value
 
     @property
-    def model(self):
+    def model(self) -> models.Model:
+        """Return model, related to self"""
         if self.type not in [self.DEFAULT_TYPE, self.STRUCT_TYPE]:
             return getattr(self, self.type)
-        else:
-            return None
 
     def __str__(self):
-        """:return: name field value"""
         return self.title
 
     def get_path(self, include_self=True):
         """Get page parents list"""
-        def create_path(page):
-            while page:
-                if page != self or include_self:
-                    yield page
-                page = page.parent
-        return list(reversed(list(create_path(self))))
+        path = []
+        page = self
+        while page:
+            if page != self or include_self:
+                path = [page] + path
+            page = page.parent
+        return path
 
     def get_path_as_slugs(self):
         """Get page parent slugs list"""
-        return tuple(map(lambda p: p.slug, self.get_path()))
+        return tuple(p.slug for p in self.get_path())
 
     def get_absolute_url(self):
 
@@ -145,7 +145,8 @@ class Page(SeoMixin, models.Model):
 
     @property
     def image(self):
-        return self.model.image or None if self.model else None
+        if self.model and hasattr(self.model, 'image'):
+            return self.model.image
 
     def save(self, *args, **kwargs):
         if not self.slug:
@@ -170,7 +171,9 @@ class PageConnectorMixin(models.Model):
 
     MODEL_RELATION_PATTERN = '%(app_label)s_%(class)s'
 
-    id = None  # for error logging
+    # if we get some error on Page-Model connection,
+    # we use id to output error message
+    id = None
     parent = None
     title = None
     slug = None

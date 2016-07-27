@@ -40,7 +40,10 @@ def accordion(links_per_item=10, sort_field='position'):
     sections = list(
         filter(
             lambda p: p.is_section,
-            Page.objects.all().order_by(sort_field).iterator()
+            Page.objects.all()
+                .order_by(sort_field)
+                .filter(is_active=True)
+                .iterator()
         )
     )
 

@@ -17,7 +17,7 @@ Quick start
 `pip install -e git://github.com/fidals/refarm-blog.git#egg=refarm-blog`
 
 
-2. Add blog app to your INSTALLED_APPS setting like this::
+2. Add site app to your INSTALLED_APPS setting like this::
 
     INSTALLED_APPS = [
         ...
@@ -28,8 +28,6 @@ Quick start
 
     url(r'^blog/', include('blog.urls')),
 
-4. Run `python manage.py migrate` apply migrations
+4. Run `python manage.py migrate` to apply migrations
 
-5. Add some models via admin dashboard
-
-6. Visit http://127.0.0.1:8000/blog/ to view pages list
+5. Visit http://127.0.0.1:8000/blog/ to view pages list

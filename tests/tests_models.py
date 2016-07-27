@@ -16,6 +16,12 @@ class ModelsTests(TestCase):
             title='Default page #1',
         )
 
+    @staticmethod
+    def delete_index_page():
+        page_set = Page.objects.filter(slug='index')
+        if page_set:
+            page_set[0].delete()
+
     def test_default_page_creation(self):
         """Default page should have correct type and empty model relation"""
         page = self.__create_default_page()
@@ -27,6 +33,7 @@ class ModelsTests(TestCase):
         Struct page should have correct type, model relation and
         should have field data configured in settings
         """
+        self.delete_index_page()
         page = get_or_create_struct_page(slug='index')
         self.assertEqual(page.type, page.STRUCT_TYPE)
         self.assertEqual(page.model, None)
