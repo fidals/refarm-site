@@ -2,40 +2,51 @@
 Defines tests for models in Catalog app
 """
 
-from django.test import TestCase, override_settings
-from pages.models import Post, get_default_type
-from .model_factory import set_default_posts
+from django.test import TestCase
+from pages.models import Page, get_or_create_struct_page
+from django.conf import settings
 
 
 class ModelsTests(TestCase):
 
-    def setUp(self):
-        set_default_posts(self)
-
-    def tearDown(self):
-        Post.objects.all().delete()
-
-    def test_get_posts_type(self):
-        """News page is single"""
-        news_posts = Post.objects.filter(type='news')
-        self.assertEqual(len(news_posts), 1)
-        self.assertEqual(news_posts.values_list()[0][0], self.test_news_post.id)
-
-    def test_default_posts_type(self):
-        """
-        First type name in alphabetical order in APP_BLOG_POST_TYPES
-         should be default type
-        """
-        article_posts = Post.objects.filter(type='article')
-        self.assertEqual(len(article_posts), 1)
-        self.assertEqual(
-            article_posts.values_list()[0][0],
-            self.test_article_post.id
+    @staticmethod
+    def __create_default_page():
+        return Page.objects.create(
+            slug='default-page-1',
+            title='Default page #1',
         )
 
-    def test_get_default_type(self):
+    @staticmethod
+    def delete_index_page():
+        page = Page.objects.filter(slug='index').first()
+        if page:
+            page.delete()
+
+    def test_default_page_creation(self):
+        """Default page should have correct type and empty model relation"""
+        page = self.__create_default_page()
+        self.assertEqual(page.type, page.DEFAULT_TYPE)
+        self.assertEqual(page.model, None)
+
+    def test_struct_page_creation(self):
         """
-        get_default_type() should return type,
-         that marked as default in APP_BLOG_POST_TYPES.
+        Struct page should have correct type, model relation and
+        should have field data configured in settings
         """
-        self.assertEqual(get_default_type(), 'news')
+        self.delete_index_page()
+        page = get_or_create_struct_page(slug='index')
+        self.assertEqual(page.type, page.STRUCT_TYPE)
+        self.assertEqual(page.model, None)
+        self.assertEqual(page.title, settings.PAGES['index']['title'])
+
+    def test_struct_page_get_or_create(self):
+        """
+        Get_or_create method for struct pages
+        should just get page, if it exists. Method shouldn't choose page data
+        """
+        test_title = 'My tests cool title'
+        page = get_or_create_struct_page(slug='index')
+        page.title = test_title
+        page.save()
+        page = get_or_create_struct_page(slug='index')
+        self.assertEqual(page.title, test_title)

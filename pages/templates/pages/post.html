@@ -1,9 +1,0 @@
-{% load breadcrumb_extras %}
-
-<h1>Page: {{ page.name }}</h1>
-<p>{% breadcrumbs breadcrumbs %}</p>
-<p>name: {{ page.name }}</p>
-<ul>
-  <li><span>alias:</span><a href="{{ page.get_absolute_url }}">{{ page.name }}</a></li>
-</ul>
-<p>type: {{ page.type }}</p>

@@ -1,5 +1,4 @@
 import os
-from . import config_factory
 
 DIRNAME = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -22,9 +21,11 @@ INSTALLED_APPS = ('django.contrib.auth',
                   'pages',
                   )
 
-APP_BLOG_POST_TYPES = config_factory.get_usual()
-
-CRUMBS = {
-    'main': 'Main',
-    'pages': 'Posts list',
+PAGES = {
+    'index': {
+        'slug': 'index',
+        'route': 'index',
+        'title': 'MySite | My cool title',
+        'menu_title': 'Main page',
+    },
 }
