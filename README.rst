@@ -28,6 +28,6 @@ Quick start
 
     url(r'^blog/', include('blog.urls')),
 
-4. Run `python manage.py migrate` to apply migrations
+4. Run `python manage.py migrate` to apply migrations.
 
 5. Visit http://127.0.0.1:8000/blog/ to view pages list
