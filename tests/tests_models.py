@@ -18,9 +18,9 @@ class ModelsTests(TestCase):
 
     @staticmethod
     def delete_index_page():
-        page_set = Page.objects.filter(slug='index')
-        if page_set:
-            page_set[0].delete()
+        page = Page.objects.filter(slug='index').first()
+        if page:
+            page.delete()
 
     def test_default_page_creation(self):
         """Default page should have correct type and empty model relation"""

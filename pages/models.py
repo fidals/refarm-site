@@ -145,6 +145,7 @@ class Page(SeoMixin, models.Model):
 
     @property
     def image(self):
+        """Used in microdata: http://ogp.me/#metadata """
         if self.model and hasattr(self.model, 'image'):
             return self.model.image
 
