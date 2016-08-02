@@ -50,7 +50,7 @@ class Page(SeoMixin, models.Model):
     _date_published = models.DateField(auto_now_add=True, null=True, blank=True)
 
     _parent = models.ForeignKey(
-        'Page',
+        'self',
         on_delete=models.CASCADE,
         related_name='children',
         null=True, blank=True, default=None
@@ -106,13 +106,11 @@ class Page(SeoMixin, models.Model):
 
     def get_path(self, include_self=True):
         """Get page parents list"""
-        path = []
-        page = self
-        while page:
-            if page != self or include_self:
-                path = [page] + path
-            page = page.parent
-        return path
+        def build_path(page):
+            return build_path(page.parent) + [page] if page else []
+
+        path = build_path(self)
+        return path if include_self else path[:-1]
 
     def get_path_as_slugs(self):
         """Get page parent slugs list"""
