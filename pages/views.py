@@ -1,6 +1,7 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, render_to_response
 from django.http import HttpResponsePermanentRedirect, Http404
 from django.views.generic import DetailView
+from django.conf import settings
 
 from .models import Page, get_or_create_struct_page
 
@@ -38,6 +39,16 @@ def page(request, *slugs):
             raise Http404('No pages matches to given query')
 
     return render_page(request, page_)
+
+
+def robots(request):
+    """Render robots.txt and send it as response"""
+    return render_to_response(
+        'robots.txt',
+        {'debug': settings.DEBUG,
+         'url': request.scheme + '://' + request.META['HTTP_HOST']},
+        content_type='text/plain'
+    )
 
 
 class IndexPage(DetailView):
