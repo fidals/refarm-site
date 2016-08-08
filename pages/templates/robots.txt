@@ -1,10 +1,11 @@
 User-agent: *{% if debug %}
 Disallow: /
-{% else %}Disallow: /service/
+{% else %}
+Disallow: /service/
 Disallow: /*.css$
 Disallow: /*.js$
 Disallow: /*.txt$
-Clean-param: utm_source&utm_medium&utm_campaign&block&keyword&position /
+Clean-param: from&utm_source&utm_medium&utm_campaign&block&keyword&position /
 
 User-agent: Yandex
 Disallow: /search-results/
@@ -12,7 +13,7 @@ Disallow: /service/
 Disallow: /*.css$
 Disallow: /*.js$
 Disallow: /*.txt$
-Clean-param: utm_source&utm_medium&utm_campaign&block&keyword&position /
+Clean-param: from&utm_source&utm_medium&utm_campaign&block&keyword&position /
 
 Host: {{ url }}
 Sitemap: {{ url }}{% url 'sitemap' %}

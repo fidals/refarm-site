@@ -123,7 +123,7 @@ class Page(SeoMixin, models.Model):
             return self.model.get_absolute_url()
 
         if self.type == self.CUSTOM_TYPE:
-            return reverse(self.route)
+            return reverse(self.route) if self.route else '/'
 
         if self.type == self.FLAT_TYPE:
             return reverse('pages:flat_page', args=self.get_path_as_slugs())
