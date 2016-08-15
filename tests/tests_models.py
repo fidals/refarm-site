@@ -25,7 +25,7 @@ class ModelsTests(TestCase):
     def test_default_page_creation(self):
         """Default page should have correct type and empty model relation"""
         page = self.__create_default_page()
-        self.assertEqual(page.type, page.DEFAULT_TYPE)
+        self.assertEqual(page.type, page.FLAT_TYPE)
         self.assertEqual(page.model, None)
 
     def test_custom_page_creation(self):
