@@ -28,23 +28,23 @@ class SeoMixin(models.Model):
 class Page(SeoMixin, models.Model):
 
     # pages without related models: contacts, about site, etc
-    DEFAULT_TYPE = 'page'
+    FLAT_TYPE = 'page'
     # hardcoded pages: catalog/, index page, etc
-    STRUCT_TYPE = 'structure'
+    CUSTOM_TYPE = 'custom'
 
     class Meta:
         # for example, every category's page should have unique slug
         unique_together = ('type', 'slug')
 
-    slug = models.SlugField(max_length=255, blank=True)
+    slug = models.SlugField(max_length=400, blank=True)
     # Django.conf.url name for generating page url
-    # Used in get_absolute_url method only for pages with type=='structure'
+    # Used in get_absolute_url method only for pages with type=='custom'
     route = models.SlugField(max_length=255, null=True, blank=True)
-    _menu_title = models.CharField(max_length=30, null=True, blank=True)
+    _menu_title = models.CharField(max_length=180, null=True, blank=True)
     is_active = models.BooleanField(default=True)
     position = models.IntegerField(default=0, null=False)
-    type = models.CharField(  # Page with type 'page' or 'structure'have no related model
-        default=DEFAULT_TYPE, max_length=255, null=False, blank=True)
+    type = models.CharField(  # Page with type 'page' or 'custom'have no related model
+        default=FLAT_TYPE, max_length=255, null=False, blank=True)
     content = models.TextField(null=True, blank=True)
     seo_text = models.TextField(null=True, blank=True)
     _date_published = models.DateField(auto_now_add=True, null=True, blank=True)
@@ -98,7 +98,7 @@ class Page(SeoMixin, models.Model):
     @property
     def model(self) -> models.Model:
         """Return model, related to self"""
-        if self.type not in [self.DEFAULT_TYPE, self.STRUCT_TYPE]:
+        if self.type not in [self.FLAT_TYPE, self.CUSTOM_TYPE]:
             return getattr(self, self.type)
 
     def __str__(self):
@@ -122,11 +122,11 @@ class Page(SeoMixin, models.Model):
         if self.model:
             return self.model.get_absolute_url()
 
-        if self.type == self.STRUCT_TYPE:
+        if self.type == self.CUSTOM_TYPE:
             return reverse(self.route)
 
-        if self.type == self.DEFAULT_TYPE:
-            return reverse('pages:page', args=self.get_path_as_slugs())
+        if self.type == self.FLAT_TYPE:
+            return reverse('pages:flat_page', args=self.get_path_as_slugs())
 
         return '/'
 
@@ -136,7 +136,7 @@ class Page(SeoMixin, models.Model):
         Defines if page is a list of other pages or not. Used in accordion.
         """
         return (
-            self.type == self.DEFAULT_TYPE and
+            self.type == self.FLAT_TYPE and
             not self.parent and
             self.children
         )
@@ -152,7 +152,7 @@ class Page(SeoMixin, models.Model):
             self.slug = slugify(unidecode(self.title))
         super(Page, self).save(*args, **kwargs)
 
-
+# TODO needed refactor it in dev-788
 class PageConnectorMixin(models.Model):
     """
     To connect your model to page, inherit your model from from this mixin.
@@ -236,10 +236,10 @@ class PageConnectorMixin(models.Model):
         self.page.parent = self.parent.page
         self.page.save()
 
-
+# TODO needed remove it in dev-788
 def get_or_create_struct_page(*, slug):
     """
-    Get or create struct page object. For example /catalog/ or index page
+    Get or create custom page object. For example /catalog/ or index page
     Get default fields from settings.PAGES set
     """
 
@@ -250,5 +250,5 @@ def get_or_create_struct_page(*, slug):
     )
 
     return Page.objects.get_or_create(
-        type=Page.STRUCT_TYPE, slug=slug, defaults=page_fields,
+        type=Page.CUSTOM_TYPE, slug=slug, defaults=page_fields,
     )[0]

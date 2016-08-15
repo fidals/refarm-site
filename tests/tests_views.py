@@ -110,11 +110,11 @@ class PageTests(TestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
 
-    def test_struct_page_autocreation(self):
+    def test_custom_page_autocreation(self):
         """
         Site app create index page by the first request to it's url.
-        Index page is struct page.
-        So, every struct page should be autocreated by the fist request to it.
+        Index page is custom page.
+        So, every custom page should be autocreated by the fist request to it.
         """
         url = reverse('index')
         response = self.client.get(url)
