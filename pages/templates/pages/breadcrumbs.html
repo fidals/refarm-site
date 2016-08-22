@@ -2,10 +2,12 @@
 {# macros usage examples: https://pypi.python.org/pypi/django-macros/0.3 #}
 {% load pages_extras %}
 
-{% for name, slug in crumbs_list %}
-  {% if not forloop.last %}
-    {% crumb name slug separator=separator %}
-  {% else %}
-    {% crumb name slug %}
-  {% endif %}
-{% endfor %}
+<div itemscope itemtype="http://schema.org/BreadcrumbList">
+  {% for name, slug in crumbs_list %}
+    {% if not forloop.last %}
+      {% crumb name slug separator=separator position=forloop.counter %}
+    {% else %}
+      {% crumb name slug position=forloop.counter%}
+    {% endif %}
+  {% endfor %}
+</div>

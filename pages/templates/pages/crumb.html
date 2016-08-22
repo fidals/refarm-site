@@ -1,12 +1,13 @@
-<span typeof="v:Breadcrumb" class="breadcrumbs-item"
-      property="itemListElement" typeof="ListItem">
+<span class="breadcrumbs-item"  itemprop="itemListElement" itemscope
+      itemtype="http://schema.org/ListItem">
   {% if slug %}
-    <a href="{{ slug }}" property="item" typeof="WebPage">
-      <span property="name">{{ name }}</span>
+    <a href="{{ slug }}" itemprop="item">
+      <span itemprop="name">{{ name }}</span>
     </a>
   {% else %}
-    <span property="name">{{ name }}</span>
+    <span itemprop="name">{{ name }}</span>
   {% endif %}
+  {% if position %}<meta itemprop="position" content="{{ position }}">{% endif %}
   {% if separator %}
     <span class="breadcrumbs-separator">{{ separator }}</span>
   {% endif %}
