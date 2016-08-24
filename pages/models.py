@@ -146,8 +146,6 @@ class Page(SeoMixin, models.Model):
         """Used in microdata: http://ogp.me/#metadata """
         if self.model and hasattr(self.model, 'image'):
             return self.model.image
-        else:
-            return '/static/images/logo.svg'
 
     def save(self, *args, **kwargs):
         if not self.slug:
