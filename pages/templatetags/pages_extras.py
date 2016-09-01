@@ -6,11 +6,12 @@ register = template.Library()
 
 
 @register.inclusion_tag('pages/crumb.html')
-def crumb(name, slug='/', separator=''):
+def crumb(name, slug='/', separator='', position=0):
     return {
         'name': name,
         'slug': slug,
         'separator': separator,
+        'position': position,
     }
 
 
