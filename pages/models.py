@@ -45,7 +45,7 @@ class Page(SeoMixin, models.Model):
     position = models.IntegerField(default=0, null=False)
     type = models.CharField(  # Page with type 'page' or 'custom'have no related model
         default=FLAT_TYPE, max_length=255, null=False, blank=True)
-    content = models.TextField(null=True, blank=True)
+    content = models.TextField(null=True, blank=True, default='')
     seo_text = models.TextField(null=True, blank=True)
     _date_published = models.DateField(auto_now_add=True, null=True, blank=True)
 
@@ -147,12 +147,13 @@ class Page(SeoMixin, models.Model):
         if self.model and hasattr(self.model, 'image'):
             return self.model.image
         else:
-            return '/static/images/logo.svg'
+            return settings.IMAGES['thumbnail']
 
     def save(self, *args, **kwargs):
         if not self.slug:
             self.slug = slugify(unidecode(self.title))
         super(Page, self).save(*args, **kwargs)
+
 
 # TODO needed refactor it in dev-788
 class PageConnectorMixin(models.Model):
