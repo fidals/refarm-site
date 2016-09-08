@@ -177,7 +177,7 @@ class PageConnectorMixin(models.Model):
     # we use id to output error message
     id = None
     parent = None
-    title = None
+    h1 = None
     slug = None
 
     page = models.OneToOneField(
@@ -221,7 +221,7 @@ class PageConnectorMixin(models.Model):
         self.page, _ = Page.objects.get_or_create(
             type=self.type,
             slug=self.slug,
-            defaults={'title': self.title, }
+            defaults={'h1': self.h1, }
         )
 
     def __update_page_tree(self):
@@ -249,7 +249,7 @@ def get_or_create_struct_page(*, slug):
     page_fields = (
         settings.PAGES[slug]
         if settings.PAGES and slug in settings.PAGES
-        else {'title': slug}
+        else {'h1': slug}
     )
 
     return Page.objects.get_or_create(
