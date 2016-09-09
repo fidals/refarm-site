@@ -7,19 +7,18 @@ from django.template.defaultfilters import slugify
 
 
 class SeoMixin(models.Model):
-    title = models.CharField(max_length=255, null=False, blank=True)
-    _h1 = models.CharField(default='', max_length=255, null=False, blank=True)
-    keywords = models.CharField(
-        max_length=255, default='', null=False, blank=True)
+    _title = models.CharField(max_length=255, null=False, blank=True)
+    h1 = models.CharField(default='', max_length=255, null=False, blank=True)
+    keywords = models.CharField(max_length=255, default='', null=False, blank=True)
     description = models.TextField(default='', null=False, blank=True)
 
     @property
-    def h1(self):
-        return self._h1 or self.title
+    def title(self):
+        return self._title or self.h1
 
-    @h1.setter
-    def h1(self, value):
-        self._h1 = value
+    @title.setter
+    def title(self, value):
+        self._title = value
 
     class Meta:
         abstract = True
@@ -89,7 +88,7 @@ class Page(SeoMixin, models.Model):
 
     @property
     def menu_title(self):
-        return self._menu_title or self.title
+        return self._menu_title or self.h1
 
     @menu_title.setter
     def menu_title(self, value):
@@ -102,7 +101,7 @@ class Page(SeoMixin, models.Model):
             return getattr(self, self.type)
 
     def __str__(self):
-        return self.title
+        return self.h1
 
     def get_path(self, include_self=True):
         """Get page parents list"""
@@ -151,7 +150,7 @@ class Page(SeoMixin, models.Model):
 
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = slugify(unidecode(self.title))
+            self.slug = slugify(unidecode(self.h1))
         super(Page, self).save(*args, **kwargs)
 
 
@@ -160,7 +159,7 @@ class PageConnectorMixin(models.Model):
     """
     To connect your model to page, inherit your model from from this mixin.
     And you should (re)define some attributes:
-     - title - str for page's title (h1)
+     - h1 - h1 page's tag
      - parent - if your model has it
 
     Mixin contains:
@@ -177,7 +176,7 @@ class PageConnectorMixin(models.Model):
     # we use id to output error message
     id = None
     parent = None
-    title = None
+    h1 = None
     slug = None
 
     page = models.OneToOneField(
@@ -221,7 +220,9 @@ class PageConnectorMixin(models.Model):
         self.page, _ = Page.objects.get_or_create(
             type=self.type,
             slug=self.slug,
-            defaults={'title': self.title, }
+            defaults={
+                'h1': self.h1,
+            }
         )
 
     def __update_page_tree(self):
@@ -249,7 +250,7 @@ def get_or_create_struct_page(*, slug):
     page_fields = (
         settings.PAGES[slug]
         if settings.PAGES and slug in settings.PAGES
-        else {'title': slug}
+        else {'h1': slug}
     )
 
     return Page.objects.get_or_create(
