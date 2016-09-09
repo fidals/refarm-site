@@ -88,7 +88,7 @@ class Page(SeoMixin, models.Model):
 
     @property
     def menu_title(self):
-        return self._menu_title or self.title
+        return self._menu_title or self.h1
 
     @menu_title.setter
     def menu_title(self, value):

@@ -19,13 +19,13 @@ def crumb(name, slug='/', separator='', position=0):
 def breadcrumbs(page: Page, separator=''):
 
     def get_crumb(page_):
-        return page_.h1, page_.get_absolute_url()
+        return page_.menu_title, page_.get_absolute_url()
 
     index_page = get_or_create_struct_page(slug='index')
     crumbs_list = (
         [get_crumb(index_page)] +
         [get_crumb(p) for p in page.get_path(include_self=False)] +
-        [(page.h1, '')]
+        [(page.menu_title, '')]
     )
     return {
         'crumbs_list': crumbs_list,
