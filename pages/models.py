@@ -4,6 +4,7 @@ from django.db import models
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.template.defaultfilters import slugify
+from images.models import Image, ImageMixin
 
 
 class SeoMixin(models.Model):
@@ -24,7 +25,7 @@ class SeoMixin(models.Model):
         abstract = True
 
 
-class Page(SeoMixin, models.Model):
+class Page(SeoMixin, ImageMixin):
 
     # pages without related models: contacts, about site, etc
     FLAT_TYPE = 'page'
@@ -239,6 +240,7 @@ class PageConnectorMixin(models.Model):
         self.parent.assert_page_is_correct()
         self.page.parent = self.parent.page
         self.page.save()
+
 
 # TODO needed remove it in dev-788
 def get_or_create_struct_page(*, slug):
