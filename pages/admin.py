@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from pages.models import Page
+from pages.models import CustomPage, ModelPage, FlatPage
 
 
 class PageAdmin(admin.ModelAdmin):
@@ -11,4 +11,6 @@ class PageAdmin(admin.ModelAdmin):
     search_fields = ['title', 'slug']
 
 
-admin.site.register(Page, PageAdmin)
+admin.site.register(CustomPage, PageAdmin)
+admin.site.register(ModelPage, PageAdmin)
+admin.site.register(FlatPage, PageAdmin)

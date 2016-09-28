@@ -9,7 +9,7 @@ DATABASES = {
     }
 }
 
-ROOT_URLCONF = 'pages.urls'
+ROOT_URLCONF = 'tests.urls'
 
 SECRET_KEY = 'fake-key'
 
@@ -26,16 +26,11 @@ INSTALLED_APPS = (
     'sorl.thumbnail',
     'images',
     'pages',
+    'tests',
 )
 
-PAGES = {
-    'index': {
-        'slug': 'index',
-        'route': 'index',
-        'title': 'MySite | My cool title',
-        'menu_title': 'Main page',
-    },
-}
+CUSTOM_PAGES_URL_NAME = 'custom_page'
+ENTITY_MODEL = 'tests.TestEntity'
 
 # <--- transitive depends on pages app
 PRODUCTS_TO_LOAD = 30

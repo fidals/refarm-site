@@ -1,19 +1,26 @@
 from unidecode import unidecode
+from datetime import date, datetime
+from itertools import chain
 
-from django.db import models
-from django.conf import settings
+from django.db import models, transaction
 from django.core.urlresolvers import reverse
+from django.conf import settings
 from django.template.defaultfilters import slugify
 
 from images.models import Image, ImageMixin
 from images.templatetags.images import placeholder_image_url
 
 
-class SeoMixin(models.Model):
-    _title = models.CharField(max_length=255, null=False, blank=True)
-    h1 = models.CharField(default='', max_length=255, null=False, blank=True)
-    keywords = models.CharField(max_length=255, default='', null=False, blank=True)
-    description = models.TextField(default='', null=False, blank=True)
+class AbstractSeo(models.Model):
+    class Meta:
+        abstract = True
+
+    h1 = models.CharField(max_length=255)
+    keywords = models.CharField(blank=True, max_length=255)
+    description = models.TextField(blank=True)
+    seo_text = models.TextField(blank=True)
+
+    _title = models.CharField(blank=True, max_length=255)
 
     @property
     def title(self):
@@ -23,71 +30,46 @@ class SeoMixin(models.Model):
     def title(self, value):
         self._title = value
 
-    class Meta:
-        abstract = True
 
-
-class Page(SeoMixin, ImageMixin):
-
-    # pages without related models: contacts, about site, etc
-    FLAT_TYPE = 'page'
-    # hardcoded pages: catalog/, index page, etc
+class Page(AbstractSeo, ImageMixin):
+    # pages with same templates (ex. news, about)
+    FLAT_TYPE = 'flat'
+    # pages with unique templates (ex. index, order)
     CUSTOM_TYPE = 'custom'
+    # pages related with other models like Product or Category
+    # pages with type 'flat' or 'custom' have not related model
+    MODEL_TYPE = 'model'
+
+    INDEX_SLUG = ''
 
     class Meta:
-        # for example, every category's page should have unique slug
-        unique_together = ('type', 'slug')
+        unique_together = ('type', 'slug', 'related_model_name')
+
+    type = models.CharField(default=FLAT_TYPE, max_length=100, editable=False)
+    # Name for reversing at related model
+    related_model_name = models.CharField(blank=True, max_length=255, editable=False)
+
+    parent = models.ForeignKey(
+        'self', on_delete=models.CASCADE, related_name='children', null=True, blank=True)
 
     slug = models.SlugField(max_length=400, blank=True)
-    # Django.conf.url name for generating page url
-    # Used in get_absolute_url method only for pages with type=='custom'
-    route = models.SlugField(max_length=255, null=True, blank=True)
-    _menu_title = models.CharField(max_length=180, null=True, blank=True)
-    is_active = models.BooleanField(default=True)
-    position = models.IntegerField(default=0, null=False)
-    type = models.CharField(  # Page with type 'page' or 'custom'have no related model
-        default=FLAT_TYPE, max_length=255, null=False, blank=True)
-    content = models.TextField(null=True, blank=True, default='')
-    seo_text = models.TextField(null=True, blank=True)
-    _date_published = models.DateField(auto_now_add=True, null=True, blank=True)
+    is_active = models.BooleanField(default=True, blank=True)
+    position = models.IntegerField(default=0, blank=True)
+    content = models.TextField(blank=True)
+    date_published = models.DateField(default=date.today, blank=True)
 
-    _parent = models.ForeignKey(
-        'self',
-        on_delete=models.CASCADE,
-        related_name='children',
-        null=True, blank=True, default=None
+    _menu_title = models.CharField(
+        max_length=180, blank=True,
+        help_text='This field will be shown in the breadcrumbs, menu items and etc.'
     )
 
     @property
-    def parent(self):
-
-        def is_category(model):
-            return type(model).__name__.lower() == 'category'
-
-        def is_page_of_root_category():
-            return is_category(self.model) and not self._parent
-
-        # Duker 20.07.16 - Dirty check of 'category_tree' special case.
-        # Now i don't know how to inject this code correctly from catalog app
-        if is_page_of_root_category():
-            return get_or_create_struct_page(slug='category_tree')
-        return self._parent
-
-    @parent.setter
-    def parent(self, value):
-        self._parent = value
+    def index(self):
+        return Page.objects.filter(type=self.CUSTOM_TYPE, slug=self.INDEX_SLUG).first()
 
     @property
-    def date_published(self):
-        if self._date_published:
-            return self._date_published
-        if hasattr(settings, 'SITE_CREATED'):
-            return settings.SITE_CREATED
-        return None
-
-    @date_published.setter
-    def date_published(self, value):
-        self._date_published = value
+    def url(self):
+        return self.get_absolute_url()
 
     @property
     def menu_title(self):
@@ -100,48 +82,34 @@ class Page(SeoMixin, ImageMixin):
     @property
     def model(self) -> models.Model:
         """Return model, related to self"""
-        if self.type not in [self.FLAT_TYPE, self.CUSTOM_TYPE]:
-            return getattr(self, self.type)
+        return getattr(self, self.related_model_name)
 
-    def __str__(self):
-        return self.h1
+    @property
+    def url(self):
+        return self.get_absolute_url()
 
-    def get_path(self, include_self=True):
-        """Get page parents list"""
-        def build_path(page):
-            return build_path(page.parent) + [page] if page else []
+    @property
+    def is_root(self):
+        return not self.parent and self.children
 
-        path = build_path(self)
-        return path if include_self else path[:-1]
+    @property
+    def is_flat(self):
+        return self.type == self.FLAT_TYPE
 
-    def get_path_as_slugs(self):
-        """Get page parent slugs list"""
-        return tuple(p.slug for p in self.get_path())
+    @property
+    def is_custom(self):
+        return self.type == self.CUSTOM_TYPE
 
-    def get_absolute_url(self):
-
-        # Different page types reverse different urls
-        if self.model:
-            return self.model.get_absolute_url()
-
-        if self.type == self.CUSTOM_TYPE:
-            return reverse(self.route) if self.route else '/'
-
-        if self.type == self.FLAT_TYPE:
-            return reverse('pages:flat_page', args=self.get_path_as_slugs())
-
-        return '/'
+    @property
+    def is_model(self):
+        return self.type == self.MODEL_TYPE
 
     @property
     def is_section(self):
         """
         Defines if page is a list of other pages or not. Used in accordion.
         """
-        return (
-            self.type == self.FLAT_TYPE and
-            not self.parent and
-            self.children
-        )
+        return self.is_root and self.is_flat
 
     @property
     def image(self):
@@ -151,44 +119,131 @@ class Page(SeoMixin, ImageMixin):
         else:
             return placeholder_image_url()
 
+    def __str__(self):
+        return self.h1
+
+    def get_absolute_url(self):
+        """Different page types reverse different urls"""
+        if self.is_model:
+            return self.model.get_absolute_url()
+
+        if self.is_custom:
+            return reverse(settings.CUSTOM_PAGES_URL_NAME, args=(self.slug, ))
+
+        if self.is_flat:
+            return reverse('pages:flat_page', args=self.get_ancestors_fields('slug'))
+
+        return '/'
+
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = slugify(unidecode(self.h1))
+            h1 = unidecode(self.h1.replace('.', '-').replace('+', '-'))
+            if self.is_flat:
+                self.slug = slugify(h1)
+
+            #  We don't use slug field for model pages.
+            #  I do not know how to avoid duplication data, we needed to respect unique_together.
+            if self.is_model:
+                self.slug = slugify('{}-{}'.format(h1, datetime.now().timestamp()))
+
         super(Page, self).save(*args, **kwargs)
 
+    def get_ancestors(self, include_self=True) -> [models.Model]:
+        def gather_ancestors(page):
+            """Recursively gather ancestors in branch"""
+            return gather_ancestors(page.parent) + [page] if page else []
 
-# TODO needed refactor it in dev-788
-class PageConnectorMixin(models.Model):
+        branch = gather_ancestors(self)
+        return branch if include_self else branch[:-1]
+
+    def get_ancestors_fields(self, *args, include_self=True) -> [[models.Field] or models.Field]:
+        fields = [
+            [getattr(page, field) for field in args]
+            for page in self.get_ancestors(include_self=include_self)]
+
+        if len(args) == 1:
+            fields = list(chain(*fields))
+
+        return fields
+
+
+class CustomPageManager(models.Manager):
+    def get_queryset(self):
+        return super(CustomPageManager, self).get_queryset().filter(type=Page.CUSTOM_TYPE)
+
+
+class FlatPageManager(models.Manager):
+    def get_queryset(self):
+        return super(FlatPageManager, self).get_queryset().filter(type=Page.FLAT_TYPE)
+
+
+class ModelPageManager(models.Manager):
+    def get_queryset(self):
+        return super(ModelPageManager, self).get_queryset().filter(type=Page.MODEL_TYPE)
+
+
+class CustomPage(Page):
+    class Meta:
+        proxy = True
+
+    objects = CustomPageManager()
+
+    def save(self, *args, **kwargs):
+        self.type = Page.CUSTOM_TYPE
+        super(CustomPage, self).save(*args, **kwargs)
+
+
+class FlatPage(Page):
+    class Meta:
+        proxy = True
+
+    objects = FlatPageManager()
+
+    def save(self, *args, **kwargs):
+        self.type = Page.FLAT_TYPE
+        super(FlatPage, self).save(*args, **kwargs)
+
+
+class ModelPage(Page):
+    class Meta:
+        proxy = True
+
+    objects = ModelPageManager()
+
+    def save(self, *args, **kwargs):
+        self.type = Page.MODEL_TYPE
+        super(ModelPage, self).save(*args, **kwargs)
+
+
+class PageMixin(models.Model):
     """
-    To connect your model to page, inherit your model from from this mixin.
-    And you should (re)define some attributes:
-     - h1 - h1 page's tag
-     - parent - if your model has it
+    Add page functionality to your model.
 
-    Mixin contains:
-     - Fields set, that every entity should have to connect to model
-     - Model<->page sync logic
+    Requirements:
+        - Inherit your model from this mixin.
+        - Define CharField `name`.
+
+    Functions:
+        - Create relationships oneToOne for your model and Page.
+        - Add save/delete hooks for related Page.
+        - Sync relations with parent if them exist.
+
+    Examples:
+    obj1 = Obj.objects.create(...) -> p1 = Page.objects.create(h1=obj1.name)
+    obj2 = Obj.objects.create(parent=obj1, ...) -> Page.objects.create(h1=obj1.name, parent=p1)
+    obj2.delete() -> p2.delete()
     """
 
     class Meta:
         abstract = True
 
+    # docs: https://goo.gl/MJIAYd
     MODEL_RELATION_PATTERN = '%(app_label)s_%(class)s'
-
-    # if we get some error on Page-Model connection,
-    # we use id to output error message
-    id = None
-    parent = None
-    h1 = None
-    slug = None
-
     page = models.OneToOneField(
-        Page, on_delete=models.SET_NULL, null=True, blank=True,
-        related_name=MODEL_RELATION_PATTERN  # Dj doc: https://goo.gl/MJIAYd
-    )
+        Page, on_delete=models.CASCADE, related_name=MODEL_RELATION_PATTERN, null=True)
 
     @property
-    def type(self):
+    def related_model_name(self):
         """
         Returns model class as string. For example:
         catalog.Category.type -> 'catalog_category'
@@ -198,65 +253,35 @@ class PageConnectorMixin(models.Model):
             'class': self._meta.model_name.lower(),
         }
 
-    def save(self, *args, **kwargs):
-        self.update_page()
-        super(PageConnectorMixin, self).save(*args, **kwargs)
+    @transaction.atomic
+    def delete(self, using=None, keep_parents=False):
+        super(PageMixin, self).delete(using, keep_parents)
+        self.page.delete(using, keep_parents)
 
-    def assert_page_is_correct(self):
-        assert self.page, '{} #{} has no page'.format(self.type, self.id)
-        is_correct = (self.type, self.slug) == (self.page.type, self.page.slug)
-        assert is_correct, '{} #{} has wrong page'.format(self.type, self.id)
+    @transaction.atomic
+    def save(self, page_parent=None, page_fields=None, *args, **kwargs):
+        self.update_related_page(page_parent, page_fields or {})
+        super(PageMixin, self).save(*args, **kwargs)
 
-    def update_page(self):
-        self.__update_page_fields()
-        self.__update_page_relation()
-        self.__update_page_tree()
+    def update_related_page(self, parent, fields):
+        def update_page():
+            if not self.page:
+                page_data = {
+                    'h1': getattr(self, 'name', ''),
+                    'related_model_name': self.related_model_name,
+                    **fields,
+                }
+                self.page = ModelPage.objects.create(**page_data)
+            else:
+                self.page.h1 = self.name
 
-    def __update_page_fields(self):
-        if not self.page:
-            return
-        source, dest = self, self.page
-        dest.type, dest.slug = source.type, source.slug
-        dest.save()
+        def update_page_tree():
+            if getattr(self, 'parent', None):
+                self.page.parent = self.parent.page
+            else:
+                self.page.parent = parent
 
-    def __update_page_relation(self):
-        self.page, _ = Page.objects.get_or_create(
-            type=self.type,
-            slug=self.slug,
-            defaults={
-                'h1': self.h1,
-            }
-        )
+            self.page.save()
 
-    def __update_page_tree(self):
-        """
-        Me - current category.
-        Set my parent.page as my page.parent.
-        Precondition:
-        My page and my parent's page should be correct.
-        """
-        self.assert_page_is_correct()
-        if not self.parent:
-            self.page.parent = None
-            return
-        self.parent.assert_page_is_correct()
-        self.page.parent = self.parent.page
-        self.page.save()
-
-
-# TODO needed remove it in dev-788
-def get_or_create_struct_page(*, slug):
-    """
-    Get or create custom page object. For example /catalog/ or index page
-    Get default fields from settings.PAGES set
-    """
-
-    page_fields = (
-        settings.PAGES[slug]
-        if settings.PAGES and slug in settings.PAGES
-        else {'h1': slug}
-    )
-
-    return Page.objects.get_or_create(
-        type=Page.CUSTOM_TYPE, slug=slug, defaults=page_fields,
-    )[0]
+        update_page()
+        update_page_tree()

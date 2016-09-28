@@ -4,10 +4,18 @@
 
 <div itemscope itemtype="http://schema.org/BreadcrumbList">
   {% for name, slug in crumbs_list %}
-    {% if not forloop.last %}
-      {% crumb name slug separator=separator position=forloop.counter %}
-    {% else %}
-      {% crumb name slug position=forloop.counter%}
-    {% endif %}
+    <span class="breadcrumbs-item"  itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
+      {% if slug %}
+        <a href="{{ slug }}" itemprop="item">
+          <span itemprop="name">{{ name }}</span>
+        </a>
+      {% else %}
+        <span itemprop="name">{{ name }}</span>
+      {% endif %}
+        <meta itemprop="position" content="{{ forloop.counter }}">
+      {% if not forloop.last %}
+        <span class="breadcrumbs-separator">{{ separator }}</span>
+      {% endif %}
+    </span>
   {% endfor %}
 </div>

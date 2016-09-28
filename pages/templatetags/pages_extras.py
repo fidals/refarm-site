@@ -1,32 +1,20 @@
 from django import template
+from django.db import models
 
-from pages.models import Page, get_or_create_struct_page
+from pages.models import FlatPage, CustomPage
 
 register = template.Library()
 
 
-@register.inclusion_tag('pages/crumb.html')
-def crumb(name, slug='/', separator='', position=0):
-    return {
-        'name': name,
-        'slug': slug,
-        'separator': separator,
-        'position': position,
-    }
-
-
 @register.inclusion_tag('pages/breadcrumbs.html')
-def breadcrumbs(page: Page, separator=''):
+def breadcrumbs(page: models.Model, separator=''):
+    index = page.index
+    crumbs_list = [
+        [index.menu_title, index.url] if index else ['Главная', '/'],
+        *page.get_ancestors_fields('menu_title', 'url', include_self=False),
+        [page.menu_title, '']
+    ]
 
-    def get_crumb(page_):
-        return page_.menu_title, page_.get_absolute_url()
-
-    index_page = get_or_create_struct_page(slug='index')
-    crumbs_list = (
-        [get_crumb(index_page)] +
-        [get_crumb(p) for p in page.get_path(include_self=False)] +
-        [(page.menu_title, '')]
-    )
     return {
         'crumbs_list': crumbs_list,
         'separator': separator,
@@ -41,7 +29,7 @@ def accordion(links_per_item=10, sort_field='position'):
     sections = list(
         filter(
             lambda p: p.is_section,
-            Page.objects.all()
+            FlatPage.objects.all()
                 .order_by(sort_field)
                 .filter(is_active=True)
                 .iterator()
@@ -49,8 +37,7 @@ def accordion(links_per_item=10, sort_field='position'):
     )
 
     for section in sections:
-        section.pages = \
-            section.children.all().order_by(sort_field)[:links_per_item]
+        section.pages = section.children.all().order_by(sort_field)[:links_per_item]
 
     return {
         'sections': sections,

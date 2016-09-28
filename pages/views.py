@@ -3,35 +3,21 @@ from django.http import HttpResponsePermanentRedirect, Http404
 from django.views.generic import DetailView
 from django.conf import settings
 
-from pages.models import Page, get_or_create_struct_page
+from pages.models import CustomPage, FlatPage
 
 
-class CustomPage(DetailView):
+class CustomPageView(DetailView):
     """
     Class based views for page.
     Render custom page by it's slug.
     """
-    model = Page
-    template_name = 'pages/page.html'
+    model = CustomPage
+    template_name = 'index/index.html'
+    slug_url_kwarg = 'page'
     context_object_name = 'page'
-    slug_field = 'index'
-    context = {}
-
-    def get_object(self, *args):
-        """If entity exist - fetch it, else 404"""
-        return get_object_or_404(self.model, slug=args[0])
-
-    def get(self, request, *args, **kwargs):
-        """Get method for page"""
-        page = self.get_object(args or self.slug_field)
-        context = {
-            self.context_object_name: page,
-            **self.context
-        }
-        return render(request, self.template_name, context)
 
 
-class FlatPage(CustomPage):
+class FlatPageView(DetailView):
     """
     Class based views for flat page.
     Render page by it's alias (slugs list).
@@ -40,55 +26,45 @@ class FlatPage(CustomPage):
      - /contacts/ should return 301 redirect to /navi/contacts/
      - /navi/contacts/ should render "contacts" page
     """
-    __entity_page = None
+    model = FlatPage
+    template_name = 'pages/page.html'
+    context_object_name = 'page'
 
-    def is_not_full_path(self, page, slugs):
-        """Check URL path, if is not full - 301 to actual URL
+    def is_full_path(self, request, page):
+        """
+        Check URL path, if is not full - 301 to actual URL
         (ex. suppose, we have entity 'contacts' with path /navi/contacts/
-        if path=/contacts/ return PermanentRedirect
-        if path=/navi/contacts/ return None)"""
-        if len(slugs) == 1 and page.parent:
-            return HttpResponsePermanentRedirect(page.get_absolute_url())
+        if path=/contacts/ return False
+        if path=/navi/contacts/ return True)
+        """
+        return request.path == page.url
 
-    def is_not_path_exist(self, page, slugs_path):
-        """Check URL path, if is not exist - raise 404
+    def is_correct_path(self, request, page):
+        """
+        Check URL path, if is not correct - 404
         (ex. suppose, we have entity 'contacts' with path /navi/contacts/
-        if path=/news/contacts/ return 404
-        if path=/navi/contacts/ return None)"""
-        if page.get_path_as_slugs() != slugs_path:
-            raise Http404('No pages matches to given query')
-
-    def get_object(self, slugs_path):
-        """If entity exist - fetch it, else 404"""
-        return self.__entity_page or get_object_or_404(self.model, slug=slugs_path[-1])
+        if path=/navi/contacts/ return True)
+        if path=/job/contacts/ return False
+        """
+        return request.path in page.url
 
     def get(self, request, *args):
         """Get method for flat page"""
-        page = self.__entity_page = self.get_object(args)
-        __validation_methods = [self.is_not_full_path, self.is_not_path_exist]
-        for method in __validation_methods:
-            method_response = method(page, args)
-            if method_response:
-                return method_response
-        return super(FlatPage, self).get(request, args)
+        self.object = page = get_object_or_404(self.model, slug=args[-1])
 
+        if not self.is_correct_path(request, page):
+            raise Http404()
 
-# TODO needed remove it and instead use CustomPage. dev-788
-class IndexPage(DetailView):
-    model = Page
-    template_name = 'index/index.html'
-    context_object_name = 'page'
+        if not self.is_full_path(request, page):
+            return HttpResponsePermanentRedirect(page.url)
 
-    def get_object(self, **kwargs):
-        return get_or_create_struct_page(slug='index')
+        context = self.get_context_data(object=page)
+        return render(request, self.template_name, context)
 
 
 def robots(request):
     return render_to_response(
-        'robots.txt',
-        {
+        'robots.txt', {
             'debug': settings.DEBUG,
-            'url': settings.BASE_URL,
-        },
-        content_type='text/plain'
-    )
+            'url': request.scheme + '://' + request.META['HTTP_HOST']
+        }, content_type='text/plain')

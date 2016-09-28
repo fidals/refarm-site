@@ -1,64 +1,111 @@
 """
 Defines tests for models in Catalog app
 """
-
 import os.path
 
-from django.test import TestCase
-from django.conf import settings
 from django.core.files.images import ImageFile
-from django.db.models import Model
+from django.apps.registry import apps
+from django.conf import settings
+from django.db import models
+from django.test import TestCase
 
-from pages.models import Page, get_or_create_struct_page
+from pages.models import ModelPage, CustomPage, FlatPage
 from images.models import Image
-
-
 import tests
 
 
-def create_default_page():
-    return Page.objects.create(
-        slug='default-page-1',
-        title='Default page #1',
-    )
-
-
-class PageTests(TestCase):
+class AbstractModelsTests(TestCase):
 
     @staticmethod
-    def delete_index_page():
-        page = Page.objects.filter(slug='index').first()
-        if page:
-            page.delete()
+    def create_page(model: models.Model, **extra_field) -> models.Model:
+        return model.objects.create(**{'h1': 'Test h1', **extra_field})
 
-    def test_default_page_creation(self):
-        """Default page should have correct type and empty model relation"""
-        page = create_default_page()
-        self.assertEqual(page.type, page.FLAT_TYPE)
-        self.assertEqual(page.model, None)
+    @staticmethod
+    def create_related_entity(number=0):
+        name = 'entity_#{}'.format(number)
+        model = apps.get_model(settings.ENTITY_MODEL)
+        product = model.objects.create(name=name)
+        return product
 
-    def test_custom_page_creation(self):
-        """
-        Custom page should have correct type, model relation and
-        should have field data configured in settings
-        """
-        self.delete_index_page()
-        page = get_or_create_struct_page(slug='index')
-        self.assertEqual(page.type, page.CUSTOM_TYPE)
-        self.assertEqual(page.model, None)
-        self.assertEqual(page.title, settings.PAGES['index']['title'])
+    @staticmethod
+    def get_page(model: models.Model, name: str) -> [models.Model] or []:
+        return model.objects.filter(h1=name)
 
-    def test_custom_page_get_or_create(self):
-        """
-        Get_or_create method for custom pages
-        should just get page, if it exists. Method shouldn't choose page data
-        """
-        test_title = 'My tests cool title'
-        page = get_or_create_struct_page(slug='index')
-        page.title = test_title
-        page.save()
-        page = get_or_create_struct_page(slug='index')
-        self.assertEqual(page.title, test_title)
+
+class CustomPageTests(AbstractModelsTests):
+    def test_get_absolute_url(self):
+        page = self.create_page(CustomPage, slug='')
+
+        self.assertIn(page.slug, page.url)
+
+
+class FlatPageTest(AbstractModelsTests):
+    @classmethod
+    def setUpClass(cls):
+        super(FlatPageTest, cls).setUpClass()
+
+        def create_flat_page(parent=None):
+            return cls.create_page(
+                FlatPage, slug='page_of_{}'.format(getattr(parent, 'slug', 'ROOT')), parent=parent)
+
+        page = create_flat_page()
+        child_page = create_flat_page(parent=page)
+        deep_child_page = create_flat_page(parent=child_page)
+        cls.pages = [page, child_page, deep_child_page]
+
+    def test_is_section(self):
+        root_page, *_ = self.pages
+        self.assertTrue(root_page.is_section)
+
+    def test_get_absolute_url(self):
+        urls = [page.url for page in self.pages]
+        slugs = [page.slug for page in self.pages]
+
+        for url, slug in zip(urls, slugs):
+            self.assertIn(slug, url)
+
+
+class ModelPageTest(AbstractModelsTests):
+
+    def setUp(self):
+        self.product = self.create_related_entity()
+        self.page = self.product.page
+
+    def test_get_absolute_url(self):
+        self.assertEqual(self.product.get_absolute_url(), self.page.url)
+
+
+class PageMixinTest(AbstractModelsTests):
+
+    def setUp(self):
+        self.entity = self.create_related_entity()
+        self.name = self.entity.name
+
+    def test_save_page_after_save_entity(self):
+        page = self.get_page(ModelPage, self.name)
+
+        self.assertTrue(page)
+
+    def test_delete_page_after_delete_entity(self):
+        self.entity.delete()
+        page = self.get_page(ModelPage, self.name)
+
+        self.assertFalse(page)
+
+    def test_update_page_after_update_entity(self):
+        def update_parent(parent=None):
+            self.entity.parent = parent
+            self.entity.save()
+
+        entity_parent = self.create_related_entity(number=1)
+        update_parent(entity_parent)
+
+        self.assertEqual(entity_parent.page, self.entity.page.parent)
+
+        update_parent()
+        self.assertEqual(self.entity.parent, None)
+        self.assertNotEqual(entity_parent.page, self.entity.page.parent)
+
 
 
 def open_file(filename: str):
@@ -69,7 +116,7 @@ def open_file(filename: str):
     return file
 
 
-def create_image_model(model: Model, filename: str, slug: str):
+def create_image_model(model: models.Model, filename: str, slug: str):
     image_file = ImageFile(open_file(filename))
     image_model = Image.objects.create(
         model=model,
@@ -80,7 +127,7 @@ def create_image_model(model: Model, filename: str, slug: str):
     return image_model
 
 
-class ImageTests(TestCase):
+class ImageTests(AbstractModelsTests):
     """
     Assume this:
      - Page - model with few images. type(page.images) == QuerySet<Image>
@@ -96,7 +143,7 @@ class ImageTests(TestCase):
 
     def setUp(self):
         super(ImageTests, self).setUpClass()
-        self.page = create_default_page()
+        self.page = self.create_page(CustomPage, slug='')
         self.image_model = create_image_model(
             model=self.page,
             filename=self.IMG_PATH,
@@ -145,4 +192,3 @@ class ImageTests(TestCase):
         self.assertTrue(another_image_model.is_main)
         self.assertEquals(another_image_model.image, self.page.main_image)
         another_image_model.delete()
-
