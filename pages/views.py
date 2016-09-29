@@ -72,6 +72,7 @@ class FlatPage(CustomPage):
                 return method_response
         return super(FlatPage, self).get(request, args)
 
+
 # TODO needed remove it and instead use CustomPage. dev-788
 class IndexPage(DetailView):
     model = Page
@@ -85,7 +86,9 @@ class IndexPage(DetailView):
 def robots(request):
     return render_to_response(
         'robots.txt',
-        {'debug': settings.DEBUG,
-         'url': request.scheme + '://' + request.META['HTTP_HOST']},
+        {
+            'debug': settings.DEBUG,
+            'url': settings.BASE_URL,
+        },
         content_type='text/plain'
     )
