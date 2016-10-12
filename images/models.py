@@ -26,15 +26,16 @@ class Image(models.Model):
     Django by Example, chapter 5. http://bit.ly/django-by-example-book
     """
 
-    # http://bit.ly/django-generic-relations
+    # <--- Generic relation fields | http://bit.ly/django-generic-relations
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()
     model = GenericForeignKey('content_type', 'object_id')
+    # --->
 
-    _title = models.CharField(default='', max_length=400, null=False, blank=True)
+    _title = models.CharField(max_length=400, blank=True)
     slug = models.SlugField(max_length=400, blank=True)
-    description = models.TextField(default='')
-    created = models.DateField(auto_now_add=True, db_index=True)
+    description = models.TextField()
+    created = models.DateField(auto_now_add=True)
     image = thumbnail.ImageField(upload_to=model_directory_path)
 
     is_main = models.BooleanField(default=False)
@@ -52,23 +53,11 @@ class Image(models.Model):
 
     def save(self, *args, **kwargs):
 
-        def get_siblings():
-            if hasattr(self.model, 'images') and self.model.images:
-                # set all image neighbours not main
-                return list(
-                    filter(lambda image: image != self, self.model.images.all())
-                )
-            return []
-
-        def set_as_main_image():
-            for image in siblings:
-                image.is_main = False
-                image.save()
-
-        siblings = get_siblings()
+        siblings = self.model.images.exclude(pk=self.pk)
 
         if self.is_main:
-            set_as_main_image()
+            # set as main image
+            siblings.update(is_main=False)
 
         # if current image is single for model, it should be main
         if not siblings:

@@ -4,7 +4,9 @@ from django.db import models
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.template.defaultfilters import slugify
+
 from images.models import Image, ImageMixin
+from images.templatetags.images import placeholder_image_url
 
 
 class SeoMixin(models.Model):
@@ -147,7 +149,7 @@ class Page(SeoMixin, ImageMixin):
         if self.model and hasattr(self.model, 'image'):
             return self.model.image
         else:
-            return settings.IMAGES['thumbnail']
+            return placeholder_image_url()
 
     def save(self, *args, **kwargs):
         if not self.slug:

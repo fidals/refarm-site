@@ -109,14 +109,14 @@ class ImageTests(TestCase):
         self.image_model.delete()
 
     def test_model_has_one_main_image(self):
-        """Every model should have at least one main image"""
+        """If model has any images, it should have at least one main image"""
         self.assertIsNotNone(self.page.main_image)
         self.image_model.is_main = False
         self.image_model.save()
         self.assertIsNotNone(self.page.main_image)
 
     def test_get_main_image(self):
-        """Page should have not more than one main image"""
+        """Page should have only one main image"""
         image_model = self.image_model
         # set image model as main for page
         image_model.is_main = True
@@ -124,7 +124,10 @@ class ImageTests(TestCase):
         self.assertEquals(image_model.image, self.page.main_image)
 
     def test_update_main_image(self):
-        """Page should have not more than one main image"""
+        """
+        Model should have only one main image
+        after updating on of the images as main
+        """
         image_model = self.image_model
         # set image model as main for page
         image_model.is_main = True
