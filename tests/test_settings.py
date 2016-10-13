@@ -1,6 +1,5 @@
 import os
-
-DIRNAME = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+import tests
 
 DEBUG = True
 
@@ -14,12 +13,18 @@ ROOT_URLCONF = 'pages.urls'
 
 SECRET_KEY = 'fake-key'
 
+BASE_DIR = os.path.dirname(tests.__file__)
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
 INSTALLED_APPS = (
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.admin',
     'django.contrib.sites',
+    'sorl.thumbnail',
+    'images',
     'pages',
 )
 
