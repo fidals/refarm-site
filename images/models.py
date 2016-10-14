@@ -27,18 +27,18 @@ class Image(models.Model):
     """
 
     # <--- Generic relation fields | http://bit.ly/django-generic-relations
-    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, db_index=True)
     object_id = models.PositiveIntegerField()
     model = GenericForeignKey('content_type', 'object_id')
     # --->
 
     _title = models.CharField(max_length=400, blank=True)
-    slug = models.SlugField(max_length=400, blank=True)
+    slug = models.SlugField(max_length=400, blank=True, db_index=True)
     description = models.TextField()
     created = models.DateField(auto_now_add=True)
     image = thumbnail.ImageField(upload_to=model_directory_path)
 
-    is_main = models.BooleanField(default=False)
+    is_main = models.BooleanField(default=False, db_index=True)
 
     @property
     def title(self):
