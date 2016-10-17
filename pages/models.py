@@ -47,7 +47,7 @@ class Page(SeoMixin, ImageMixin):
     position = models.IntegerField(default=0, null=False)
     type = models.CharField(  # Page with type 'page' or 'custom'have no related model
         default=FLAT_TYPE, max_length=255, null=False, blank=True)
-    content = models.TextField(null=True, blank=True, default='')
+    content = models.TextField(blank=True, default='')
     seo_text = models.TextField(null=True, blank=True)
     _date_published = models.DateField(auto_now_add=True, null=True, blank=True)
 
