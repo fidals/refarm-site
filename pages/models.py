@@ -114,7 +114,7 @@ class Page(AbstractSeo, ImageMixin):
     @property
     def image(self):
         """Used in microdata: http://ogp.me/#metadata """
-        if self.model and hasattr(self.model, 'image'):
+        if self.is_model and hasattr(self.model, 'image'):
             return self.model.image
         else:
             return placeholder_image_url()
