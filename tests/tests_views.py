@@ -106,7 +106,7 @@ class PageTests(TestCase):
     def test_page_crumbs(self):
         """Default page have valid crumbs list"""
         page = self.page_default_contacts
-        page_index, _ = CustomPage.objects.get_or_create(slug='')
+        page_index = CustomPage.objects.get_or_create(slug='')[0]
         crumbs_to_test = [
             page_index.menu_title, page_index.get_absolute_url(),
             page.parent.menu_title, page.parent.get_absolute_url(),

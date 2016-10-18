@@ -9,8 +9,3 @@ class PageAdmin(admin.ModelAdmin):
     list_display = ['id', 'title', 'slug']
     list_display_links = ['title']
     search_fields = ['title', 'slug']
-
-
-admin.site.register(CustomPage, PageAdmin)
-admin.site.register(ModelPage, PageAdmin)
-admin.site.register(FlatPage, PageAdmin)

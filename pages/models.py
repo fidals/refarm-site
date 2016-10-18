@@ -85,10 +85,6 @@ class Page(AbstractSeo, ImageMixin):
         return getattr(self, self.related_model_name)
 
     @property
-    def url(self):
-        return self.get_absolute_url()
-
-    @property
     def is_root(self):
         return not self.parent and self.children
 
