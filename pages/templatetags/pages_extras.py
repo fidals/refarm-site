@@ -1,16 +1,17 @@
 from django import template
 from django.db import models
 
-from pages.models import FlatPage, CustomPage
+from pages.models import FlatPage, Page
 
 register = template.Library()
 
 
 @register.inclusion_tag('pages/breadcrumbs.html')
-def breadcrumbs(page: models.Model, separator=''):
-    index = page.index
+def breadcrumbs(page: Page, separator=''):
+    index = page.index()
+    index_crumb = [[index.menu_title, index.url]] if index else []
     crumbs_list = [
-        [index.menu_title, index.url] if index else ['Главная', '/'],
+        *index_crumb,
         *page.get_ancestors_fields('menu_title', 'url', include_self=False),
         [page.menu_title, '']
     ]
@@ -28,7 +29,7 @@ def accordion(links_per_item=10, sort_field='position'):
     # root pages list
     sections = list(
         filter(
-            lambda p: p.is_section,
+            lambda p: p.is_root,
             FlatPage.objects.all()
                 .order_by(sort_field)
                 .filter(is_active=True)

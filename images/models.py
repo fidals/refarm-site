@@ -92,8 +92,5 @@ class ImageMixin(models.Model):
 
     @property
     def main_image(self) -> models.ImageField:
-        try:
-            model_image = self.images.get(is_main=True)
-            return model_image.image
-        except Image.DoesNotExist:
-            return None
+        main_image = self.images.filter(is_main=True).first()
+        return main_image.image if main_image else None

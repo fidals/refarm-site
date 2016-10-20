@@ -32,30 +32,30 @@ class FlatPageView(DetailView):
 
     def is_full_path(self, request, page):
         """
-        Check URL path, if is not full - 301 to actual URL
         (ex. suppose, we have entity 'contacts' with path /navi/contacts/
         if path=/contacts/ return False
         if path=/navi/contacts/ return True)
         """
         return request.path == page.url
 
-    def is_correct_path(self, request, page):
+    def is_correct_path(self, slugs, page):
         """
-        Check URL path, if is not correct - 404
         (ex. suppose, we have entity 'contacts' with path /navi/contacts/
         if path=/navi/contacts/ return True)
         if path=/job/contacts/ return False
         """
-        return request.path in page.url
+        return '/'.join(slugs) in page.url
 
     def get(self, request, *args):
         """Get method for flat page"""
         self.object = page = get_object_or_404(self.model, slug=args[-1])
 
-        if not self.is_correct_path(request, page):
+        if not self.is_correct_path(args, page):
+            """Check URL path, if is not correct - 404"""
             raise Http404()
 
         if not self.is_full_path(request, page):
+            """Check URL path, if is not full - 301 to actual URL"""
             return HttpResponsePermanentRedirect(page.url)
 
         context = self.get_context_data(object=page)
@@ -66,5 +66,6 @@ def robots(request):
     return render_to_response(
         'robots.txt', {
             'debug': settings.DEBUG,
-            'url': request.scheme + '://' + request.META['HTTP_HOST']
+            # WE don't use request.scheme because of nginx proxy server and https on production
+            'url': settings.BASE_URL
         }, content_type='text/plain')

@@ -3,7 +3,6 @@ from django.test import TestCase, override_settings
 from pages.models import FlatPage, CustomPage
 
 
-@override_settings(ROOT_URLCONF='tests.urls')
 class PageTests(TestCase):
     @classmethod
     def setUpClass(cls):
@@ -12,7 +11,7 @@ class PageTests(TestCase):
         cls.index = CustomPage.objects.create(slug='')
         # -- set up section navi --
         cls.section_navi = FlatPage.objects.create(
-            h1='Navigation on SE web portal',
+            h1='Navigation on web portal',
             slug='navigation'
         )
 
@@ -26,20 +25,20 @@ class PageTests(TestCase):
         cls.page_default_delivery = FlatPage.objects.create(
             slug='delivery',
             parent=cls.section_navi,
-            h1='How SE logistic system works',
+            h1='How logistic system works',
             menu_title='delivery'
         )
 
         # -- set up section news --
         cls.section_news = FlatPage.objects.create(
-            h1='News of SE corporation',
+            h1='News of corporation',
             slug='news'
         )
 
         cls.page_default_ipo = FlatPage.objects.create(
             slug='se-ipo',
             parent=cls.section_news,
-            h1='ShopElectro go to IPO only after 15-n investment rounds'
+            h1='Our site go to IPO only after 15-n investment rounds'
         )
 
         cls.page_default_jobs = FlatPage.objects.create(
@@ -65,14 +64,14 @@ class PageTests(TestCase):
         section = self.section_navi
         child_fist = self.page_default_contacts
         child_second = self.page_default_delivery
-        response = self.client.get(section.get_absolute_url())
+        response = self.client.get(section.url)
         self.assertEqual(response.status_code, 200)
 
         self.assertContains(response, child_fist.title)
-        self.assertContains(response, child_fist.get_absolute_url())
+        self.assertContains(response, child_fist.url)
 
         self.assertContains(response, child_second.title)
-        self.assertContains(response, child_second.get_absolute_url())
+        self.assertContains(response, child_second.url)
 
     def test_nested_page_redirects(self):
         """
@@ -106,7 +105,7 @@ class PageTests(TestCase):
     def test_page_crumbs(self):
         """Default page have valid crumbs list"""
         page = self.page_default_contacts
-        page_index = CustomPage.objects.get_or_create(slug='')[0]
+        page_index, _ = CustomPage.objects.get_or_create(slug='')
         crumbs_to_test = [
             page_index.menu_title, page_index.get_absolute_url(),
             page.parent.menu_title, page.parent.get_absolute_url(),

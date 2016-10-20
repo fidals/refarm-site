@@ -4,11 +4,9 @@ from itertools import chain
 
 from django.db import models, transaction
 from django.core.urlresolvers import reverse
-from django.conf import settings
 from django.template.defaultfilters import slugify
 
-from images.models import Image, ImageMixin
-from images.templatetags.images import placeholder_image_url
+from images.models import ImageMixin
 
 
 class AbstractSeo(models.Model):
@@ -40,7 +38,11 @@ class Page(AbstractSeo, ImageMixin):
     # pages with type 'flat' or 'custom' have not related model
     MODEL_TYPE = 'model'
 
-    INDEX_SLUG = ''
+    # This field
+    INDEX_PAGE_SLUG = ''
+
+    # Use for reversing custom pages
+    CUSTOM_PAGES_URL_NAME = 'custom_page'
 
     class Meta:
         unique_together = ('type', 'slug', 'related_model_name')
@@ -63,9 +65,9 @@ class Page(AbstractSeo, ImageMixin):
         help_text='This field will be shown in the breadcrumbs, menu items and etc.'
     )
 
-    @property
+    @classmethod
     def index(self):
-        return Page.objects.filter(type=self.CUSTOM_TYPE, slug=self.INDEX_SLUG).first()
+        return Page.objects.filter(type=self.CUSTOM_TYPE, slug=self.INDEX_PAGE_SLUG).first()
 
     @property
     def url(self):
@@ -100,23 +102,8 @@ class Page(AbstractSeo, ImageMixin):
     def is_model(self):
         return self.type == self.MODEL_TYPE
 
-    @property
-    def is_section(self):
-        """
-        Defines if page is a list of other pages or not. Used in accordion.
-        """
-        return self.is_root and self.is_flat
-
-    @property
-    def image(self):
-        """Used in microdata: http://ogp.me/#metadata """
-        if self.is_model and hasattr(self.model, 'image'):
-            return self.model.image
-        else:
-            return placeholder_image_url()
-
     def __str__(self):
-        return self.h1
+        return self.slug
 
     def get_absolute_url(self):
         """Different page types reverse different urls"""
@@ -124,23 +111,26 @@ class Page(AbstractSeo, ImageMixin):
             return self.model.get_absolute_url()
 
         if self.is_custom:
-            return reverse(settings.CUSTOM_PAGES_URL_NAME, args=(self.slug, ))
+            return reverse(Page.CUSTOM_PAGES_URL_NAME, args=(self.slug, ))
 
         if self.is_flat:
             return reverse('pages:flat_page', args=self.get_ancestors_fields('slug'))
 
+        # TODO http://bit.ly/refarm-tail-enable-logging
         return '/'
 
     def save(self, *args, **kwargs):
-        if not self.slug:
-            h1 = unidecode(self.h1.replace('.', '-').replace('+', '-'))
-            if self.is_flat:
-                self.slug = slugify(h1)
+        if not self.slug and self.is_flat:
+            slug = slugify(unidecode(self.h1.replace('.', '-').replace('+', '-')))
+            self.slug = slug
 
-            #  We don't use slug field for model pages.
-            #  I do not know how to avoid duplication data, we needed to respect unique_together.
-            if self.is_model:
-                self.slug = slugify('{}-{}'.format(h1, datetime.now().timestamp()))
+        elif not self.slug and self.is_model:
+            slug = slugify(unidecode(self.h1.replace('.', '-').replace('+', '-')))
+            count_with_same_slug = Page.objects.filter(slug=slug).count()
+            if count_with_same_slug:
+                self.slug = '{}-{}'.format(slug, count_with_same_slug)
+            else:
+                self.slug = slug
 
         super(Page, self).save(*args, **kwargs)
 
@@ -163,6 +153,7 @@ class Page(AbstractSeo, ImageMixin):
         return fields
 
 
+# Managers
 class CustomPageManager(models.Manager):
     def get_queryset(self):
         return super(CustomPageManager, self).get_queryset().filter(type=Page.CUSTOM_TYPE)
@@ -177,7 +168,7 @@ class ModelPageManager(models.Manager):
     def get_queryset(self):
         return super(ModelPageManager, self).get_queryset().filter(type=Page.MODEL_TYPE)
 
-
+# Proxies
 class CustomPage(Page):
     class Meta:
         proxy = True
@@ -211,9 +202,10 @@ class ModelPage(Page):
         super(ModelPage, self).save(*args, **kwargs)
 
 
+# Mixins
 class PageMixin(models.Model):
     """
-    Add page functionality to your model.
+    Add page functionality with sync page's relations feature to your model.
 
     Requirements:
         - Inherit your model from this mixin.
@@ -221,22 +213,30 @@ class PageMixin(models.Model):
 
     Functions:
         - Create relationships oneToOne for your model and Page.
-        - Add save/delete hooks for related Page.
-        - Sync relations with parent if them exist.
+        - Sync page's relations with parent if it exist.
 
     Examples:
-    obj1 = Obj.objects.create(...) -> p1 = Page.objects.create(h1=obj1.name)
-    obj2 = Obj.objects.create(parent=obj1, ...) -> Page.objects.create(h1=obj1.name, parent=p1)
-    obj2.delete() -> p2.delete()
+    p1 = Page.objects.create(h1=obj1.name)
+    obj1 = Obj.objects.create(page=p1)
+    p2 = Page.objects.create(h1=obj1.name)
+    obj2 = Obj.objects.create(parent=obj1, ...)
     """
-
     class Meta:
         abstract = True
 
     # docs: https://goo.gl/MJIAYd
-    MODEL_RELATION_PATTERN = '%(app_label)s_%(class)s'
+    _MODEL_RELATION_PATTERN = '%(app_label)s_%(class)s'
     page = models.OneToOneField(
-        Page, on_delete=models.CASCADE, related_name=MODEL_RELATION_PATTERN, null=True)
+        Page, on_delete=models.CASCADE, related_name=_MODEL_RELATION_PATTERN, null=True)
+
+    DEFAULT_PARENT_FIELD = None
+
+    @classmethod
+    def get_default_parent(cls):
+        if not cls.DEFAULT_PARENT_FIELD:
+            return
+
+        return Page.objects.get(**cls.DEFAULT_PARENT_FIELD)
 
     @property
     def related_model_name(self):
@@ -244,40 +244,67 @@ class PageMixin(models.Model):
         Returns model class as string. For example:
         catalog.Category.type -> 'catalog_category'
         """
-        return self.MODEL_RELATION_PATTERN % {
+        return self._MODEL_RELATION_PATTERN % {
             'app_label': self._meta.app_label.lower(),
             'class': self._meta.model_name.lower(),
         }
 
     @transaction.atomic
+    def save(self, *args, **kwargs):
+        """
+        Extend base class save of add `update related page's relations` feature
+        """
+        if getattr(self, 'parent', None):
+            self.page.parent = self.parent.page
+        else:
+            self.page.parent = self.get_default_parent()
+
+        if not self.page.related_model_name:
+            self.page.related_model_name = self.related_model_name
+
+        self.page.save()
+        super(PageMixin, self).save(*args, **kwargs)
+
+
+class SyncPageMixin(PageMixin):
+    """
+    Extend PageMixin functionality. Add page auto create feature.
+
+    Requirements:
+        - Inherit your model from this mixin.
+        - Define CharField `name`.
+
+    Functions:
+        - Create relationships oneToOne for your model and Page.
+        - Sync page's relations with parent if it exist.
+        - Add save/delete hooks for related Page.
+
+    Examples:
+    obj1 = Obj.objects.create(...) -> p1 = Page.objects.create(h1=obj1.name)
+    obj2.delete() -> p2.delete()
+    """
+    class Meta:
+        abstract = True
+
+    FIELDS = None
+
+    @transaction.atomic
     def delete(self, using=None, keep_parents=False):
-        super(PageMixin, self).delete(using, keep_parents)
+        """Extend base class method of add `auto delete related page's` feature"""
+        super(SyncPageMixin, self).delete(using, keep_parents)
         self.page.delete(using, keep_parents)
 
     @transaction.atomic
-    def save(self, page_parent=None, page_fields=None, *args, **kwargs):
-        self.update_related_page(page_parent, page_fields or {})
-        super(PageMixin, self).save(*args, **kwargs)
+    def save(self, *args, **kwargs):
+        """Extend base class method of add `auto create related page's` feature"""
 
-    def update_related_page(self, parent, fields):
-        def update_page():
-            if not self.page:
-                page_data = {
-                    'h1': getattr(self, 'name', ''),
-                    'related_model_name': self.related_model_name,
-                    **fields,
-                }
-                self.page = ModelPage.objects.create(**page_data)
-            else:
-                self.page.h1 = self.name
+        if not self.page:
+            fields = self.FIELDS or {}
+            page_data = {
+                'h1': getattr(self, 'name', ''),
+                'related_model_name': self.related_model_name,
+                **fields,
+            }
+            self.page = ModelPage.objects.create(**page_data)
 
-        def update_page_tree():
-            if getattr(self, 'parent', None):
-                self.page.parent = self.parent.page
-            else:
-                self.page.parent = parent
-
-            self.page.save()
-
-        update_page()
-        update_page_tree()
+        super(SyncPageMixin, self).save(*args, **kwargs)

@@ -29,8 +29,8 @@ INSTALLED_APPS = (
     'tests',
 )
 
-CUSTOM_PAGES_URL_NAME = 'custom_page'
 ENTITY_MODEL = 'tests.TestEntity'
+ENTITY_MODEL_WITH_SYNC = 'tests.TestEntityWithSync'
 
 # <--- transitive depends on pages app
 PRODUCTS_TO_LOAD = 30
