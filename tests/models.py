@@ -1,12 +1,17 @@
 from django.db import models
 
 from pages.models import PageMixin, SyncPageMixin
+from pages.models import CustomPage
 
 
 class TestEntityWithSync(SyncPageMixin):
     name = models.CharField(max_length=100)
     parent = models.OneToOneField('self', on_delete=models.CASCADE, null=True, blank=True)
-    DEFAULT_PARENT_FIELD = {'slug': 'catalog'}
+
+    @classmethod
+    def get_default_parent(cls):
+        """You can override this method, if need a default parent"""
+        return CustomPage.objects.get(slug='catalog')
 
     def get_absolute_url(self):
         return '/so-mock-wow/'
@@ -15,7 +20,11 @@ class TestEntityWithSync(SyncPageMixin):
 class TestEntity(PageMixin):
     name = models.CharField(max_length=100)
     parent = models.OneToOneField('self', on_delete=models.CASCADE, null=True, blank=True)
-    DEFAULT_PARENT_FIELD = {'slug': 'catalog'}
+
+    @classmethod
+    def get_default_parent(cls):
+        """You can override this method, if need a default parent"""
+        return CustomPage.objects.get(slug='catalog')
 
     def get_absolute_url(self):
         return '/so-mock-wow/'

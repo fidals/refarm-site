@@ -1,5 +1,5 @@
 from unidecode import unidecode
-from datetime import date, datetime
+from datetime import date
 from itertools import chain
 
 from django.db import models, transaction
@@ -66,8 +66,8 @@ class Page(AbstractSeo, ImageMixin):
     )
 
     @classmethod
-    def index(self):
-        return Page.objects.filter(type=self.CUSTOM_TYPE, slug=self.INDEX_PAGE_SLUG).first()
+    def get_index(cls):
+        return Page.objects.filter(type=cls.CUSTOM_TYPE, slug=cls.INDEX_PAGE_SLUG).first()
 
     @property
     def url(self):
@@ -84,7 +84,7 @@ class Page(AbstractSeo, ImageMixin):
     @property
     def model(self) -> models.Model:
         """Return model, related to self"""
-        return getattr(self, self.related_model_name)
+        return getattr(self, self.related_model_name, None)
 
     @property
     def is_root(self):
@@ -120,18 +120,14 @@ class Page(AbstractSeo, ImageMixin):
         return '/'
 
     def save(self, *args, **kwargs):
-        if not self.slug and self.is_flat:
+        def update_slug():
+            if self.slug or self.is_custom:
+                return
+
             slug = slugify(unidecode(self.h1.replace('.', '-').replace('+', '-')))
             self.slug = slug
 
-        elif not self.slug and self.is_model:
-            slug = slugify(unidecode(self.h1.replace('.', '-').replace('+', '-')))
-            count_with_same_slug = Page.objects.filter(slug=slug).count()
-            if count_with_same_slug:
-                self.slug = '{}-{}'.format(slug, count_with_same_slug)
-            else:
-                self.slug = slug
-
+        update_slug()
         super(Page, self).save(*args, **kwargs)
 
     def get_ancestors(self, include_self=True) -> [models.Model]:
@@ -143,17 +139,17 @@ class Page(AbstractSeo, ImageMixin):
         return branch if include_self else branch[:-1]
 
     def get_ancestors_fields(self, *args, include_self=True) -> [[models.Field] or models.Field]:
-        fields = [
-            [getattr(page, field) for field in args]
-            for page in self.get_ancestors(include_self=include_self)]
+        fields = tuple(
+            tuple(getattr(page, field) for field in args)
+            for page in self.get_ancestors(include_self=include_self))
 
         if len(args) == 1:
-            fields = list(chain(*fields))
+            fields = tuple(chain.from_iterable(fields))
 
         return fields
 
 
-# Managers
+# ------- Managers -------
 class CustomPageManager(models.Manager):
     def get_queryset(self):
         return super(CustomPageManager, self).get_queryset().filter(type=Page.CUSTOM_TYPE)
@@ -168,7 +164,8 @@ class ModelPageManager(models.Manager):
     def get_queryset(self):
         return super(ModelPageManager, self).get_queryset().filter(type=Page.MODEL_TYPE)
 
-# Proxies
+
+# ------- Proxies ----------
 class CustomPage(Page):
     class Meta:
         proxy = True
@@ -202,75 +199,78 @@ class ModelPage(Page):
         super(ModelPage, self).save(*args, **kwargs)
 
 
-# Mixins
+# ------- Mixins -------
 class PageMixin(models.Model):
     """
     Add page functionality with sync page's relations feature to your model.
 
-    Requirements:
+    Usage:
         - Inherit your model from this mixin.
         - Define CharField `name`.
+        - If necessary define recursive relationships at itself with reversing
+        name `parent`. It provide sync page's relations feature.
 
     Functions:
         - Create relationships oneToOne for your model and Page.
         - Sync page's relations with parent if it exist.
 
     Examples:
-    p1 = Page.objects.create(h1=obj1.name)
-    obj1 = Obj.objects.create(page=p1)
-    p2 = Page.objects.create(h1=obj1.name)
-    obj2 = Obj.objects.create(parent=obj1, ...)
+    >>> p1 = Page.objects.create(h1=obj1.name)
+    >>> obj1 = RelatedObject.objects.create(page=p1, ...)
+
+    >>> p2 = Page.objects.create(h1=obj1.name)
+    >>> obj2 = RelatedObject.objects.create(parent=obj1, ...) -> p2.parent = p1; p2.save();
     """
     class Meta:
         abstract = True
 
-    # docs: https://goo.gl/MJIAYd
-    _MODEL_RELATION_PATTERN = '%(app_label)s_%(class)s'
     page = models.OneToOneField(
-        Page, on_delete=models.CASCADE, related_name=_MODEL_RELATION_PATTERN, null=True)
-
-    DEFAULT_PARENT_FIELD = None
+        Page, on_delete=models.CASCADE,
+        related_name='%(app_label)s_%(class)s',  # docs: https://goo.gl/MJIAYd
+        null=True
+    )
 
     @classmethod
     def get_default_parent(cls):
-        if not cls.DEFAULT_PARENT_FIELD:
-            return
-
-        return Page.objects.get(**cls.DEFAULT_PARENT_FIELD)
+        """You can override this method, if need a default parent"""
+        return None
 
     @property
     def related_model_name(self):
         """
-        Returns model class as string. For example:
+        Return model class as string. For example:
         catalog.Category.type -> 'catalog_category'
         """
-        return self._MODEL_RELATION_PATTERN % {
-            'app_label': self._meta.app_label.lower(),
-            'class': self._meta.model_name.lower(),
-        }
+        return self._meta.db_table
 
     @transaction.atomic
     def save(self, *args, **kwargs):
         """
-        Extend base class save of add `update related page's relations` feature
+        Extend base class save of add `update related page` feature
         """
-        if getattr(self, 'parent', None):
-            self.page.parent = self.parent.page
-        else:
-            self.page.parent = self.get_default_parent()
+        def update_relations():
+            if not self.page:
+                return
 
-        if not self.page.related_model_name:
-            self.page.related_model_name = self.related_model_name
+            if getattr(self, 'parent', None):
+                self.page.parent = self.parent.page
+            else:
+                self.page.parent = self.get_default_parent()
 
-        self.page.save()
+            if not self.page.related_model_name:
+                self.page.related_model_name = self.related_model_name
+
+            self.page.save()
+
+        update_relations()
         super(PageMixin, self).save(*args, **kwargs)
 
 
 class SyncPageMixin(PageMixin):
     """
-    Extend PageMixin functionality. Add page auto create feature.
+    Extend PageMixin with related page autocreation feature.
 
-    Requirements:
+    Usage:
         - Inherit your model from this mixin.
         - Define CharField `name`.
 
@@ -280,13 +280,11 @@ class SyncPageMixin(PageMixin):
         - Add save/delete hooks for related Page.
 
     Examples:
-    obj1 = Obj.objects.create(...) -> p1 = Page.objects.create(h1=obj1.name)
-    obj2.delete() -> p2.delete()
+    >>> obj1 = RelatedObject.objects.create(...) -> p1 = Page.objects.create(h1=obj1.name)
+    >>> obj2.delete() -> RelatedObject.delete()
     """
     class Meta:
         abstract = True
-
-    FIELDS = None
 
     @transaction.atomic
     def delete(self, using=None, keep_parents=False):
@@ -296,15 +294,25 @@ class SyncPageMixin(PageMixin):
 
     @transaction.atomic
     def save(self, *args, **kwargs):
-        """Extend base class method of add `auto create related page's` feature"""
+        """Create related page on instance save() hook"""
+        def create_page(**kwargs):
+            if self.page:
+                return
 
-        if not self.page:
-            fields = self.FIELDS or {}
             page_data = {
                 'h1': getattr(self, 'name', ''),
                 'related_model_name': self.related_model_name,
-                **fields,
+                'slug': slug,
+                **kwargs
             }
+
             self.page = ModelPage.objects.create(**page_data)
+            self.save()
 
         super(SyncPageMixin, self).save(*args, **kwargs)
+        slug = slugify(unidecode(self.name.replace('.', '-').replace('+', '-')))
+        try:
+            with transaction.atomic():
+                create_page()
+        except:
+            create_page(slug='{}-{}'.format(slug, self.id))

@@ -15,16 +15,16 @@ from pages.models import ModelPage, CustomPage, FlatPage, Page
 from images.models import Image
 
 
-def _create_page(model: models.Model, **extra_field) -> models.Model:
+def create_page(model: models.Model, **extra_field) -> models.Model:
     return model.objects.create(**{'h1': 'Test h1', **extra_field})
 
 
-def _create_entity(model_path, **kwargs):
+def create_entity(model_path, **kwargs):
     model = apps.get_model(model_path)
     return model.objects.create(**kwargs)
 
-_create_test_entity = partial(_create_entity, model_path=settings.ENTITY_MODEL)
-_create_test_entity_with_sync = partial(_create_entity, model_path=settings.ENTITY_MODEL_WITH_SYNC)
+create_test_entity = partial(create_entity, model_path=settings.ENTITY_MODEL)
+create_test_entity_with_sync = partial(create_entity, model_path=settings.ENTITY_MODEL_WITH_SYNC)
 
 
 
@@ -32,10 +32,10 @@ class PageTests(TestCase):
     @classmethod
     def setUpClass(cls):
         super(PageTests, cls).setUpClass()
-        cls.custom_page = _create_page(CustomPage, slug='')
-        cls.model_page = _create_page(ModelPage, h1='Unique h1')
-        cls.flat_page = _create_page(FlatPage, h1='Another unique h1')
-        cls.child_flat_page = _create_page(FlatPage, h1='Child unique h1', parent=cls.flat_page)
+        cls.custom_page = create_page(CustomPage, slug='')
+        cls.model_page = create_page(ModelPage, h1='Unique h1')
+        cls.flat_page = create_page(FlatPage, h1='Another unique h1')
+        cls.child_flat_page = create_page(FlatPage, h1='Child unique h1', parent=cls.flat_page)
 
     @classmethod
     def get_ancestors(cls):
@@ -88,7 +88,7 @@ class PageTests(TestCase):
 
         ancestors_different_fields = self.get_ancestors_fields('h1', 'slug')
 
-        has_nested_list = all(isinstance(x, list) for x in ancestors_different_fields)
+        has_nested_list = all(isinstance(x, tuple) for x in ancestors_different_fields)
         is_nested_list_with_str_fields = all(
             is_str_fields(*fields)
             for fields in zip(*ancestors_different_fields)
@@ -114,7 +114,7 @@ class PageTests(TestCase):
         self.assertTrue(is_str_fields)
 
     def test_slug_should_auto_generate(self):
-        page = _create_page(Page)
+        page = create_page(Page)
 
         self.assertTrue(page.slug)
 
@@ -124,7 +124,7 @@ class CustomPageTests(TestCase):
         types = [CustomPage, FlatPage, ModelPage]
 
         for type in types:
-            _create_page(type)
+            create_page(type)
 
         custom_pages = CustomPage.objects.all()
         truly, falsy_first, falsy_second = [
@@ -137,12 +137,12 @@ class CustomPageTests(TestCase):
         self.assertFalse(falsy_second)
 
     def test_should_create_only_custom_type_pages(self):
-        page = _create_page(CustomPage)
+        page = create_page(CustomPage)
 
         self.assertEqual(page.type, Page.CUSTOM_TYPE)
 
     def test_get_absolute_url(self):
-        page = _create_page(CustomPage, slug='')
+        page = create_page(CustomPage, slug='')
 
         self.assertIn(page.slug, page.url)
 
@@ -153,7 +153,7 @@ class FlatPageTests(TestCase):
         super(FlatPageTests, cls).setUpClass()
 
         def create_flat_page(parent=None):
-            return _create_page(
+            return create_page(
                 FlatPage, slug='page_of_{}'.format(getattr(parent, 'slug', 'ROOT')), parent=parent)
 
         page = create_flat_page()
@@ -164,7 +164,7 @@ class FlatPageTests(TestCase):
         types = [FlatPage, CustomPage, ModelPage]
 
         for type in types:
-            _create_page(type)
+            create_page(type)
 
         custom_pages = FlatPage.objects.all()
         truly, falsy_first, falsy_second = [
@@ -177,7 +177,7 @@ class FlatPageTests(TestCase):
         self.assertFalse(falsy_second)
 
     def test_should_create_only_flat_pages(self):
-        page = _create_page(FlatPage)
+        page = create_page(FlatPage)
 
         self.assertEqual(page.type, Page.FLAT_TYPE)
 
@@ -193,7 +193,7 @@ class ModelPageTests(TestCase):
 
     def setUp(self):
         self.default_parent = CustomPage.objects.create(slug='catalog')
-        self.product = _create_test_entity_with_sync(name='Test entity')
+        self.product = create_test_entity_with_sync(name='Test entity')
         self.page = self.product.page
 
     def test_get_absolute_url(self):
@@ -208,7 +208,7 @@ class SyncPageMixinTests(TestCase):
     def setUp(self):
         self.name = 'Test entity'
         self.default_parent = CustomPage.objects.create(slug='catalog')
-        self.entity = _create_test_entity_with_sync(name=self.name)
+        self.entity = create_test_entity_with_sync(name=self.name)
 
     def test_default_parent(self):
         self.assertEqual(self.entity.page.parent, self.default_parent)
@@ -228,7 +228,7 @@ class SyncPageMixinTests(TestCase):
             self.entity.parent = parent
             self.entity.save()
 
-        entity_parent = _create_test_entity_with_sync(name='Unique name')
+        entity_parent = create_test_entity_with_sync(name='Unique name')
         set_parent(entity_parent)
 
         self.assertEqual(entity_parent.page, self.entity.page.parent)
@@ -242,14 +242,14 @@ class PageMixin(TestCase):
     def setUp(self):
         self.name = 'Test entity'
         self.default_parent = CustomPage.objects.create(slug='catalog')
-        self.entity = _create_test_entity_with_sync(name=self.name)
+        self.entity = create_test_entity_with_sync(name=self.name)
 
     def test_update_page_after_update_entity(self):
         def set_parent(parent=None):
             self.entity.parent = parent
             self.entity.save()
 
-        entity_parent = _create_test_entity_with_sync(name='Unique name')
+        entity_parent = create_test_entity_with_sync(name='Unique name')
         set_parent(entity_parent)
 
         self.assertEqual(entity_parent.page, self.entity.page.parent)
@@ -296,7 +296,7 @@ class ImageTests(TestCase):
 
     def setUp(self):
         super(ImageTests, self).setUpClass()
-        self.page = _create_page(CustomPage, slug='')
+        self.page = create_page(CustomPage, slug='')
         self.image_model = create_image_model(
             model=self.page,
             filename=self.IMG_PATH,

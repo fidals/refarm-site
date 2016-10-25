@@ -8,13 +8,13 @@ register = template.Library()
 
 @register.inclusion_tag('pages/breadcrumbs.html')
 def breadcrumbs(page: Page, separator=''):
-    index = page.index()
-    index_crumb = [[index.menu_title, index.url]] if index else []
-    crumbs_list = [
-        *index_crumb,
+    index = page.get_index()
+
+    crumbs_list = (
+        (index.menu_title, index.url) if index else ('Main', '/'),
         *page.get_ancestors_fields('menu_title', 'url', include_self=False),
-        [page.menu_title, '']
-    ]
+        (page.menu_title, '')
+    )
 
     return {
         'crumbs_list': crumbs_list,
