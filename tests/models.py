@@ -1,7 +1,6 @@
 from django.db import models
 
-from pages.models import PageMixin, SyncPageMixin
-from pages.models import CustomPage
+from pages.models import CustomPage, PageMixin, SyncPageMixin
 
 
 class TestEntityWithSync(SyncPageMixin):

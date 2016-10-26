@@ -103,7 +103,7 @@ class PageTests(TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_page_crumbs(self):
-        """Default page have valid crumbs list"""
+        """Default page has valid crumbs list"""
         page = self.page_default_contacts
         page_index, _ = CustomPage.objects.get_or_create(slug='')
         crumbs_to_test = [

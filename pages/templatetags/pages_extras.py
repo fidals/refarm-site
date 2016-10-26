@@ -1,10 +1,10 @@
 from django import template
-from django.db import models
+from django.core.urlresolvers import reverse
 
 from pages.models import FlatPage, Page
 
-register = template.Library()
 
+register = template.Library()
 
 @register.inclusion_tag('pages/breadcrumbs.html')
 def breadcrumbs(page: Page, separator=''):
@@ -43,3 +43,8 @@ def accordion(links_per_item=10, sort_field='position'):
     return {
         'sections': sections,
     }
+
+
+@register.simple_tag
+def custom_url(*args):
+    return reverse(Page.CUSTOM_PAGES_URL_NAME, args=args or ('', ))

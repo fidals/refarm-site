@@ -252,10 +252,10 @@ class PageMixin(models.Model):
             if not self.page:
                 return
 
-            if getattr(self, 'parent', None):
-                self.page.parent = self.parent.page
-            else:
-                self.page.parent = self.get_default_parent()
+            self.page.parent = (
+                self.parent.page if getattr(self, 'parent', None)
+                else self.get_default_parent()
+            )
 
             if not self.page.related_model_name:
                 self.page.related_model_name = self.related_model_name

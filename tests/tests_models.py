@@ -127,12 +127,12 @@ class CustomPageTests(TestCase):
             create_page(type)
 
         custom_pages = CustomPage.objects.all()
-        truly, falsy_first, falsy_second = [
+        truthy, falsy_first, falsy_second = [
             all(isinstance(page, type) for page in custom_pages)
             for type in types
         ]
 
-        self.assertTrue(truly)
+        self.assertTrue(truthy)
         self.assertFalse(falsy_first)
         self.assertFalse(falsy_second)
 
@@ -167,12 +167,12 @@ class FlatPageTests(TestCase):
             create_page(type)
 
         custom_pages = FlatPage.objects.all()
-        truly, falsy_first, falsy_second = [
+        truthy, falsy_first, falsy_second = [
             all(isinstance(page, type) for page in custom_pages)
             for type in types
         ]
 
-        self.assertTrue(truly)
+        self.assertTrue(truthy)
         self.assertFalse(falsy_first)
         self.assertFalse(falsy_second)
 
@@ -181,7 +181,7 @@ class FlatPageTests(TestCase):
 
         self.assertEqual(page.type, Page.FLAT_TYPE)
 
-    def test_get_absolute_url(self):
+    def test_url(self):
         urls = [page.url for page in self.pages]
         slugs = [page.slug for page in self.pages]
 
