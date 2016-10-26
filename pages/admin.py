@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from pages.models import Page
+from pages.models import CustomPage, ModelPage, FlatPage
 
 
 class PageAdmin(admin.ModelAdmin):
@@ -9,6 +9,3 @@ class PageAdmin(admin.ModelAdmin):
     list_display = ['id', 'title', 'slug']
     list_display_links = ['title']
     search_fields = ['title', 'slug']
-
-
-admin.site.register(Page, PageAdmin)

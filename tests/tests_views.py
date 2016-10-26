@@ -1,65 +1,57 @@
-"""
-Defines tests for views in Catalog app
-"""
+from django.test import TestCase, override_settings
 
-from django.test import TestCase
-from django.core.urlresolvers import reverse
-from django.conf import settings
-
-from pages.models import Page, get_or_create_struct_page
+from pages.models import FlatPage, CustomPage
 
 
 class PageTests(TestCase):
-
-    urls = 'tests.urls'
-
     @classmethod
     def setUpClass(cls):
         super(PageTests, cls).setUpClass()
 
+        cls.index = CustomPage.objects.create(slug='')
         # -- set up section navi --
-        cls.section_navi = Page.objects.create(
-            title='Navigation on SE web portal',
+        cls.section_navi = FlatPage.objects.create(
+            h1='Navigation on web portal',
             slug='navigation'
         )
 
-        cls.page_default_contacts = Page.objects.create(
+        cls.page_default_contacts = FlatPage.objects.create(
             slug='contacts',
             parent=cls.section_navi,
-            title='Here you can see Fenichs contacts. He reads every mail!',
+            h1='Here you can see Fenichs contacts. He reads every mail!',
             menu_title='contacts',
         )
 
-        cls.page_default_delivery = Page.objects.create(
+        cls.page_default_delivery = FlatPage.objects.create(
             slug='delivery',
             parent=cls.section_navi,
-            title='How SE logistic system works',
+            h1='How logistic system works',
             menu_title='delivery'
         )
 
         # -- set up section news --
-        cls.section_news = Page.objects.create(
-            title='News of SE corporation',
+        cls.section_news = FlatPage.objects.create(
+            h1='News of corporation',
             slug='news'
         )
 
-        cls.page_default_ipo = Page.objects.create(
+        cls.page_default_ipo = FlatPage.objects.create(
             slug='se-ipo',
             parent=cls.section_news,
-            title='ShopElectro go to IPO only after 15-n investment rounds'
+            h1='Our site go to IPO only after 15-n investment rounds'
         )
 
-        cls.page_default_jobs = Page.objects.create(
+        cls.page_default_jobs = FlatPage.objects.create(
             slug='fenich-new-jobs',
             parent=cls.section_news,
-            title='Why Fenich called as new Steve Jobs'
+            h1='Why Fenich called as new Steve Jobs'
         )
 
     def test_empty_pages_list(self):
         """
         Empty pages list should return 200 response and user friendly message
         """
-        section_empty = Page.objects.create(
+        section_empty = FlatPage.objects.create(
             slug='empty-section',
             title='Empty pages list'
         )
@@ -72,14 +64,14 @@ class PageTests(TestCase):
         section = self.section_navi
         child_fist = self.page_default_contacts
         child_second = self.page_default_delivery
-        response = self.client.get(section.get_absolute_url())
+        response = self.client.get(section.url)
         self.assertEqual(response.status_code, 200)
 
         self.assertContains(response, child_fist.title)
-        self.assertContains(response, child_fist.get_absolute_url())
+        self.assertContains(response, child_fist.url)
 
         self.assertContains(response, child_second.title)
-        self.assertContains(response, child_second.get_absolute_url())
+        self.assertContains(response, child_second.url)
 
     def test_nested_page_redirects(self):
         """
@@ -110,21 +102,10 @@ class PageTests(TestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
 
-    def test_custom_page_autocreation(self):
-        """
-        Site app create index page by the first request to it's url.
-        Index page is custom page.
-        So, every custom page should be autocreated by the fist request to it.
-        """
-        url = reverse('index')
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, settings.PAGES['index']['title'])
-
     def test_page_crumbs(self):
-        """Default page have valid crumbs list"""
+        """Default page has valid crumbs list"""
         page = self.page_default_contacts
-        page_index = get_or_create_struct_page(slug='index')
+        page_index, _ = CustomPage.objects.get_or_create(slug='')
         crumbs_to_test = [
             page_index.menu_title, page_index.get_absolute_url(),
             page.parent.menu_title, page.parent.get_absolute_url(),
