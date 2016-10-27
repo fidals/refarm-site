@@ -1,4 +1,5 @@
 import os
+import time
 
 from django.db import models
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
@@ -10,7 +11,7 @@ from sorl.thumbnail import delete
 def model_directory_path(instance, filename):
     def generate_filename(old_name: str, slug: str) -> str:
         _, file_extension = os.path.splitext(old_name)
-        return slug + file_extension
+        return slug or str(time.time()) + file_extension
 
     result_filename = generate_filename(filename, instance.slug)
     models_folder_name = type(instance.model).__name__.lower()
@@ -36,7 +37,7 @@ class Image(models.Model):
     slug = models.SlugField(max_length=400, blank=True, db_index=True)
     description = models.TextField(default='', blank=True)
     created = models.DateField(auto_now_add=True)
-    image = thumbnail.ImageField(upload_to=model_directory_path)
+    image = thumbnail.ImageField(upload_to=model_directory_path, blank=True)
 
     is_main = models.BooleanField(default=False, db_index=True)
 
