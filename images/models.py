@@ -34,7 +34,7 @@ class Image(models.Model):
 
     _title = models.CharField(max_length=400, blank=True)
     slug = models.SlugField(max_length=400, blank=True, db_index=True)
-    description = models.TextField()
+    description = models.TextField(default='', blank=True)
     created = models.DateField(auto_now_add=True)
     image = thumbnail.ImageField(upload_to=model_directory_path)
 
