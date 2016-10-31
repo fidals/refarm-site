@@ -19,11 +19,17 @@ class TestEntityWithSync(SyncPageMixin):
 class TestEntity(PageMixin):
     name = models.CharField(max_length=100)
     parent = models.OneToOneField('self', on_delete=models.CASCADE, null=True, blank=True)
+    is_active = models.BooleanField(default=True)
+    slug = models.SlugField(default='')
 
     @classmethod
     def get_default_parent(cls):
         """You can override this method, if need a default parent"""
         return CustomPage.objects.get(slug='catalog')
 
+    @property
+    def url(self):
+        return self.get_absolute_url()
+
     def get_absolute_url(self):
-        return '/so-mock-wow/'
+        return self.slug or '/so-mock-wow/'

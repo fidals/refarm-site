@@ -1,0 +1,166 @@
+from django.contrib import admin
+from django.contrib.redirects.models import Redirect
+from django.contrib.sites.shortcuts import get_current_site
+from django.core.urlresolvers import reverse
+from django.db.models import QuerySet, F
+from django.utils.html import format_html
+
+from generic_admin.admin import filters, inlines
+
+
+class PermissionsControl(admin.ModelAdmin):
+    """Roughly defines user rights."""
+    add = True
+    change = True
+    delete = True
+
+    def has_add_permission(self, request):
+        return self.add
+
+    def has_change_permission(self, request, obj=None):
+        return self.change
+
+    def has_delete_permission(self, request, obj=None):
+        return self.delete
+
+
+class ChangeItemsStateActions(admin.ModelAdmin):
+    @staticmethod
+    def after_action_message(updated_rows):
+        return '1 item was' if updated_rows == 1 else '{} items were'.format(updated_rows)
+
+    def make_items_active(self, request, queryset):
+        updated_rows = queryset.update(is_active=1)
+        message_prefix = self.after_action_message(updated_rows)
+
+        self.message_user(request, '{} marked as active.'.format(message_prefix))
+
+    def make_items_non_active(self, request, queryset):
+        updated_rows = queryset.update(is_active=0)
+        message_prefix = self.after_action_message(updated_rows)
+
+        self.message_user(request, '{} marked as non-active.'.format(message_prefix))
+
+    make_items_active.short_description = 'Make active'
+    make_items_non_active.short_description = 'Make inactive'
+
+
+class AutoCreateRedirects(admin.ModelAdmin):
+    """Create new redirect link, if change slug field."""
+    def save_model(self, request, obj, form, change):
+        if change and 'slug' in form.changed_data:
+            old_obj = type(obj).objects.get(id=obj.id)
+            Redirect.objects.create(
+                site=get_current_site(request), old_path=old_obj.url, new_path=obj.url)
+
+        super(AutoCreateRedirects, self).save_model(request, obj, form, change)
+
+
+class Page(ChangeItemsStateActions):
+    """Generic class for each page."""
+    save_on_top = True
+    list_display_links = ['h1']
+    actions = ['make_items_active', 'make_items_non_active']
+    list_filter = ['is_active', filters.HasContent, filters.HasImages]
+
+    # Custom fields
+    def custom_parent(self, obj, urlconf=None):
+        parent = obj.parent
+
+        if not parent:
+            return
+
+        urlconf = urlconf or '{}:{}_{}_change'.format(
+            self.admin_site.name,
+            self.model._meta.app_label,
+            self.model._meta.model_name
+        )
+
+        url = reverse(urlconf, args=(parent.id,))
+
+        return format_html(
+            '<a href="{url}">{parent}</a>',
+            parent=parent,
+            url=url
+        )
+
+    custom_parent.admin_order_field = 'parent__h1'
+    custom_parent.short_description = 'Parent'
+
+
+class PageWithoutRelatedModel(Page):
+    list_display = ['id', 'h1', 'custom_parent', 'is_active']
+    readonly_fields = ['id', 'correct_parent_id']
+    inlines = [inlines.ImageInline]
+
+    # Custom fields
+    def correct_parent_id(self, obj):
+        """Needed for correct short_description attr"""
+        return obj.parent_id
+
+    correct_parent_id.short_description = 'Parent ID'
+
+
+class PageWithRelatedModel(Page, PermissionsControl, AutoCreateRedirects):
+    readonly_fields = ['id', 'model_id']
+    fieldsets = (
+        ('Дополнительные характеристики', {
+            'classes': ('seo-chars',),
+            'fields': (
+                ('id', 'is_active'),
+                'date_published',
+                'slug',
+                '_menu_title',
+                'seo_text',
+                'position',
+            )
+        }),
+        ('Параметры страницы', {
+            'classes': ('secondary-chars',),
+            'fields': (
+                ('h1', '_title'),
+                'keywords',
+                'description',
+                'content'
+            )
+        })
+    )
+
+    @staticmethod
+    def check_is_proxy(qs: QuerySet):
+        """Is it proxy for only one related model?"""
+        count = qs.distinct('related_model_name').count()
+        assert count <= 1, 'You should split your model pages by proxy, before register it.'
+
+    @classmethod
+    def add_reference_to_field_on_related_model(cls, qs: QuerySet, **kwargs):
+        cls.check_is_proxy(qs)
+
+        modified_qs = qs.all()
+
+        if qs.distinct('related_model_name').count() == 1:
+            related_model_name = qs.first().related_model_name
+            modified_qs = modified_qs.annotate(**{
+                key: F('{}__{}'.format(related_model_name, value))
+                for key, value in kwargs.items()
+            })
+
+        return modified_qs
+
+    # Custom fields
+    def model_id(self, obj):
+        return obj.model.id
+    model_id.short_description = 'Id'
+
+    # Django methods
+    def get_search_fields(self, request):
+        """
+        Returns a sequence containing the fields to be searched whenever
+        somebody submits a search query.
+        """
+        self.check_is_proxy(self.model.objects.all())
+
+        if not self.search_fields:
+            model_related_name = self.model.objects.first().related_model_name
+            self.search_fields = ['{}__id'.format(model_related_name), 'h1', 'parent__h1']
+        return self.search_fields

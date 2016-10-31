@@ -1,18 +1,14 @@
 """
 Defines tests for models in Catalog app
 """
-import os.path
 from functools import partial
 
-from django.core.files.images import ImageFile
 from django.apps.registry import apps
 from django.conf import settings
 from django.db import models
 from django.test import TestCase
 
-import tests
 from pages.models import ModelPage, CustomPage, FlatPage, Page
-from images.models import Image
 
 
 def create_page(model: models.Model, **extra_field) -> models.Model:
@@ -23,9 +19,7 @@ def create_entity(model_path, **kwargs):
     model = apps.get_model(model_path)
     return model.objects.create(**kwargs)
 
-create_test_entity = partial(create_entity, model_path=settings.ENTITY_MODEL)
 create_test_entity_with_sync = partial(create_entity, model_path=settings.ENTITY_MODEL_WITH_SYNC)
-
 
 
 class PageTests(TestCase):
@@ -260,88 +254,3 @@ class PageMixin(TestCase):
 
     def test_default_parent(self):
         self.assertEqual(self.entity.page.parent, self.default_parent)
-
-def open_file(filename: str):
-    try:
-        file = open(filename, mode='rb')
-    except FileNotFoundError:
-        raise FileNotFoundError('Put file with name ' + filename)
-    return file
-
-
-def create_image_model(model: models.Model, filename: str, slug: str):
-    image_file = ImageFile(open_file(filename))
-    image_model = Image.objects.create(
-        model=model,
-        slug=slug,
-        image=image_file
-    )
-    image_file.close()
-    return image_model
-
-
-class ImageTests(TestCase):
-    """
-    Assume this:
-     - Page - model with few images. type(page.images) == QuerySet<Image>
-     - Image - model with one ImageField
-       and image metadata: slug, date_created, is_main, etc.
-     - ImageField - wrapper around image file
-    """
-
-    IMG_PATH = os.path.join(os.path.dirname(tests.__file__), 'assets/deer.jpg')
-    IMG_SLUG = 'one-two'
-    page = None
-    image_model = None
-
-    def setUp(self):
-        super(ImageTests, self).setUpClass()
-        self.page = create_page(CustomPage, slug='')
-        self.image_model = create_image_model(
-            model=self.page,
-            filename=self.IMG_PATH,
-            slug=self.IMG_SLUG
-        )
-
-    def tearDown(self):
-        super(ImageTests, self).tearDownClass()
-        self.page.delete()
-        self.image_model.delete()
-
-    def test_model_has_one_main_image(self):
-        """If model has any images, it should have at least one main image"""
-        self.assertIsNotNone(self.page.main_image)
-        self.image_model.is_main = False
-        self.image_model.save()
-        self.assertIsNotNone(self.page.main_image)
-
-    def test_get_main_image(self):
-        """Page should have only one main image"""
-        image_model = self.image_model
-        # set image model as main for page
-        image_model.is_main = True
-        image_model.save()
-        self.assertEquals(image_model.image, self.page.main_image)
-
-    def test_update_main_image(self):
-        """
-        Model should have only one main image
-        after updating on of the images as main
-        """
-        image_model = self.image_model
-        # set image model as main for page
-        image_model.is_main = True
-        image_model.save()
-
-        # create another image model
-        another_image_model = create_image_model(self.page, self.IMG_PATH, 'one-another')
-        # set new image model as main for page
-        another_image_model.is_main = True
-        another_image_model.save()
-
-        # only one new image should be main for page
-        image_model = Image.objects.get(slug=self.IMG_SLUG)
-        self.assertFalse(image_model.is_main)
-        self.assertTrue(another_image_model.is_main)
-        self.assertEquals(another_image_model.image, self.page.main_image)
-        another_image_model.delete()
