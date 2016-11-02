@@ -6,7 +6,7 @@
   {% for name, slug in crumbs_list %}
     <span class="breadcrumbs-item"  itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
       {% if slug %}
-        <a href="{{ slug }}" itemprop="item">
+        <a itemscope itemtype="http://schema.org/Thing" itemprop="item" href="{{ slug }}">
           <span itemprop="name">{{ name }}</span>
         </a>
       {% else %}
