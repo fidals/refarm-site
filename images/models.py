@@ -37,7 +37,7 @@ class Image(models.Model):
     slug = models.SlugField(max_length=400, blank=True, db_index=True)
     description = models.TextField(default='', blank=True)
     created = models.DateField(auto_now_add=True)
-    image = thumbnail.ImageField(upload_to=model_directory_path, blank=True)
+    image = thumbnail.ImageField(upload_to=model_directory_path)
 
     is_main = models.BooleanField(default=False, db_index=True)
 
@@ -89,6 +89,7 @@ class ImageMixin(models.Model):
         content_type_field='content_type',
         object_id_field='object_id',
         related_query_name='images',
+        blank=True
     )
 
     @property
