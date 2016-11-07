@@ -1,4 +1,5 @@
 import os
+import time
 
 from django.db import models
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
@@ -10,7 +11,7 @@ from sorl.thumbnail import delete
 def model_directory_path(instance, filename):
     def generate_filename(old_name: str, slug: str) -> str:
         _, file_extension = os.path.splitext(old_name)
-        return slug + file_extension
+        return slug or str(time.time()) + file_extension
 
     result_filename = generate_filename(filename, instance.slug)
     models_folder_name = type(instance.model).__name__.lower()
@@ -88,6 +89,7 @@ class ImageMixin(models.Model):
         content_type_field='content_type',
         object_id_field='object_id',
         related_query_name='images',
+        blank=True
     )
 
     @property

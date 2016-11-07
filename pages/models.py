@@ -231,7 +231,7 @@ class PageMixin(models.Model):
     )
 
     @classmethod
-    def get_default_parent(cls):
+    def get_default_parent(cls) -> Page:
         """You can override this method, if need a default parent"""
         return None
 
