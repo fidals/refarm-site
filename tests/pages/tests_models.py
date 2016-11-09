@@ -1,6 +1,3 @@
-"""
-Defines tests for models in Catalog app
-"""
 from functools import partial
 
 from django.apps.registry import apps

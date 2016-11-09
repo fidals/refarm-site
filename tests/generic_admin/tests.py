@@ -3,9 +3,8 @@ from django.contrib.redirects.models import Redirect
 from django.test import TestCase
 from django.http.request import HttpRequest
 
-from generic_admin.admin.sites import TableEditor
-from generic_admin.admin.mixins import (
-    PermissionsControl, ChangeItemsStateActions, AutoCreateRedirects)
+from generic_admin.sites import TableEditor
+from generic_admin.mixins import PermissionsControl, ChangeItemsStateActions, AutoCreateRedirects
 
 from tests.models import TestEntity
 
@@ -27,7 +26,7 @@ class TestMixins(TestCase):
         self.site = TableEditor()
 
     def test_permissions_control(self):
-        ma = PermissionsControl(TestEntity, self.site)
+        ma = PermissionsControl(TestEntity, self.site)  # ModelAdmin
         permission_checks = [
             ma.has_add_permission, ma.has_change_permission, ma.has_delete_permission
         ]
@@ -35,15 +34,13 @@ class TestMixins(TestCase):
         for check in permission_checks:
             self.assertTrue(check(request))
 
-        ma.add = False
-        ma.delete = False
-        ma.change = False
+        ma.add, ma.delete, ma.change = [False] * 3
 
         for check in permission_checks:
             self.assertFalse(check(request))
 
     def test_change_items_state_actions(self):
-        ma = ChangeItemsStateActions(TestEntity, self.site)
+        ma = ChangeItemsStateActions(TestEntity, self.site)  # ModelAdmin
 
         ma.make_items_non_active(request, TestEntity.objects.all())
         self.assertFalse(TestEntity.objects.first().is_active)
@@ -55,7 +52,7 @@ class TestMixins(TestCase):
         class TestForm:
             changed_data = ['slug']
 
-        ma = AutoCreateRedirects(TestEntity, self.site)
+        ma = AutoCreateRedirects(TestEntity, self.site)  # ModelAdmin
         obj = TestEntity.objects.first()
         new_slug = 'ololo'
 

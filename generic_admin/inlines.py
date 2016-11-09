@@ -1,4 +1,3 @@
-"""Admin inlines classes."""
 from django.contrib import admin
 from django.contrib.contenttypes.admin import GenericStackedInline
 from django.utils.html import format_html

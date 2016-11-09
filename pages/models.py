@@ -202,14 +202,12 @@ class ModelPage(Page):
         """Create managers for dividing ModelPage entities"""
         assert isinstance(model, type(models.Model)), 'arg should be ModelBase type'
 
-        def create_manager(model):
-            class ModelPageManager(models.Manager):
-                def get_queryset(self):
-                    return super(ModelPageManager, self).get_queryset().filter(
-                        related_model_name=model._meta.db_table)
-            return ModelPageManager()
+        class ModelPageManager(models.Manager):
+            def get_queryset(self):
+                return super(ModelPageManager, self).get_queryset().filter(
+                    related_model_name=model._meta.db_table)
 
-        return create_manager(model)
+        return ModelPageManager()
 
 
 # ------- Mixins -------

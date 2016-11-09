@@ -1,6 +1,3 @@
-"""
-Defines tests for models in Catalog app
-"""
 import os.path
 
 from django.core.files.images import ImageFile

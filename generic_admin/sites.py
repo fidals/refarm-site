@@ -52,10 +52,10 @@ class TableEditor(admin.AdminSite):
     def get_urls(self):
         original_urls = super(TableEditor, self).get_urls()
 
-        custom_urls = [
-            url(r'^editor/$', self.admin_view(self.table_editor_view), name='editor')
+        return [
+            url(r'^editor/$', self.admin_view(self.table_editor_view), name='editor'),
+            *original_urls
         ]
-        return custom_urls + original_urls
 
     def table_editor_view(self, request):
         context = {

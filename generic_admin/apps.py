@@ -1,5 +1,5 @@
 from django.apps import AppConfig
 
 
-class SiteAdminConfig(AppConfig):
+class GenericAdminConfig(AppConfig):
     name = 'generic_admin'
