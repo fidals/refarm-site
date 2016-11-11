@@ -198,6 +198,17 @@ class ModelPage(Page):
         self.type = Page.MODEL_TYPE
         super(ModelPage, self).save(*args, **kwargs)
 
+    def create_model_page_managers(model: models.Model):
+        """Create managers for dividing ModelPage entities"""
+        assert isinstance(model, type(models.Model)), 'arg should be ModelBase type'
+
+        class ModelPageManager(models.Manager):
+            def get_queryset(self):
+                return super(ModelPageManager, self).get_queryset().filter(
+                    related_model_name=model._meta.db_table)
+
+        return ModelPageManager()
+
 
 # ------- Mixins -------
 class PageMixin(models.Model):
