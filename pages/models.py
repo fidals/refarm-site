@@ -13,20 +13,12 @@ class AbstractSeo(models.Model):
     class Meta:
         abstract = True
 
-    h1 = models.CharField(max_length=255)
+    h1 = models.CharField(blank=True, max_length=255)
     keywords = models.CharField(blank=True, max_length=255)
     description = models.TextField(blank=True)
     seo_text = models.TextField(blank=True)
 
-    _title = models.CharField(blank=True, max_length=255)
-
-    @property
-    def title(self):
-        return self._title or self.h1
-
-    @title.setter
-    def title(self, value):
-        self._title = value
+    title = models.CharField(blank=True, max_length=255)
 
 
 class Page(AbstractSeo, ImageMixin):
@@ -47,6 +39,7 @@ class Page(AbstractSeo, ImageMixin):
     class Meta:
         unique_together = ('type', 'slug', 'related_model_name')
 
+    name = models.CharField(max_length=200, default='')
     type = models.CharField(default=FLAT_TYPE, max_length=100, editable=False)
     # Name for reversing at related model
     related_model_name = models.CharField(blank=True, max_length=255, editable=False)
@@ -60,7 +53,7 @@ class Page(AbstractSeo, ImageMixin):
     content = models.TextField(blank=True)
     date_published = models.DateField(default=date.today, blank=True)
 
-    _menu_title = models.CharField(
+    menu_title = models.CharField(
         max_length=180, blank=True,
         help_text='This field will be shown in the breadcrumbs, menu items and etc.'
     )
@@ -72,14 +65,6 @@ class Page(AbstractSeo, ImageMixin):
     @property
     def url(self):
         return self.get_absolute_url()
-
-    @property
-    def menu_title(self):
-        return self._menu_title or self.h1
-
-    @menu_title.setter
-    def menu_title(self, value):
-        self._menu_title = value
 
     @property
     def model(self) -> models.Model:
@@ -105,6 +90,13 @@ class Page(AbstractSeo, ImageMixin):
     def __str__(self):
         return self.slug
 
+    def __getattribute__(self, name):
+        """Some fields should give default value."""
+        attr = super(Page, self).__getattribute__(name)
+        if name in ['title', 'h1', 'menu_title'] and not attr:
+            return self.name
+        return attr
+
     def get_absolute_url(self):
         """Different page types reverse different urls"""
         if self.is_model:
@@ -124,8 +116,7 @@ class Page(AbstractSeo, ImageMixin):
             if self.slug or self.is_custom:
                 return
 
-            slug = slugify(unidecode(self.h1.replace('.', '-').replace('+', '-')))
-            self.slug = slug
+            self.slug = slugify(unidecode(self.name.replace('.', '-').replace('+', '-')))
 
         update_slug()
         super(Page, self).save(*args, **kwargs)
@@ -201,6 +192,7 @@ class ModelPage(Page):
         self.type = Page.MODEL_TYPE
         super(ModelPage, self).save(*args, **kwargs)
 
+    @staticmethod
     def create_model_page_managers(model: models.Model):
         """Create managers for dividing ModelPage entities"""
         assert isinstance(model, type(models.Model)), 'arg should be ModelBase type'
@@ -229,10 +221,10 @@ class PageMixin(models.Model):
         - Sync page's relations with parent if it exist.
 
     Examples:
-    >>> p1 = Page.objects.create(h1=obj1.name)
+    >>> p1 = Page.objects.create(name=obj1.name)
     >>> obj1 = RelatedObject.objects.create(page=p1, ...)
 
-    >>> p2 = Page.objects.create(h1=obj1.name)
+    >>> p2 = Page.objects.create(name=obj1.name)
     >>> obj2 = RelatedObject.objects.create(parent=obj1, ...) -> p2.parent = p1; p2.save();
     """
     class Meta:
@@ -294,7 +286,7 @@ class SyncPageMixin(PageMixin):
         - Add save/delete hooks for related Page.
 
     Examples:
-    >>> obj1 = RelatedObject.objects.create(...) -> p1 = Page.objects.create(h1=obj1.name)
+    >>> obj1 = RelatedObject.objects.create(...) -> p1 = Page.objects.create(name=obj1.name)
     >>> obj2.delete() -> RelatedObject.delete()
     """
     class Meta:
@@ -314,7 +306,7 @@ class SyncPageMixin(PageMixin):
                 return
 
             page_data = {
-                'h1': getattr(self, 'name', ''),
+                'name': getattr(self, 'name', ''),
                 'related_model_name': self.related_model_name,
                 'slug': slug,
                 **kwargs

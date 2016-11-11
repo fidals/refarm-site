@@ -3,7 +3,7 @@ from django.contrib.redirects.models import Redirect
 from django.test import TestCase
 from django.http.request import HttpRequest
 
-from generic_admin.sites import TableEditor
+from generic_admin.sites import SiteWithTableEditor
 from generic_admin.mixins import PermissionsControl, ChangeItemsStateActions, AutoCreateRedirects
 
 from tests.models import TestEntity
@@ -23,7 +23,7 @@ request._messages = messages
 class TestMixins(TestCase):
     def setUp(self):
         self.entity = TestEntity.objects.create(name='Test')
-        self.site = TableEditor()
+        self.site = SiteWithTableEditor()
 
     def test_permissions_control(self):
         ma = PermissionsControl(TestEntity, self.site)  # ModelAdmin
@@ -58,8 +58,8 @@ class TestMixins(TestCase):
 
         obj.slug = new_slug
         ma.save_model(request, obj=obj, form=TestForm(), change=True)
-
         redirect = Redirect.objects.first()
+
         self.assertEqual(Redirect.objects.count(), 1)
         self.assertEqual(redirect.old_path, '/so-mock-wow/')
         self.assertEqual(redirect.new_path, new_slug)
