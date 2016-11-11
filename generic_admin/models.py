@@ -86,7 +86,11 @@ class ProductPageAdmin(mixins.PageWithModels):
     custom_parent.admin_order_field = 'parent__h1'
     custom_parent.short_description = _('Parent')
 
-    mixins.PageWithModels.model_id.admin_order_field = '_product_id'
+    def model_id(self, obj):
+        return super(ProductPageAdmin, self).model_id(obj)
+
+    model_id.admin_order_field = '_product_id'
+    model_id.short_description = _('Id')
 
     def links(self, obj):
         return format_html(
@@ -106,4 +110,8 @@ class CategoryPageAdmin(mixins.PageWithModels):
         qs = super(CategoryPageAdmin, self).get_queryset(request)
         return self.add_reference_to_field_on_related_model(qs, _category_id='id')
 
-    mixins.PageWithModels.model_id.admin_order_field = '_category_id'
+    def model_id(self, obj):
+        return super(CategoryPageAdmin, self).model_id(obj)
+
+    model_id.admin_order_field = '_category_id'
+    model_id.short_description = _('Id')

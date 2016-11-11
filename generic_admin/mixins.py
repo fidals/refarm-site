@@ -152,7 +152,6 @@ class PageWithModels(AbstractPage, PermissionsControl, AutoCreateRedirects):
 
     def model_id(self, obj):
         return obj.model.id
-    model_id.short_description = _('Id')
 
     def get_search_fields(self, request):
         """https://goo.gl/4jVdgn"""
