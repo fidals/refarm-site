@@ -5,7 +5,7 @@ from pages.models import CustomPage, Page
 
 def save_custom_pages():
     """
-    This helper safely save custom pages data from settings.CUSTOM_PAGES to DB.
+    This helper safely saves custom pages data from settings.CUSTOM_PAGES to DB.
     It's useful in data migration scripts
 
     >>> settings.CUSTOM_PAGES = {'order': { 'slug': 'order', 'h1': 'Order page'}}
