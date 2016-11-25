@@ -63,10 +63,11 @@ class AutoCreateRedirects(admin.ModelAdmin):
 
 class AbstractPage(ChangeItemsStateActions):
     """Generic class for each page."""
-    save_on_top = True
-    list_display_links = ['h1']
     actions = ['make_items_active', 'make_items_non_active']
+    list_display_links = ['h1']
     list_filter = ['is_active', filters.HasContent, filters.HasImages]
+    save_on_top = True
+    search_fields = ['id', 'h1', 'slug']
 
     def custom_parent(self, obj, urlconf=None):
         parent = obj.parent
@@ -93,7 +94,7 @@ class AbstractPage(ChangeItemsStateActions):
 
 
 class PageWithoutModels(AbstractPage):
-    list_display = ['id', 'h1', 'custom_parent', 'is_active']
+    list_display = ['id', 'h1', 'slug', 'date_published', 'custom_parent', 'is_active']
     readonly_fields = ['id', 'correct_parent_id']
     inlines = [inlines.ImageInline]
 
