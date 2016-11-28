@@ -60,7 +60,6 @@ ENTITY_MODEL = 'tests.TestEntity'
 ENTITY_MODEL_WITH_SYNC = 'tests.TestEntityWithSync'
 
 # <--- transitive depends on pages app
-PRODUCTS_TO_LOAD = 30
 SITE_ID = 1
 SITE_DOMAIN_NAME = 'www.shopelectro.ru'
 # ---->
