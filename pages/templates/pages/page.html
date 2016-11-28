@@ -8,13 +8,13 @@
   <p>{{ page.content }}</p>
 
   {% if page.children.all %}
-    <p>Sub pages:
+    <div>Sub pages:
       <ul>
         {% for item in page.children.all %}
           <li><a href="{{ item.get_absolute_url }}">{{ item.title }}</a></li>
         {% endfor %}
       </ul>
-    </p>
+    </div>
   {% else %}
       <p>No sub pages</p>
   {% endif %}
