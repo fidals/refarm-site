@@ -1,9 +1,16 @@
 class TableEditor {
-  constructor(colModel = TableEditorColumnModel(), modals = TableEditorDialogBoxes()) {
+  constructor(colModel = TableEditorColumnModel(), dialogBoxes = TableEditorDialogBoxes()) {
     this.DOM = {
       $: $('#jqGrid'),
+      redirectToLinks: '.js-to-site-page, .js-to-admin-page',
     };
 
+    this.urls = {
+      jqGrid: '/admin/table-editor-api/',
+      redirectToProduct: '/admin/redirect-to-product/',
+    };
+
+    this.excludedFieldForUpdate = ['removeTag', 'linksTag'];
     this.$searchField = $('#search-field');
     this.wasFiltered = false;
     this.lastSelectedRowId = undefined;
@@ -15,10 +22,12 @@ class TableEditor {
 
     this.jsTreeSearchKey = 'search_term';
 
+    // https://goo.gl/ZvxxoP
     this.jqGridSettings = {
-      url: '/admin/table-editor-api/',
+      url: this.urls.jqGrid,
       editurl: 'clientArray',
       styleUI: 'Bootstrap',
+      regional : 'ru',
       altRows: true,
       altclass: 'jqgrid-secondary',
       autoencode: true,
@@ -30,31 +39,59 @@ class TableEditor {
       height: 500,
       rowNum: 30,
       pager: '#jqGridPager',
-      onSelectRow: this.editRow.bind(this),
-      onCellSelect: this.collectCellData.bind(this),
-      loadComplete: this.afterLoad.bind(this),
+      onSelectRow: (rowId) => this.editRow(rowId),
+      onCellSelect: (...data) => this.collectCellData(...data),
+      loadComplete: () => this.afterLoad(),
     };
 
     this.filterFields = [
       'name',
       'category_name',
       'price',
-      'purchase_price',
     ];
 
-    this.modals = modals;
+    this.dialogBoxes = dialogBoxes;
 
     this.init();
   }
 
   init() {
     this.setUpListeners();
+    this.setupFormatter();
     this.DOM.$.jqGrid(this.jqGridSettings);
   }
 
   setUpListeners() {
-    this.$searchField.on('keyup', this.searchInTable.bind(this));
-    this.modals.DOM.modalToDeleteProduct.$acceptBtn.click(this.deleteProduct.bind(this));
+    this.$searchField.on('keyup', () => this.searchInTable());
+    this.dialogBoxes.modalToDeleteProduct.$acceptBtn.click(event => this.deleteProduct(event));
+    $(document).on('click', `${this.DOM.redirectToLinks}`, event => this.redirectTo(event));
+  }
+
+  setupFormatter() {
+    $.extend($.fn.fmatter, {
+      removeTag: () => {
+        return `
+          <i class="jqgrid-remove-icon fa fa-2x fa-trash-o
+            ${this.dialogBoxes.modalToDeleteProduct.deleteProductBtnClass}"
+            title="Delete product" data-toggle="modal" data-target="#remove-modal"></i>
+        `;
+      },
+      linksTag: () => {
+        return `
+          <div class="btn-group" role="group">
+            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown"
+              aria-haspopup="true" aria-expanded="false">
+              <i class="fa fa-link" aria-hidden="true"></i>
+              <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-right table-editor-links-list">
+              <li><a class="js-to-site-page">Look on site page</a></li>
+              <li><a class="js-to-admin-page">Look on admin page</a></li>
+            </ul>
+          </div>
+        `;
+      },
+    });
   }
 
   /**
@@ -75,7 +112,7 @@ class TableEditor {
 
     // Cancel method by click on delete Product icon:
     if ($(event.target).hasClass(
-        tableEditorDialogBoxes.DOM.modalToDeleteProduct.deleteProductBtnClass)) return;
+        this.dialogBoxes.modalToDeleteProduct.deleteProductBtnClass)) return;
 
     const self = this;
     this.DOM.$.jqGrid('editRow', rowId, {
@@ -187,14 +224,14 @@ class TableEditor {
     $.ajax({
       url: this.jqGridSettings.url,
       type: 'PUT',
-      data: this.destructFields(newRowData),
+      data: this.prepareFieldsForUpdate(newRowData),
       success: () => {
         $currentRow.removeClass('danger');
       },
       error: (XHR, status, err) => {
         try {
           const {field, message} = JSON.parse(XHR.responseText);
-          tableEditorDialogBoxes.showPopover($currentRow, field, message);
+          this.dialogBoxes.showPopover($currentRow, field, message);
         } catch (e) {
           console.warn(status, err);
         }
@@ -208,9 +245,9 @@ class TableEditor {
     $.ajax({
       url: this.jqGridSettings.url,
       type: 'DELETE',
-      data: {id: this.lastSelectedData.id},
+      data: { id: this.lastSelectedData.id },
       success: () => {
-        this.modals.closeModal(event, this.modals.DOM.modalToDeleteProduct.$);
+        this.dialogBoxes.closeModal(event, this.dialogBoxes.modalToDeleteProduct.$);
         this.DOM.$.jqGrid('delRowData', this.lastSelectedData.id);
       },
     });
@@ -219,13 +256,22 @@ class TableEditor {
   /**
    * Return trimmed fields from newRowData for ajax data arguments.
    */
-  destructFields(newRowData) {
+  prepareFieldsForUpdate(newRowData) {
     const trimmedData = {};
 
     for (const [key, value] of Object.entries(newRowData)) {
-      if (key && key !== 'undefined' ) trimmedData[key] = value.trim();
+      if (this.excludedFieldForUpdate.every(field => field !== key)) trimmedData[key] = value.trim();
     }
 
     return trimmedData;
+  }
+
+  redirectTo(event) {
+    $.get(this.urls.redirectToProduct, {
+      id: this.lastSelectedData.id,
+      tosite: $(event.target).hasClass('js-to-site-page') ? 1 : 0,
+    }).success((url) => {
+      window.location.assign(url);
+    });
   }
 }

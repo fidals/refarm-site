@@ -15,16 +15,16 @@ class TableEditorColumnModel {
       },
       {
         name: 'name',
-        label: 'Название',
+        label: 'Name',
         editable: true,
         editrules: {
           required: true,
         },
-        width: 200,
+        width: 150,
       },
       {
         name: 'category_name',
-        label: 'Категория',
+        label: 'Category name',
         editable: true,
         editoptions: {
           dataInit(elem) {
@@ -56,7 +56,7 @@ class TableEditorColumnModel {
             });
           },
         },
-        width: 150,
+        width: 120,
       },
       {
         name: 'category_id',
@@ -64,7 +64,7 @@ class TableEditorColumnModel {
       },
       {
         name: 'price',
-        label: 'Цена',
+        label: 'Price',
         editable: true,
         editoptions: {
           type: 'number',
@@ -84,11 +84,11 @@ class TableEditorColumnModel {
           prefix: '₽ ',
         },
         sorttype: 'integer',
-        width: 50,
+        width: 30,
       },
       {
         name: 'in_stock',
-        label: 'Наличие',
+        label: 'In stock',
         editable: true,
         editoptions: {
           type: 'number',
@@ -103,30 +103,27 @@ class TableEditorColumnModel {
         },
         formatter: 'integer',
         sorttype: 'integer',
-        width: 40,
+        width: 30,
       },
       {
         name: 'is_popular',
-        label: 'Топ',
+        label: 'Is popular',
         align: 'center',
         editable: true,
         editoptions: { value: '1:0' },
         edittype: 'checkbox',
         formatter: 'checkbox',
-        width: 42,
+        width: 35,
       },
       {
         name: 'page_title',
         label: 'Title',
         editable: true,
-        editrules: {
-          required: true,
-        },
-        width: 200,
+        width: 150,
       },
       {
         name: 'page_position',
-        label: 'Позиция',
+        label: 'Position',
         editable: true,
         editoptions: {
           type: 'number',
@@ -146,37 +143,25 @@ class TableEditorColumnModel {
         name: 'page_h1',
         label: 'H1',
         editable: true,
-        editrules: {
-          required: true,
-        },
-        width: 200,
+        width: 150,
       },
       {
         name: 'page_keywords',
-        label: 'Ключевые слова',
+        label: 'Keywords',
         editable: true,
-        editrules: {
-          required: true,
-        },
-        width: 200,
+        width: 150,
       },
       {
         name: 'page_description',
-        label: 'Описание',
+        label: 'Description',
         editable: true,
-        editrules: {
-          required: true,
-        },
-        width: 200,
+        width: 150,
       },
       {
         name: 'page_seo_text',
-        label: 'СЕО текст',
+        label: 'Seo text',
         editable: true,
-        editrules: {
-          required: true,
-        },
-        width: 200,
+        width: 150,
       },
       {
         name: 'page_name',
@@ -184,20 +169,17 @@ class TableEditorColumnModel {
         editrules: {
           required: true,
         },
-        width: 200,
+        width: 150,
       },
       {
         name: 'page_menu_title',
-        label: 'Название в крошках',
+        label: 'Menu title',
         editable: true,
-        editrules: {
-          required: true,
-        },
-        width: 200,
+        width: 150,
       },
       {
         name: 'page_is_active',
-        label: 'Активность',
+        label: 'Is active',
         align: 'center',
         editable: true,
         editoptions: { value: '1:0' },
@@ -206,9 +188,18 @@ class TableEditorColumnModel {
         width: 44,
       },
       {
-        label: '<div class="text-center"><i class="fa fa-2x fa-trash-o"</i></div>',
+        name: 'removeTag',
+        label: '<div class="text-center"><i class="fa fa-2x fa-trash-o"></i></div>',
         align: 'center',
         formatter: 'removeTag',
+        sortable: false,
+        width: 20,
+      },
+      {
+        name: 'linksTag',
+        label: '<div class="text-center"><i class="fa fa-link"></i></div>',
+        align: 'center',
+        formatter: 'linksTag',
         sortable: false,
         width: 30,
       },
@@ -216,66 +207,50 @@ class TableEditorColumnModel {
   }
 
   mergeColumnModels(customColumnModel) {
-    const [rowId, ...filteredColumns] = this.getDefaultColumnModels.call(this)
-      .filter((col) => {
-        for (let customCol of customColumnModel) {
-          if (customCol.name === col.name) return false;
-        }
-        return true;
-      });
-    // RowId should be a first in jqGrid and removalTag last.
-    return [rowId].concat(customColumnModel, filteredColumns)
+    return this.getDefaultColumnModels()
+      .filter(col => customColumnModel.every(customCol => customCol !== col.name))
+      .concat(customColumnModel);
   }
 
   /**
-   * Get jQgrid settings from localStorage or default.
-   * Has dependence on Filters.
+   * Get jQgrid settings from localStorage or return default.
+   * Depends on Filters.
    */
   getSettings() {
-    const storedFilters = localStorage.getItem(this.filters.storageKeys.filterFieldsPreset);
-    const fieldNames = storedFilters ?
-      this.getCustomFieldNames(storedFilters) : this.getStandardFieldNames();
+    const customFieldNames = this.getCustomFieldNames();
+    const fieldNames = customFieldNames ? customFieldNames : this.getStandardFieldNames();
 
     return this.generateSettings(fieldNames);
   }
 
-  /**
-   * Return checked filters field names.
-   */
-  getFieldNames($checkboxes) {
+  getCheckedFieldNames($checkboxes) {
     return $checkboxes.map(item => item.replace('filter-', ''));
   }
 
-  getCustomFieldNames(storedFilters) {
-    return this.getFieldNames(JSON.parse(storedFilters));
+  getCustomFieldNames() {
+    const storedFilters = localStorage.getItem(this.filters.storageKeys.filterFieldsPreset);
+    if (storedFilters === null) return null;
+
+    return this.getCheckedFieldNames(JSON.parse(storedFilters));
   }
 
   getStandardFieldNames() {
-    const checkboxIds = [];
-    const $checkboxes = this.filters.getCheckedCheckboxes();
-    $.each($checkboxes, (_, item) => checkboxIds.push($(item).attr('id')));
-
-    return this.getFieldNames(checkboxIds);
+    const checkboxIds = $.map(this.filters.getSelectedFields(), item => $(item).attr('id'));
+    return this.getCheckedFieldNames(checkboxIds);
   }
 
-  /**
-   * Generate settings from colModel object.
-   * @param fieldNames - filter checked names
-   */
-  generateSettings(fieldNames) {
-    const allSettings = this.columnModels;
-    const generatedSettings = [];
+  getFieldByName(name, fields) {
+    return fields.filter(field => field.name === name)[0];
+  }
 
-    for (const field of fieldNames) {
-      for (const item of allSettings) {
-        if (item.name === field) {
-          generatedSettings.push(item);
-        }
-      }
-    }
+  generateSettings(colNames) {
+    const generatedSettings = colNames
+      .map(col => this.getFieldByName(col, this.columnModels));
 
-    generatedSettings.unshift(allSettings[0]);
-    generatedSettings.push(allSettings[allSettings.length - 1]);
+    // We always show id and tags columns.
+    generatedSettings.unshift(this.getFieldByName('id', this.columnModels));
+    generatedSettings.push(this.getFieldByName('linksTag', this.columnModels));
+    generatedSettings.push(this.getFieldByName('removeTag', this.columnModels));
 
     return generatedSettings;
   }

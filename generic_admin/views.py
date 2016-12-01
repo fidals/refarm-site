@@ -1,7 +1,6 @@
 from itertools import chain
 from functools import partial
-from collections import ChainMap
-from typing import Iterator
+from typing import Iterator, Union
 
 from django.core.urlresolvers import reverse
 from django.core.exceptions import ValidationError
@@ -16,78 +15,101 @@ from django.template.response import TemplateResponse
 
 
 class TableEditorFieldsControlMixin:
-    """Mixin for simplifies to work with model's fields."""
+    """Mixin gives simple access to model's fields."""
 
-    relation_field_names = []
-    include_related_model_fields = exclude_related_model_fields = {None: []}
-    include_model_fields = exclude_model_fields = []
+    def __init__(
+            self, model, relation_field_names=None, included_related_model_fields=None,
+            excluded_related_model_fields=None, included_model_fields=None,
+            excluded_model_fields=None
+    ):
+        self.model = model
 
-    def get_all_fields(self, model: Model):
+        self.relation_field_names = relation_field_names or []
+
+        self.included_related_model_fields = included_related_model_fields or {}
+        self.excluded_related_model_fields = excluded_related_model_fields or {}
+
+        self.included_model_fields = included_model_fields or []
+        self.excluded_model_fields = excluded_model_fields or []
+
+    def _get_all_fields(self, model: Model):
         return (field for field in model._meta.get_fields())
 
-    def get_field(self, model: Model, field_name: str) -> Field:
-        return next(filter(lambda field: field.name == field_name, self.get_all_fields(model)))
+    def _get_field(self, model: Model, field_name: str) -> Field:
+        return next(filter(lambda field: field.name == field_name, self._get_all_fields(model)))
 
-    def get_include_fields(self, model: Model, include_fields: list):
-        return filter(lambda field: field.name in include_fields, self.get_all_fields(model))
+    def _get_included_fields(self, model: Model, included_fields: list):
+        return filter(lambda field: field.name in included_fields, self._get_all_fields(model))
 
-    def get_not_exclude_fields(self, model: Model, exclude_fields: list):
-        return filter(lambda field: field.name not in exclude_fields, self.get_all_fields(model))
+    def _get_not_excluded_fields(self, model: Model, excluded_fields: list):
+        return filter(lambda field: field.name not in excluded_fields, self._get_all_fields(model))
 
-    def get_related_model_fields(self, related_field_name: str, *args, **kwargs) -> Iterator[Field]:
-        model = self.get_field(self.model, related_field_name).related_model
+    def get_related_model_fields(self) -> Iterator[Union[str, Field]]:
+        def get_fields(related_field_name):
+            model = self._get_field(self.model, related_field_name).related_model
 
-        include_fields = self.include_related_model_fields.get(related_field_name)
-        exclude_fields = self.exclude_related_model_fields.get(related_field_name)
+            included_fields = self.included_related_model_fields.get(related_field_name)
+            excluded_fields = self.excluded_related_model_fields.get(related_field_name)
 
-        if include_fields:
-            return self.get_include_fields(model, include_fields)
+            fields = None
 
-        if exclude_fields:
-            return self.get_not_exclude_fields(model, exclude_fields)
+            if included_fields:
+                fields = self._get_included_fields(model, included_fields)
 
-        return self.get_all_fields(model)
+            elif excluded_fields:
+                fields = self._get_not_excluded_fields(model, excluded_fields)
+
+            else:
+                fields = self._get_all_fields(model)
+
+            return related_field_name, fields
+
+        return map(get_fields, self.relation_field_names)
 
     def get_model_fields(self, *args, **kwargs) -> Iterator[Field]:
-        if self.include_model_fields:
-            return self.get_include_fields(self.model, self.include_model_fields)
+        if self.included_model_fields:
+            return self._get_included_fields(self.model, self.included_model_fields)
 
-        if self.exclude_model_fields:
-            return self.get_not_exclude_fields(self.model, self.exclude_model_fields)
+        if self.excluded_model_fields:
+            return self._get_not_excluded_fields(self.model, self.excluded_model_fields)
 
-        return self.get_all_fields(self.model)
+        return self._get_all_fields(self.model)
 
     def value_to_python(self, model, key, value):
         # https://goo.gl/luu69S
-        to_python = self.get_field(model, key).to_python
+        to_python = self._get_field(model, key).to_python
         try:
             return to_python(value)
         except ValidationError as err:
             raise ValueError(next(iter(err.messages)))
 
 
-class TableEditorMixin(TableEditorFieldsControlMixin, MultipleObjectMixin, View):
+class ABSTableEditor(MultipleObjectMixin, View):
     """
     Handling CBV request, queryset logic and TableEditor fields control.
     """
+    model = None
+    relation_field_names = []
+
+    field_controller = TableEditorFieldsControlMixin(model, relation_field_names)
 
 
 class TableEditorGet:
-    def get_related_model_fields(self, related_field_name: str, *args, **kwargs):
-        fields = super(TableEditorGet, self).get_related_model_fields(
-            related_field_name, *args, **kwargs)
+    def prepare_related_model_fields(self, fields_data):
+        def prepare_fields(related_field_name, fields):
+            return (
+                (
+                    '{}_{}'.format(related_field_name, field.name),
+                    F('{}__{}'.format(related_field_name, field.name))
+                ) for field in fields
+            )
 
-        return {
-            '{}_{}'.format(related_field_name, field.name):
-                F('{}__{}'.format(related_field_name, field.name))
-            for field in fields
-        }
+        return dict(chain.from_iterable(map(prepare_fields, *zip(*fields_data))))
 
     def get_queryset(self, *args, **kwargs):
-        annotate_data = dict(ChainMap(*(
-            self.get_related_model_fields(field_name)
-            for field_name in self.relation_field_names
-        )))
+        annotate_data = self.prepare_related_model_fields(
+            self.field_controller.get_related_model_fields()
+        )
 
         return (
             super(TableEditorGet, self)
@@ -138,10 +160,13 @@ class TableEditorPut:
         related_model_entity = getattr(product, related_model_name)
 
         related_model_key = key.replace('{}_'.format(related_model_name), '')
-        if not hasattr(related_model_entity, related_model_key):
-            return
 
-        python_value = self.value_to_python(related_model_entity, related_model_key, value)
+        if not hasattr(related_model_entity, related_model_key):
+            raise ValueError('{} has not `{}` in fields'.format(
+                related_model_entity, related_model_key
+            ))
+
+        python_value = self.field_controller.value_to_python(related_model_entity, related_model_key, value)
 
         related_model_strategy = self.pattern_to_update_related_model.get(related_model_name, {})
 
@@ -155,9 +180,11 @@ class TableEditorPut:
 
     def update_model(self, product, key, value):
         if not hasattr(product, key):
-            return
+            raise ValueError('{} has not `{}` in fields'.format(
+                product, key
+            ))
 
-        python_value = self.value_to_python(product, key, value)
+        python_value = self.field_controller.value_to_python(product, key, value)
 
         if key in self.pattern_to_update_model:
             self.pattern_to_update_model[key](
@@ -196,54 +223,54 @@ class TableEditorPost:
 
 @method_decorator(staff_member_required, name='dispatch')
 class TableEditorAPI(
-    TableEditorPost,
-    TableEditorGet,
-    TableEditorPut,
-    TableEditorDelete,
-    TableEditorMixin
-):
+        TableEditorPost,
+        TableEditorGet,
+        TableEditorPut,
+        TableEditorDelete,
+        ABSTableEditor
+    ):
     """REST view with CRUD logic."""
     http_method_names = ['post', 'put', 'delete', 'get']
 
 
-class TableEditor(TableEditorMixin):
+class TableEditor(ABSTableEditor):
     """Admin view for TableEditor."""
     http_method_names = ['get']
     default_filters = ['name', 'price', 'is_popular', 'is_active']
 
     each_context = None  # Define from Admin's site.
 
-    def get_related_model_fields(self, related_field_name: str, *args, **kwargs):
-        fields = super(TableEditor, self).get_related_model_fields(
-            related_field_name, *args, **kwargs)
+    def prepare_related_model_fields(self, fields_data):
+        def prepare_fields(related_field_name, fields):
+            capitalize_related_field_name = related_field_name.capitalize()
 
-        capitalize_related_field_name = related_field_name.capitalize()
-        return (
-            ('{}_{}'.format(related_field_name, field.name),
-             '{} {}'.format(
-                 capitalize_related_field_name,
-                 getattr(field, 'verbose_name', field.name)))
-            for field in fields
-        )
+            return (
+                ('{}_{}'.format(related_field_name, field.name),
+                 '{} {}'.format(
+                     capitalize_related_field_name,
+                     getattr(field, 'verbose_name', field.name)))
+                for field in fields
+            )
 
-    def get_model_fields(self, *args, **kwargs):
-        fields = super(TableEditor, self).get_model_fields(*args, **kwargs)
+        return chain.from_iterable(map(prepare_fields, *zip(*fields_data)))
 
+    def prepare_model_fields(self, fields):
         return (
             (field.name,
              getattr(field, 'verbose_name', field.name).capitalize())
             for field in fields
         )
 
-    def gather_filter_data(self):
-        related_model_fields_data = chain.from_iterable(
-            self.get_related_model_fields(field_name)
-            for field_name in self.relation_field_names
+    def get_filter(self):
+        prepared_related_model_fields = self.prepare_related_model_fields(
+            self.field_controller.get_related_model_fields()
         )
 
-        model_fields_data = self.get_model_fields()
+        prepared_model_fields = self.prepare_model_fields(
+            self.field_controller.get_model_fields()
+        )
 
-        filter_data = chain(model_fields_data, related_model_fields_data)
+        filter_data = chain(prepared_model_fields, prepared_related_model_fields)
 
         return [
             {'id': 'filter-{}'.format(id_attr),
@@ -253,12 +280,11 @@ class TableEditor(TableEditorMixin):
         ]
 
     def get(self, request, *args, **kwargs):
-        filters = self.gather_filter_data()
 
         context = {
             **self.each_context(request),
             'title': 'Table editor',
-            'filter_fields': filters,
+            'filter_fields': self.get_filter(),
         }
 
         return TemplateResponse(request, 'admin/table_editor.html', context)
@@ -272,17 +298,17 @@ class Tree(View, MultipleObjectMixin):
     model = None
 
     # Page model names for reversing url.
-    category_page_model_name = 'categorypage'
-    product_page_model_name = 'productpage'
+    CATEGORY_PAGE_MODEL_NAME = 'categorypage'
+    PRODUCT_PAGE_MODEL_NAME = 'productpage'
 
-    def gather_js_tree_data(self, entities):
+    def prepare_for_js_tree(self, entities):
         if not entities.exists():
             return {'text': 'У категории нет товаров.'}
 
         is_category = isinstance(entities.first(), self.model)
         urlconf = 'admin:{}_{}_change'.format(
             self.model._meta.app_label,
-            self.category_page_model_name if is_category else self.product_page_model_name
+            self.CATEGORY_PAGE_MODEL_NAME if is_category else self.PRODUCT_PAGE_MODEL_NAME
         )
 
         # jsTree has restriction on the field's names.
@@ -290,7 +316,7 @@ class Tree(View, MultipleObjectMixin):
            'id': entity.id,
            'text': '[ {id} ] {name}'.format(id=entity.id, name=entity.name),
            'children': is_category,  # if False, then lazy load switch off
-           'a_attr': {  # it is "a" tag's attribute
+           'a_attr': {  # it is <a> tag's attributes
                'href-site-page': entity.get_absolute_url(),
                'href-admin-page': reverse(urlconf, args=(entity.page_id,)),
                'search-term': entity.name,
@@ -308,5 +334,22 @@ class Tree(View, MultipleObjectMixin):
 
     def get(self, request, *args, **kwargs):
         category_id = request.GET.get('id')
-        data = self.get_queryset(category_id=category_id)
-        return JsonResponse(self.gather_js_tree_data(data), safe=False)
+        entities = self.get_queryset(category_id=category_id)
+        return JsonResponse(self.prepare_for_js_tree(entities), safe=False)
+
+
+class RedirectToProductPage(View):
+    model = None
+    admin_page_product_urlconf = None
+    site_page_product_urlconf = None
+
+    def get(self, request, *args, **kwargs):
+        id_, is_to_site = request.GET.get('id'), int(request.GET.get('tosite'))
+        pattern_name = None
+        if is_to_site:
+            pattern_name = self.site_page_product_urlconf
+        else:
+            pattern_name = self.admin_page_product_urlconf
+            id_ = self.model.objects.get(id=id_).page_id
+
+        return HttpResponse(reverse(pattern_name, args=(id_, )))

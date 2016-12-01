@@ -6,9 +6,6 @@
  *  Made by Sandy Duan
  *  Under MIT License
  */
-.webui-popover-content {
-  display: none;
-}
 .webui-popover-rtl {
   direction: rtl;
   text-align: right;
@@ -114,7 +111,6 @@
 }
 
 .webui-popover-content {
-  display: none;
   line-height: 1.5;
   overflow: auto;
   padding: 14px;
@@ -280,7 +276,7 @@
   position: absolute;
   margin-left: -15px;
   margin-right: -15px;
-  background: url("../imgages/loading.gif") no-repeat;
+  background: url("../images/loading.gif") no-repeat;
 }
 
 @keyframes rotate {

@@ -9,13 +9,13 @@
 
   <div class="filter-section row">
     <button class="btn btn-primary btn-switch-filter js-hide-filter" type="button">
-      Показать фильтр полей
+      Show columns filter
     </button>
 
     <div class="filter-wrapper js-filter-wrapper">
       <div class="row">
         <div class="filter-fields-wrapper col-sm-4">
-          <label>Фильтр полей:</label>
+          <label>Filter columns:</label>
           <ul class="filter-fields list-unstyled">
             {% for field in filter_fields %}
               <li class="filter-fields-item">
@@ -28,23 +28,23 @@
         </div>
 
         <div class="sort-fields-wrapper col-sm-3">
-          <label>Сортировка полей:</label>
+          <label>Sorting columns:</label>
           <ul class="sortable list-unstyled" id="sortable"></ul>
         </div>
 
         <div class="col-sm-2">
           <button class="btn btn-primary btn-save-filter js-save-filters" type="button">
-            Обновить таблицу
+            Update table
           </button>
-          <p class="filters-remove js-drop-filters">Сбросить фильтры</p>
+          <p class="filters-remove js-drop-filters">Drop filter</p>
         </div>
       </div>
     </div>
 
     <div class="live-filter-wrapper">
-      <label for="search-field">Фильтр:</label>
+      <label for="search-field">Search:</label>
       <input type="text" class="jqgrid-search-field form-control" id="search-field"
-             placeholder="Введите название товара, ID, категорию или цену...">
+             placeholder="Enter product name, product ID, category name or price...">
     </div>
   </div>
 
@@ -57,11 +57,11 @@
   <div class="modal-wrapper js-modal-wrapper" id="confirm-modal">
     <div class="modal-box">
       <h3 class="modal-box-title text-center">
-        Вы действительно хотите удалить <span id="product-to-remove"></span>?
+        Are you sure, that you want to delete <span id="product-to-remove"></span>?
       </h3>
       <div class="modal-box-buttons">
-        <button class="modal-delete btn btn-danger js-modal-delete">Удалить</button>
-        <button class="btn btn-primary js-modal-delete-cancel">Отменить</button>
+        <button class="modal-delete btn btn-danger js-modal-delete">Accept</button>
+        <button class="btn btn-primary js-modal-delete-cancel">Cancel</button>
       </div>
     </div>
   </div>

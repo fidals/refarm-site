@@ -16,32 +16,31 @@ class TableEditorFilters {
     };
 
     this.toggleFilterButtonTexts = {
-      show: 'Показать фильтр полей',
-      hide: 'Скрыть фильтр полей',
+      show: 'Show filters',
+      hide: 'Hide filters',
     };
 
     this.init();
   }
 
   setUpListeners() {
-    this.DOM.$saveFiltersBtn.click(this.saveFilters.bind(this));
-    this.DOM.$resetFiltersBtn.click(this.dropFilters.bind(this));
-    this.DOM.$toggleFilterBtn.click(this.toggleFilters.bind(this));
-    this.DOM.$filterCheckbox.change(this.updateSortFields.bind(this));
+    this.DOM.$saveFiltersBtn.click(() => this.saveFilters());
+    this.DOM.$resetFiltersBtn.click(() => this.dropFilters());
+    this.DOM.$toggleFilterBtn.click(() => this.toggleFilters());
+    this.DOM.$filterCheckbox.change(() => this.updateSortedFields());
   }
 
   init() {
     this.setUpListeners();
-
     this.setFiltersState();
     this.initFilters();
   }
 
-  getCheckedCheckboxes() {
+  getSelectedFields() {
     return this.DOM.$filterCheckbox.filter((_, item) => $(item).is(':checked'));
   }
 
-  updateSortFields() {
+  updateSortedFields() {
     const filterName = $(event.target).attr('id');
     const filterText = $(event.target).prev().text();
     const $filterField = this.DOM.$sortableList.find(`.${this.DOM.sortableClass}`)
@@ -75,13 +74,13 @@ class TableEditorFilters {
   }
 
   toggleFilters() {
-    const $self = $(event.target);
+    const $target = $(event.target);
 
     if (this.DOM.$filterWrapper.is(':visible')) {
-      $self.html(this.toggleFilterButtonTexts.show);
+      $target.html(this.toggleFilterButtonTexts.show);
       localStorage.setItem(this.storageKeys.isFilterVisible, 'false');
     } else {
-      $self.html(this.toggleFilterButtonTexts.hide);
+      $target.html(this.toggleFilterButtonTexts.hide);
       localStorage.setItem(this.storageKeys.isFilterVisible, 'true');
     }
 
@@ -121,7 +120,7 @@ class TableEditorFilters {
   renderStandardFilters() {
     let fieldsHtml = '';
 
-    for (const field of this.getCheckedCheckboxes()) {
+    for (const field of this.getSelectedFields()) {
       const id = $(field).attr('id');
       const text = $(field).prev().text();
 

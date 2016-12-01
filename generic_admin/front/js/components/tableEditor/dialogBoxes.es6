@@ -1,15 +1,14 @@
 class TableEditorDialogBoxes {
   constructor() {
-    this.DOM = {
-      modalToDeleteProduct: {
+    this.modalToDeleteProduct = {
         $: $('#confirm-modal'),
         $acceptBtn: $('.js-modal-delete'),
         $cancelBtn: $('.js-modal-delete-cancel'),
         $textField: $('#product-to-remove'),
         deleteProductBtnClass: 'js-confirm-delete-modal',
-      },
     };
 
+    // https://goo.gl/TzEvoR
     this.popover = {
       className: '#popover',
       settings: {
@@ -28,23 +27,23 @@ class TableEditorDialogBoxes {
 
   init() {
     this.setUpListeners();
-    this.setupFormatter();
   }
 
   setUpListeners() {
-    $(document).on('click', `.${this.DOM.modalToDeleteProduct.deleteProductBtnClass}`, (event) => {
+    $(document).on('click', `.${this.modalToDeleteProduct.deleteProductBtnClass}`, (event) => {
       this.showModal(
-        event, this.DOM.modalToDeleteProduct.$, this.DOM.modalToDeleteProduct.$textField);
+        event, this.modalToDeleteProduct.$, this.modalToDeleteProduct.$textField);
     });
 
     $(document).on('keyup', event => {
-      if (event.which === 27) {
-        this.closeModal(event, this.DOM.modalToDeleteProduct.$);
+      const escapeBtnKeyCode = 27;
+      if (event.which === escapeBtnKeyCode) {
+        this.closeModal(event, this.modalToDeleteProduct.$);
       }
     });
 
-    this.DOM.modalToDeleteProduct.$cancelBtn.click((event) => {
-      this.closeModal(event, this.DOM.modalToDeleteProduct.$);
+    this.modalToDeleteProduct.$cancelBtn.click((event) => {
+      this.closeModal(event, this.modalToDeleteProduct.$);
     });
   }
 
@@ -53,17 +52,7 @@ class TableEditorDialogBoxes {
    * Render html for Product removing icon.
    * @link http://goo.gl/9xcr7q
    */
-  setupFormatter() {
-    $.extend($.fn.fmatter, {
-      removeTag: () => {
-        return `
-          <i
-            class="jqgrid-remove-icon ${this.DOM.modalToDeleteProduct.deleteProductBtnClass} fa fa-2x fa-trash-o"
-            title="Удалить товар" data-toggle="modal" data-target="#remove-modal"></i>
-        `;
-      },
-    });
-  }
+
 
   showModal(event, $modal, $textField, text = 'this product') {
     event.stopImmediatePropagation();
@@ -87,9 +76,8 @@ class TableEditorDialogBoxes {
         content: message,
         offsetTop: offset.top,
         offsetLeft: offset.left + (this.popover.settings.width / 2),
-        title: 'Ошибка',
+        title: 'Error',
       });
-
     $(`${this.popover.className}`).webuiPopover('destroy').webuiPopover(extendedSettings);
     WebuiPopovers.show(`${this.popover.className}`);
   }

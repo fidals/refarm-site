@@ -5,12 +5,13 @@
 <html lang="{{ LANGUAGE_CODE|default:'ru-ru' }}" {% if LANGUAGE_BIDI %}dir="rtl"{% endif %}>
 <head>
   <title>{% block title %}{% endblock %}</title>
-
-  <link rel="icon" type="image/x-icon" href="{% static 'favicon.ico' %}">
-
   <link rel="stylesheet" href="{% block stylesheet %}{% static 'admin/css/base.css' %}{% endblock %}">
-  <link rel="stylesheet" href="{% static 'css/styles.min.css' %}">
-  <link rel="stylesheet" href="{% static 'css/admin.min.css' %}">
+  {% block favicon %}<link rel="icon" type="image/x-icon" href="{% static 'favicon.ico' %}">{% endblock %}
+  {% block css %}
+    <link rel="stylesheet" href="{% static 'css/styles.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/admin.min.css' %}">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+  {% endblock %}
   {% block extrastyle %}{% endblock %}
   {% if LANGUAGE_BIDI %}
     <link rel="stylesheet" href="{% block stylesheet_rtl %}{% static 'admin/css/rtl.css' %}{% endblock %}">
@@ -108,7 +109,10 @@
 
   {% block footer %}
     <div id="footer"></div>
+  {% endblock %}
+  {% block jslinks %}
     <script src="{% static 'js/admin-vendors.min.js' %}"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
     <script src="{% static 'js/admin.min.js' %}"></script>
   {% endblock %}
 </div>

@@ -11,8 +11,10 @@ class SiteWithTableEditor(admin.AdminSite):
         original_urls = super(SiteWithTableEditor, self).get_urls()
 
         return [
-            url(r'^editor/$',
+            url(
+                r'^editor/$',
                 self.admin_view(self.table_editor_view.as_view(each_context=self.each_context)),
-                name='editor'),
+                name='editor'
+            ),
             *original_urls
         ]

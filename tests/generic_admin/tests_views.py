@@ -11,109 +11,108 @@ from generic_admin import views
 from tests.models import TestEntityWithRelations, RelatedEntity, AnotherRelatedEntity
 
 
-exclude_related_model_fields = {
-    'another_related_entity': ['is_active'],
-}
-include_related_model_fields = {
-    'related_entity': [
-        'name'
-    ],
-}
-
-exclude_model_fields = ['id', 'is_active']
-relation_field_names = ['related_entity', 'another_related_entity']
-
-
 def related_entity_name_strategy(**kwargs):
     return kwargs
 
 
-class TableEditorAPI(views.TableEditorAPI):
+class GenericTableEditor:
     model = TestEntityWithRelations
+    relation_field_names = ['related_entity', 'another_related_entity']
 
-    relation_field_names = relation_field_names
+    excluded_model_fields = ['id', 'is_active']
+    excluded_related_model_fields = {
+        'another_related_entity': ['is_active'],
+    }
+    included_related_model_fields = {
+        'related_entity': [
+            'name'
+        ],
+    }
 
-    exclude_related_model_fields = exclude_related_model_fields
-    include_related_model_fields = include_related_model_fields
-    exclude_model_fields = exclude_model_fields
 
+    field_controller = views.TableEditorFieldsControlMixin(
+        model,
+        relation_field_names=relation_field_names,
+        excluded_model_fields=excluded_model_fields,
+        included_related_model_fields=included_related_model_fields,
+        excluded_related_model_fields=excluded_related_model_fields
+    )
+
+
+class TableEditorAPI(GenericTableEditor, views.TableEditorAPI):
     pattern_to_update_related_model = {
         'related_entity': {
             'name': related_entity_name_strategy
         }
     }
-
-
-class FieldsControl(views.TableEditorFieldsControlMixin):
-    model = TestEntityWithRelations
-
-    relation_field_names = relation_field_names
-
-    exclude_related_model_fields = exclude_related_model_fields
-    include_related_model_fields = include_related_model_fields
-    exclude_model_fields = exclude_model_fields
-
-    pattern_to_update_related_model = {
-        'related_entity': {
-            'name': related_entity_name_strategy
-        }
-    }
-
-fieldsControl = FieldsControl()
 
 
 class TestsTableEditorFieldsControl(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        super(TestsTableEditorFieldsControl, cls).setUpClass()
+        cls.model = TableEditorAPI.model
+        cls.field_controller = TableEditorAPI.field_controller
+
+        cls.relation_field_names = TableEditorAPI.relation_field_names
+        cls.excluded_model_fields = TableEditorAPI.excluded_model_fields
+        cls.included_related_model_fields = TableEditorAPI.included_related_model_fields
+        cls.excluded_related_model_fields = TableEditorAPI.excluded_related_model_fields
+
 
     def test_get_all_field(self):
-        field_count = len(list(fieldsControl.get_all_fields(fieldsControl.model)))
+        field_count = len(list(self.field_controller._get_all_fields(self.model)))
         self.assertEqual(field_count, 5)
 
     def test_get_field(self):
         """Get only one field from model."""
-        field_name = fieldsControl.get_field(fieldsControl.model, 'name')
+        field_name = self.field_controller._get_field(self.model, 'name')
 
         self.assertTrue(isinstance(field_name, models.Field))
-        self.assertEqual(field_name.model, fieldsControl.model)
+        self.assertEqual(field_name.model, self.model)
 
-    def test_get_not_exclude_field(self):
-        fields = list(fieldsControl.get_not_exclude_fields(
-            fieldsControl.model, fieldsControl.exclude_model_fields))
+    def test_get_not_excluded_field(self):
+        fields = list(self.field_controller._get_not_excluded_fields(
+            self.model, self.excluded_model_fields))
 
         self.assertEqual(len(fields), 3)
         self.assertTrue(all(
-            field.name not in fieldsControl.exclude_model_fields
+            field.name not in self.excluded_model_fields
             for field in fields
         ))
 
     def test_get_related_model_fields(self):
-        related_entity, another_related_entity = [
-            list(fieldsControl.get_related_model_fields(field_name))
-            for field_name in fieldsControl.relation_field_names
-        ]
+        related_entity, another_related_entity = list(
+            self.field_controller.get_related_model_fields())
 
-        self.assertEqual(len(related_entity), 1)
-        self.assertEqual(len(another_related_entity), 3)
+        self.assertEqual(len(related_entity), 2)
+        self.assertEqual(len(list(related_entity[1])), 1)
+        self.assertEqual(len(another_related_entity), 2)
+        self.assertEqual(len(list(another_related_entity[1])), 3)
+
+        self.assertEqual(related_entity[0], self.relation_field_names[0])
+        self.assertEqual(another_related_entity[0], self.relation_field_names[1])
 
         self.assertTrue(all(
-            field.name not in fieldsControl.exclude_related_model_fields
-            for field in related_entity
+            field.name not in self.excluded_related_model_fields
+            for field in related_entity[1]
         ))
         self.assertTrue(all(
-            field.name not in fieldsControl.include_related_model_fields
-            for field in another_related_entity
+            field.name not in self.included_related_model_fields
+            for field in another_related_entity[1]
         ))
 
     def test_get_model_fields(self):
-        fields = list(fieldsControl.get_model_fields())
+        fields = list(self.field_controller.get_model_fields())
 
         self.assertEqual(len(fields), 3)
         self.assertTrue(all(
-            field.name not in fieldsControl.exclude_model_fields
+            field.name not in self.excluded_model_fields
             for field in fields
         ))
 
     def test_value_to_python(self):
-        get_val = partial(fieldsControl.value_to_python, fieldsControl.model, 'is_active')
+        get_val = partial(self.field_controller.value_to_python, self.model, 'is_active')
 
         first_falsy = get_val('0')
         second_falsy = get_val('False')

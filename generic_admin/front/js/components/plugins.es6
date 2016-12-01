@@ -31,9 +31,12 @@ class CommonPlugins {
     })
   }
 
+  /**
+   * https://goo.gl/2UDLKC
+   */
   autoCompleteInit() {
-    const currentType = this.config.pagesType[this.config.currentPageType];
-    if (!currentType) return;
+    const pageType = this.config.pagesType[this.config.currentPageType];
+    if (!pageType) return;
 
     return new autoComplete({
       selector: this.DOM.searchFieldId,
@@ -41,8 +44,8 @@ class CommonPlugins {
       source: (term, response) => {
         $.getJSON(
           this.config.autocompleteURL,
-          {term, pageType: currentType, },
-          (namesArray) => response(namesArray),
+          { term, pageType },
+          namesArray => response(namesArray),
         );
       },
     });

@@ -26,5 +26,5 @@ module.exports = {
   ]),
   watch: getAbsPath('js/**/*'),
   css: getAbsPath('css/*'),
-  img: getAbsPath('imgages/**/*'),
+  img: getAbsPath('images/**/*'),
 };

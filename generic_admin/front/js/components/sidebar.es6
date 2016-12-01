@@ -1,4 +1,4 @@
-class SideBar{
+class AdminSideBar {
   constructor() {
     this.DOM = {
       $sidebarToggle: $('.js-toggle-sidebar'),
@@ -8,7 +8,7 @@ class SideBar{
     };
 
     this.localStorageKey = {
-      isSidebarOpen: 'isSidebarOpen',
+      isSidebarOpened: 'isSidebarOpened',
     };
 
     this.tableEditorPageUrl = '/admin/editor/?search_term=';
@@ -19,16 +19,8 @@ class SideBar{
   }
 
   init() {
-    this.setSidebarState();
     this.pluginsInit();
     this.setUpListeners();
-  }
-
-  setUpListeners() {
-    this.DOM.$sidebarToggle.click(this.toggleSidebar);
-    this.DOM.$sidebarTree.bind('state_ready.jstree',
-      () => this.DOM.$sidebarTree.bind('select_node.jstree', this.redirectToEditPage));
-    $(window).on('resize orientationChange', this.slimScrollReInit);
   }
 
   pluginsInit() {
@@ -36,27 +28,47 @@ class SideBar{
     this.slimScrollInit();
   }
 
-  /**
-   * Check sidebar stored state.
-   */
-  isSidebarOpen() {
-    return localStorage.getItem(this.localStorageKey.isSidebarOpen) === 'true';
+  setUpListeners() {
+    $(document).ready(() => this.setSidebarState());
+    this.DOM.$sidebarToggle.click(() => {
+      this.toggleSidebar();
+      this.toggleSidebarLocalStorageState();
+    });
+    this.DOM.$sidebarTree.bind('state_ready.jstree',
+      () => this.DOM.$sidebarTree.bind('select_node.jstree', this.redirectToEditPage));
+    $(window).on('resize orientationChange', () => this.slimScrollReinit());
   }
 
-  /**
-   * Set sidebar state depending on stored key.
-   */
+  isSidebarOpened() {
+    const sideBarState = localStorage.getItem(this.localStorageKey.isSidebarOpened);
+
+    // Set sidebar state as open if page was loaded first time.
+    if (sideBarState === null) {
+      localStorage.setItem(this.localStorageKey.isSidebarOpened, 'true');
+      return true;
+    }
+
+    return sideBarState === 'true';
+  }
+
   setSidebarState() {
-    if (!this.isSidebarOpen()) {
+    // Sidabar is always opened on page load.
+    if (!this.isSidebarOpened()) {
       this.toggleSidebar();
     }
   }
 
-  toggleSidebar() {
-    $('body').toggleClass('collapsed');
-    localStorage.setItem(this.localStorageKey.isSidebarOpen, this.isSidebarOpen() ? 'false' : 'true');
+  toggleSidebarLocalStorageState() {
+    localStorage.setItem(this.localStorageKey.isSidebarOpened, this.isSidebarOpened() ? 'false' : 'true');
   }
 
+  toggleSidebar() {
+    $('body').toggleClass('collapsed');
+  }
+
+  /**
+   * https://www.jstree.com/
+   */
   jsTreeInit() {
     this.DOM.$sidebarTree
       .jstree({
@@ -112,7 +124,7 @@ class SideBar{
     }
   }
 
-  slimScrollReInit() {
+  slimScrollReinit() {
     this.DOM.$sidebarTree.slimScroll({
       destroy: true,
     });
