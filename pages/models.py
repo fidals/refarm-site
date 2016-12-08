@@ -148,6 +148,9 @@ class Page(AbstractSeo, ImageMixin):
 
         return fields
 
+    def get_siblings(self):
+        return tuple(self.parent.children.all().exclude(id=self.id)) if self.parent else tuple()
+
 
 # ------- Managers -------
 class CustomPageManager(models.Manager):
