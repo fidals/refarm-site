@@ -98,7 +98,6 @@ class TableEditorColumnModel {
         },
         editrules: {
           minValue: 0,
-          required: true,
           number: true,
         },
         formatter: 'integer',
@@ -133,7 +132,6 @@ class TableEditorColumnModel {
         },
         editrules: {
           minValue: 0,
-          required: true,
           number: true,
         },
         sorttype: 'integer',
@@ -197,7 +195,7 @@ class TableEditorColumnModel {
       },
       {
         name: 'linksTag',
-        label: '<div class="text-center"><i class="fa fa-link"></i></div>',
+        label: 'Links',
         align: 'center',
         formatter: 'linksTag',
         sortable: false,
@@ -245,6 +243,7 @@ class TableEditorColumnModel {
 
   generateSettings(colNames) {
     const generatedSettings = colNames
+      .filter(col => this.getFieldByName(col, this.columnModels))
       .map(col => this.getFieldByName(col, this.columnModels));
 
     // We always show id and tags columns.

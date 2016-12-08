@@ -1,4 +1,4 @@
-class CommonPlugins {
+class AdminCommonPlugins {
   constructor() {
     this.DOM = {
       searchFieldId: '#searchbar',

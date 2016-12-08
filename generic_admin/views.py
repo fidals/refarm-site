@@ -18,13 +18,13 @@ class TableEditorFieldsControlMixin:
     """Mixin gives simple access to model's fields."""
 
     def __init__(
-            self, model, relation_field_names=None, included_related_model_fields=None,
+            self, model, relation_field_names, included_related_model_fields=None,
             excluded_related_model_fields=None, included_model_fields=None,
             excluded_model_fields=None
     ):
         self.model = model
 
-        self.relation_field_names = relation_field_names or []
+        self.relation_field_names = relation_field_names
 
         self.included_related_model_fields = included_related_model_fields or {}
         self.excluded_related_model_fields = excluded_related_model_fields or {}

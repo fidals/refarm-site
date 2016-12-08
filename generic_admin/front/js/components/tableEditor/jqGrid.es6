@@ -1,5 +1,5 @@
 class TableEditor {
-  constructor(colModel = TableEditorColumnModel(), dialogBoxes = TableEditorDialogBoxes()) {
+  constructor(colModel = new TableEditorColumnModel(), dialogBoxes = new TableEditorDialogBoxes()) {
     this.DOM = {
       $: $('#jqGrid'),
       redirectToLinks: '.js-to-site-page, .js-to-admin-page',

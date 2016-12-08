@@ -22,10 +22,15 @@ class Migration(migrations.Migration):
             old_name='_menu_title',
             new_name='menu_title',
         ),
+        migrations.AlterField(
+            model_name='page',
+            name='menu_title',
+            field=models.CharField(blank=True, help_text='This field will be shown in the breadcrumbs, menu items and etc.', max_length=255),
+        ),
         migrations.AddField(
             model_name='page',
             name='name',
-            field=models.CharField(default='', max_length=200),
+            field=models.CharField(default='', max_length=255),
         ),
         migrations.AlterField(
             model_name='page',

@@ -39,7 +39,7 @@ class Page(AbstractSeo, ImageMixin):
     class Meta:
         unique_together = ('type', 'slug', 'related_model_name')
 
-    name = models.CharField(max_length=200, default='')
+    name = models.CharField(max_length=255, default='')
     type = models.CharField(default=FLAT_TYPE, max_length=100, editable=False)
     # Name for reversing at related model
     related_model_name = models.CharField(blank=True, max_length=255, editable=False)
@@ -54,7 +54,7 @@ class Page(AbstractSeo, ImageMixin):
     date_published = models.DateField(default=date.today, blank=True)
 
     menu_title = models.CharField(
-        max_length=180, blank=True,
+        max_length=255, blank=True,
         help_text='This field will be shown in the breadcrumbs, menu items and etc.'
     )
 
