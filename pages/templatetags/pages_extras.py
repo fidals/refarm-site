@@ -56,9 +56,9 @@ def accordion(links_per_item=10, sort_field='position'):
         filter(
             lambda p: p.is_root,
             FlatPage.objects.all()
-                            .order_by(sort_field)
-                            .filter(is_active=True)
-                            .iterator()
+                .order_by(sort_field)
+                .filter(is_active=True)
+                .iterator()
         )
     )
 
