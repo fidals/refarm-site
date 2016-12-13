@@ -13,8 +13,9 @@ class CustomPageAdmin(mixins.PageWithoutModels, mixins.PermissionsControl):
             'classes': ('seo-chars',),
             'fields': (
                 ('id', 'is_active'),
+                'name',
                 'date_published',
-                '_menu_title',
+                'menu_title',
                 'seo_text',
                 'position',
                 ('parent', 'correct_parent_id')
@@ -23,7 +24,7 @@ class CustomPageAdmin(mixins.PageWithoutModels, mixins.PermissionsControl):
         ('Параметры страницы', {
             'classes': ('secondary-chars',),
             'fields': (
-                ('h1', '_title'),
+                ('h1', 'title'),
                 ('keywords', 'id'),
                 'description',
                 'content'
@@ -38,9 +39,9 @@ class FlatPageAdmin(mixins.PageWithoutModels, mixins.AutoCreateRedirects):
             'classes': ('seo-chars',),
             'fields': (
                 ('id', 'is_active'),
+                ('name', 'slug'),
                 'date_published',
-                'slug',
-                '_menu_title',
+                'menu_title',
                 'seo_text',
                 'position',
                 ('parent', 'correct_parent_id')
@@ -49,7 +50,7 @@ class FlatPageAdmin(mixins.PageWithoutModels, mixins.AutoCreateRedirects):
         ('Параметры страницы', {
             'classes': ('secondary-chars',),
             'fields': (
-                ('h1', '_title'),
+                ('h1', 'title'),
                 'keywords',
                 'description',
                 'content'
@@ -61,7 +62,7 @@ class FlatPageAdmin(mixins.PageWithoutModels, mixins.AutoCreateRedirects):
 class ProductPageAdmin(mixins.PageWithModels):
     category_page_model = None
     list_filter = ['is_active', filters.PriceRange, filters.HasContent, filters.HasImages]
-    list_display = ['model_id', 'h1', 'custom_parent', 'price', 'links', 'is_active']
+    list_display = ['model_id', 'name', 'custom_parent', 'price', 'links', 'is_active']
 
     def get_queryset(self, request):
         qs = super(ProductPageAdmin, self).get_queryset(request)
@@ -83,7 +84,7 @@ class ProductPageAdmin(mixins.PageWithModels):
         )
         return super(ProductPageAdmin, self).custom_parent(obj, urlconf)
 
-    custom_parent.admin_order_field = 'parent__h1'
+    custom_parent.admin_order_field = 'parent__name'
     custom_parent.short_description = _('Parent')
 
     def model_id(self, obj):
@@ -104,7 +105,7 @@ class ProductPageAdmin(mixins.PageWithModels):
 
 
 class CategoryPageAdmin(mixins.PageWithModels):
-    list_display = ['model_id', 'h1', 'custom_parent', 'is_active']
+    list_display = ['model_id', 'name', 'custom_parent', 'is_active']
 
     def get_queryset(self, request):
         qs = super(CategoryPageAdmin, self).get_queryset(request)

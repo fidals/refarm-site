@@ -1,0 +1,28 @@
+{% load admin_urls %}
+
+<aside class="sidebar">
+
+  <div class="sidebar-tree" id="js-tree"></div>
+
+  <ul class="sidebar-links list-unstyled" id="sidebar-links">
+    {% block feedback %}
+    {% endblock %}
+
+    {% block links %}
+      <li class="sidebar-links-item">
+        <a href="{% url 'admin:editor' %}" class="sidebar-link" id="admin-editor-link">Table editor</a>
+      </li>
+
+      <!--https://goo.gl/t08VOi-->
+      {% for app in available_apps %}
+        {% for model in app.models %}
+          <li class="sidebar-links-item">
+            <a href="{{ model.admin_url }}" class="sidebar-link" id="admin-pages-link">
+              {{ model.name }}
+            </a>
+          </li>
+        {% endfor %}
+      {% endfor %}
+    {% endblock %}
+  </ul>
+</aside>

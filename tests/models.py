@@ -33,3 +33,23 @@ class TestEntity(PageMixin):
 
     def get_absolute_url(self):
         return self.slug
+
+
+class TestEntityWithRelations(models.Model):
+    name = models.CharField(max_length=100)
+    is_active = models.BooleanField(default=True)
+
+    related_entity = models.ForeignKey(
+        'RelatedEntity', on_delete=models.CASCADE, null=True, blank=True)
+    another_related_entity = models.ForeignKey(
+        'AnotherRelatedEntity', on_delete=models.CASCADE, null=True, blank=True)
+
+
+class RelatedEntity(models.Model):
+    name = models.CharField(max_length=100)
+    is_active = models.BooleanField(default=True)
+
+
+class AnotherRelatedEntity(models.Model):
+    name = models.CharField(max_length=100)
+    is_active = models.BooleanField(default=True)

@@ -1,0 +1,71 @@
+{% extends 'admin/base_site.html' %}
+
+{% block bodyclass %} table-editor{% endblock %}
+
+{% block content %}
+  {% block object-tools %}
+    {{ block.super }}
+  {% endblock %}
+
+  <div class="filter-section">
+    <button class="btn btn-primary btn-switch-filter js-hide-filter" type="button">
+      Show columns filter
+    </button>
+
+    <div class="filter-wrapper js-filter-wrapper">
+      <div class="row">
+        <div class="filter-fields-wrapper col-sm-4">
+          <label>Filter columns:</label>
+          <ul class="filter-fields list-unstyled">
+            {% for field in filter_fields %}
+              <li class="filter-fields-item">
+                <label class="filter-fields-label" for="{{ field.id }}">{{ field.name }}</label>
+                <input class="filter-fields-checkbox js-filter-checkbox" type="checkbox"
+                       {% if field.checked %}checked{% endif %} id="{{ field.id }}">
+              </li>
+            {% endfor %}
+          </ul>
+        </div>
+
+        <div class="sort-fields-wrapper col-sm-3">
+          <label>Sorting columns:</label>
+          <ul class="sortable list-unstyled" id="sortable"></ul>
+        </div>
+
+        <div class="col-sm-2 text-center">
+          <button class="btn btn-primary btn-save-filter js-save-filters" type="button">
+            Update table
+          </button>
+          <p class="filters-remove js-drop-filters">Drop filter</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="live-filter-wrapper">
+      <label for="search-field">Search:</label>
+      <input type="text" class="jqgrid-search-field form-control" id="search-field"
+             placeholder="Enter product name, product ID, category name or price...">
+    </div>
+  </div>
+
+  <table id="jqGrid" class="jqgrid"></table>
+  <div id="jqGridPager"></div>
+  <a href="#" class="hidden" id="popover"></a>
+{% endblock %}
+
+{% block footer %}
+  <div class="modal-wrapper js-modal-wrapper" id="confirm-modal">
+    <div class="modal-box">
+      <h3 class="modal-box-title text-center">
+        Are you sure, that you want to delete <span id="product-to-remove"></span>?
+      </h3>
+      <div class="modal-box-buttons">
+        <button class="modal-delete btn btn-danger js-modal-delete">Accept</button>
+        <button class="btn btn-primary js-modal-delete-cancel">Cancel</button>
+      </div>
+    </div>
+  </div>
+  <div class="modal-overlay"></div>
+
+  {{ block.super }}
+{% endblock %}

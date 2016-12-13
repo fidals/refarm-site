@@ -9,7 +9,7 @@ from pages.models import ModelPage, CustomPage, FlatPage, Page
 
 
 def create_page(model: models.Model, **extra_field) -> models.Model:
-    return model.objects.create(**{'h1': 'Test h1', **extra_field})
+    return model.objects.create(**{'name': 'Test h1', **extra_field})
 
 
 def create_entity(model_path, **kwargs):
@@ -20,23 +20,19 @@ create_test_entity_with_sync = partial(create_entity, model_path=settings.ENTITY
 
 
 class PageTests(TestCase):
-    @classmethod
-    def setUpClass(cls):
-        super(PageTests, cls).setUpClass()
-        cls.custom_page = create_page(CustomPage, slug='')
-        cls.model_page = create_page(ModelPage, h1='Unique h1')
-        cls.flat_page = create_page(FlatPage, h1='Another unique h1')
-        cls.child_flat_page = create_page(FlatPage, h1='Child unique h1', parent=cls.flat_page)
+    def setUp(self):
+        self.custom_page = create_page(CustomPage, slug='')
+        self.model_page = create_page(ModelPage, name='Unique h1')
+        self.flat_page = create_page(FlatPage, name='Another unique h1')
+        self.child_flat_page = create_page(FlatPage, name='Child unique h1', parent=self.flat_page)
 
-    @classmethod
-    def get_ancestors(cls):
-        ancestors = cls.child_flat_page.get_ancestors()
-        ancestors_without_self = cls.child_flat_page.get_ancestors(include_self=False)
+    def get_ancestors(self):
+        ancestors = self.child_flat_page.get_ancestors()
+        ancestors_without_self = self.child_flat_page.get_ancestors(include_self=False)
         return ancestors, ancestors_without_self
 
-    @classmethod
-    def get_ancestors_fields(cls, *args, **kwargs):
-        return cls.child_flat_page.get_ancestors_fields(*args, **kwargs)
+    def get_ancestors_fields(self, *args, **kwargs):
+        return self.child_flat_page.get_ancestors_fields(*args, **kwargs)
 
     def test_is_model(self):
         self.assertTrue(self.model_page.is_model)
@@ -98,7 +94,7 @@ class PageTests(TestCase):
         """
         If pass one arg in get_ancestors_fields, we get [field, field, ...].
         """
-        ancestors_fields = self.get_ancestors_fields('h1')
+        ancestors_fields = self.get_ancestors_fields('name')
         is_str_fields = all(isinstance(field, str) for field in ancestors_fields)
 
         self.assertEqual(2, len(ancestors_fields))
@@ -139,9 +135,7 @@ class CustomPageTests(TestCase):
 
 
 class FlatPageTests(TestCase):
-    @classmethod
-    def setUpClass(cls):
-        super(FlatPageTests, cls).setUpClass()
+    def setUp(self):
 
         def create_flat_page(parent=None):
             return create_page(
@@ -149,7 +143,7 @@ class FlatPageTests(TestCase):
 
         page = create_flat_page()
         child_page = create_flat_page(parent=page)
-        cls.pages = [page, child_page]
+        self.pages = [page, child_page]
 
     def test_should_get_only_custom_type_pages(self):
         types = [FlatPage, CustomPage, ModelPage]
@@ -193,8 +187,8 @@ class ModelPageTests(TestCase):
 
 class SyncPageMixinTests(TestCase):
     @staticmethod
-    def get_page(h1):
-        return ModelPage.objects.filter(h1=h1).first()
+    def get_page(name):
+        return ModelPage.objects.filter(name=name).first()
 
     def setUp(self):
         self.name = 'Test entity'

@@ -64,10 +64,10 @@ class AutoCreateRedirects(admin.ModelAdmin):
 class AbstractPage(ChangeItemsStateActions):
     """Generic class for each page."""
     actions = ['make_items_active', 'make_items_non_active']
-    list_display_links = ['h1']
+    list_display_links = ['name']
     list_filter = ['is_active', filters.HasContent, filters.HasImages]
     save_on_top = True
-    search_fields = ['id', 'h1', 'slug']
+    search_fields = ['id', 'name', 'slug']
 
     def custom_parent(self, obj, urlconf=None):
         parent = obj.parent
@@ -89,12 +89,12 @@ class AbstractPage(ChangeItemsStateActions):
             url=url
         )
 
-    custom_parent.admin_order_field = 'parent__h1'
+    custom_parent.admin_order_field = 'parent__name'
     custom_parent.short_description = _('Parent')
 
 
 class PageWithoutModels(AbstractPage):
-    list_display = ['id', 'h1', 'slug', 'date_published', 'custom_parent', 'is_active']
+    list_display = ['id', 'name', 'slug', 'date_published', 'custom_parent', 'is_active']
     readonly_fields = ['id', 'correct_parent_id']
     inlines = [inlines.ImageInline]
 
@@ -112,9 +112,9 @@ class PageWithModels(AbstractPage, PermissionsControl, AutoCreateRedirects):
             'classes': ('seo-chars',),
             'fields': (
                 ('id', 'is_active'),
+                ('name', 'slug'),
                 'date_published',
-                'slug',
-                '_menu_title',
+                'menu_title',
                 'seo_text',
                 'position',
             )
@@ -122,7 +122,7 @@ class PageWithModels(AbstractPage, PermissionsControl, AutoCreateRedirects):
         ('Параметры страницы', {
             'classes': ('secondary-chars',),
             'fields': (
-                ('h1', '_title'),
+                ('h1', 'title'),
                 'keywords',
                 'description',
                 'content'
@@ -160,5 +160,5 @@ class PageWithModels(AbstractPage, PermissionsControl, AutoCreateRedirects):
 
         if not self.search_fields:
             model_related_name = self.model.objects.first().related_model_name
-            self.search_fields = ['{}__id'.format(model_related_name), 'h1', 'parent__h1']
+            self.search_fields = ['{}__id'.format(model_related_name), 'name', 'parent__name']
         return self.search_fields
