@@ -19,6 +19,11 @@ def model_directory_path(instance, filename):
         models_folder_name, instance.model.pk, result_filename)
 
 
+class ImageManager(models.Manager):
+    def get_main_images_by_pages(self, pages):
+        return self.get_queryset().filter(object_id__in=[page.id for page in pages], is_main=True)
+
+
 class Image(models.Model):
     """
     Architect thoughts:
@@ -26,6 +31,8 @@ class Image(models.Model):
     And to use sorl app for image fields.
     Django by Example, chapter 5. http://bit.ly/django-by-example-book
     """
+
+    objects = ImageManager()
 
     # <--- Generic relation fields | http://bit.ly/django-generic-relations
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, db_index=True)
@@ -94,5 +101,5 @@ class ImageMixin(models.Model):
 
     @property
     def main_image(self) -> models.ImageField:
-        main_image = self.images.filter(is_main=True).first()
-        return main_image.image if main_image else None
+        main_image = self.images.filter(is_main=True)
+        return main_image.first().image if main_image.exists() else None

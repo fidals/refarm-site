@@ -39,19 +39,19 @@ class Page(AbstractSeo, ImageMixin):
     class Meta:
         unique_together = ('type', 'slug', 'related_model_name')
 
-    name = models.CharField(max_length=255, default='')
-    type = models.CharField(default=FLAT_TYPE, max_length=100, editable=False)
+    name = models.CharField(max_length=255, default='', db_index=True)
+    type = models.CharField(default=FLAT_TYPE, max_length=100, editable=False, db_index=True)
     # Name for reversing at related model
     related_model_name = models.CharField(blank=True, max_length=255, editable=False)
 
     parent = models.ForeignKey(
         'self', on_delete=models.CASCADE, related_name='children', null=True, blank=True)
 
-    slug = models.SlugField(max_length=400, blank=True)
-    is_active = models.BooleanField(default=True, blank=True)
-    position = models.IntegerField(default=0, blank=True)
+    slug = models.SlugField(max_length=400, blank=True, db_index=True)
+    is_active = models.BooleanField(default=True, blank=True, db_index=True)
+    position = models.IntegerField(default=0, blank=True, db_index=True)
     content = models.TextField(blank=True)
-    date_published = models.DateField(default=date.today, blank=True)
+    date_published = models.DateField(default=date.today, blank=True, db_index=True)
 
     menu_title = models.CharField(
         max_length=255, blank=True,
