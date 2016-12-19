@@ -27,8 +27,8 @@ class PageTests(TestCase):
         self.child_flat_page = create_page(FlatPage, name='Child unique h1', parent=self.flat_page)
 
     def get_ancestors(self):
-        ancestors = self.child_flat_page.get_ancestors()
-        ancestors_without_self = self.child_flat_page.get_ancestors(include_self=False)
+        ancestors = self.child_flat_page.get_ancestors(include_self=True)
+        ancestors_without_self = self.child_flat_page.get_ancestors()
         return ancestors, ancestors_without_self
 
     def get_ancestors_fields(self, *args, **kwargs):
@@ -243,5 +243,11 @@ class PageMixin(TestCase):
         self.assertEqual(self.entity.parent, None)
         self.assertEqual(self.entity.page.parent, self.default_parent)
 
+    def test_update_page_name_after_update_entity_name(self):
+        self.entity.name = 'New name'
+        self.entity.save()
+
+        self.assertEqual(self.entity.name, self.entity.page.name)
+        
     def test_default_parent(self):
         self.assertEqual(self.entity.page.parent, self.default_parent)

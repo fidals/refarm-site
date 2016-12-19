@@ -2,6 +2,7 @@ from unidecode import unidecode
 from datetime import date
 from itertools import chain
 
+from mptt import models as mptt_models
 from django.db import models, transaction
 from django.core.urlresolvers import reverse
 from django.template.defaultfilters import slugify
@@ -21,7 +22,7 @@ class AbstractSeo(models.Model):
     title = models.CharField(blank=True, max_length=255)
 
 
-class Page(AbstractSeo, ImageMixin):
+class Page(mptt_models.MPTTModel, AbstractSeo, ImageMixin):
     # pages with same templates (ex. news, about)
     FLAT_TYPE = 'flat'
     # pages with unique templates (ex. index, order)
@@ -44,7 +45,7 @@ class Page(AbstractSeo, ImageMixin):
     # Name for reversing at related model
     related_model_name = models.CharField(blank=True, max_length=255, editable=False)
 
-    parent = models.ForeignKey(
+    parent = mptt_models.TreeForeignKey(
         'self', on_delete=models.CASCADE, related_name='children', null=True, blank=True)
 
     slug = models.SlugField(max_length=400, blank=True, db_index=True)
@@ -121,26 +122,16 @@ class Page(AbstractSeo, ImageMixin):
         update_slug()
         super(Page, self).save(*args, **kwargs)
 
-    def get_ancestors(self, include_self=True) -> [models.Model]:
-        def gather_ancestors(page):
-            """Recursively gather ancestors in branch"""
-            return gather_ancestors(page.parent) + [page] if page else []
-
-        branch = gather_ancestors(self)
-        return branch if include_self else branch[:-1]
-
     def get_ancestors_fields(self, *args, include_self=True) -> [[models.Field] or models.Field]:
         fields = tuple(
             tuple(getattr(page, field) for field in args)
-            for page in self.get_ancestors(include_self=include_self))
+            for page in self.get_ancestors(include_self=include_self)
+        )
 
         if len(args) == 1:
             fields = tuple(chain.from_iterable(fields))
 
         return fields
-
-    def get_siblings(self) -> models.QuerySet:
-        return self.parent.children.all().exclude(id=self.id) if self.parent else Page.objects.none()
 
 
 # ------- Managers -------
@@ -254,6 +245,12 @@ class PageMixin(models.Model):
         """
         Extend base class save of add `update related page` feature
         """
+        def update_page_name():
+            if not self.page:
+                return
+            self.page.name = self.name
+            self.page.save()
+
         def update_relations():
             if not self.page:
                 return
@@ -268,6 +265,7 @@ class PageMixin(models.Model):
 
             self.page.save()
 
+        update_page_name()
         update_relations()
         super(PageMixin, self).save(*args, **kwargs)
 
