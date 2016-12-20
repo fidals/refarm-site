@@ -8,9 +8,7 @@
   {% endblock %}
 
   <div class="filter-section">
-    <button class="btn btn-primary btn-switch-filter js-hide-filter" type="button">
-      Show columns filter
-    </button>
+    <button class="btn btn-primary btn-switch-filter js-hide-filter" type="button">Show filters</button>
 
     <div class="filter-wrapper js-filter-wrapper">
       <div class="row">
@@ -34,9 +32,11 @@
 
         <div class="col-sm-2 text-center">
           <button class="btn btn-primary btn-save-filter js-save-filters" type="button">
-            Update table
+            <i class="fa fa-save" aria-hidden="true"></i> Update table
           </button>
-          <p class="filters-remove js-drop-filters">Drop filter</p>
+          <p class="filters-remove js-drop-filters">
+            <i class="fa fa-remove" aria-hidden="true"></i> Drop filters
+          </p>
         </div>
       </div>
     </div>
@@ -45,12 +45,68 @@
       <label for="search-field">Search:</label>
       <input type="text" class="jqgrid-search-field form-control" id="search-field"
              placeholder="Enter product name, product ID, category name or price...">
+      <span class="search-clear" id="search-clear">
+        <i class="fa fa-remove"></i>
+      </span>
     </div>
   </div>
 
+  <div class="btn-wrapper">
+    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#add-entity">
+      <i class="fa fa-plus" aria-hidden="true"></i> Add new entity
+    </button>
+  </div>
   <table id="jqGrid" class="jqgrid"></table>
-  <div id="jqGridPager"></div>
   <a href="#" class="hidden" id="popover"></a>
+
+  {% block new_entity_modal %}
+    <div class="modal fade" id="add-entity" tabindex="-1" role="dialog" aria-labelledby="add-entity-title">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+            <h4 class="modal-title add-entity-title" id="add-entity-title">
+              Add new entity
+            </h4>
+            <h4 class="modal-title add-entity-title-success" id="add-entity-title-success">
+              New entity was successfully added
+            </h4>
+          </div>
+          <div class="modal-body">
+            <form id="add-entity-form">
+              <div class="form-group">
+                <label for="entity-name" class="control-label">Name:</label>
+                <input type="text" class="form-control js-new-entity js-required" id="entity-name" required>
+              </div>
+
+              <div class="form-group">
+                <label for="entity-category" class="control-label">Category:</label>
+                <input type="text" class="form-control js-new-entity js-required" id="entity-category" required>
+              </div>
+
+              <div class="form-group">
+                <label for="entity-price" class="control-label">Price:</label>
+                <input type="number" class="form-control js-new-entity" id="entity-price"
+                       step="1.00" min="0.00" pattern="[0-9]">
+              </div>
+            </form>
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+            <button type="button" class="btn btn-primary" id="refresh-table" disabled>
+              <i class="fa fa-refresh" aria-hidden="true"></i> Refresh table
+            </button>
+            <button type="button" class="btn btn-primary" id="entity-save" disabled>
+              <i class="fa fa-save" aria-hidden="true"></i> Save entity
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  {% endblock %}
 {% endblock %}
 
 {% block footer %}

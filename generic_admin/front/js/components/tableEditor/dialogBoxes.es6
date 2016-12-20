@@ -1,11 +1,11 @@
-class TableEditorDialogBoxes {
+class TableEditorDialogs {
   constructor() {
-    this.modalToDeleteProduct = {
-        $: $('#confirm-modal'),
-        $acceptBtn: $('.js-modal-delete'),
-        $cancelBtn: $('.js-modal-delete-cancel'),
-        $textField: $('#product-to-remove'),
-        deleteProductBtnClass: 'js-confirm-delete-modal',
+    this.deleteDialog = {
+      $: $('#confirm-modal'),
+      $acceptBtn: $('.js-modal-delete'),
+      $cancelBtn: $('.js-modal-delete-cancel'),
+      $text: $('#product-to-remove'),
+      deleteClass: 'js-confirm-delete-modal',
     };
 
     // https://goo.gl/TzEvoR
@@ -30,40 +30,25 @@ class TableEditorDialogBoxes {
   }
 
   setUpListeners() {
-    $(document).on('click', `.${this.modalToDeleteProduct.deleteProductBtnClass}`, (event) => {
-      this.showModal(
-        event, this.modalToDeleteProduct.$, this.modalToDeleteProduct.$textField);
+    $(document).on('click', `.${this.deleteDialog.deleteClass}`, () => {
+      this.showDeleteModal();
     });
 
-    $(document).on('keyup', event => {
+    $(document).on('keyup', (event) => {
       const escapeBtnKeyCode = 27;
       if (event.which === escapeBtnKeyCode) {
-        this.closeModal(event, this.modalToDeleteProduct.$);
+        this.deleteDialog.$.removeClass('modal-show');
       }
     });
 
-    this.modalToDeleteProduct.$cancelBtn.click((event) => {
-      this.closeModal(event, this.modalToDeleteProduct.$);
+    this.deleteDialog.$cancelBtn.click(() => {
+      this.deleteDialog.$.removeClass('modal-show');
     });
   }
 
-  /**
-   * Extend jQgrid formatter.
-   * Render html for Product removing icon.
-   * @link http://goo.gl/9xcr7q
-   */
-
-
-  showModal(event, $modal, $textField, text = 'this product') {
-    event.stopImmediatePropagation();
-
-    $textField.text(text);
-    $modal.addClass('modal-show');
-  }
-
-  closeModal(event, $modal) {
-    event.stopImmediatePropagation();
-    $modal.removeClass('modal-show');
+  showDeleteModal(text = 'this product') {
+    this.deleteDialog.$text.text(text);
+    this.deleteDialog.$.addClass('modal-show');
   }
 
   showPopover($currentRow, colName, message) {
@@ -78,7 +63,8 @@ class TableEditorDialogBoxes {
         offsetLeft: offset.left + (this.popover.settings.width / 2),
         title: 'Error',
       });
-    $(`${this.popover.className}`).webuiPopover('destroy').webuiPopover(extendedSettings);
-    WebuiPopovers.show(`${this.popover.className}`);
+
+    $(this.popover.className).webuiPopover('destroy').webuiPopover(extendedSettings);
+    WebuiPopovers.show(this.popover.className);
   }
 }

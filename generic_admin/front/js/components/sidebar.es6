@@ -1,4 +1,4 @@
-class AdminSideBar {
+class AdminSidebar {
   constructor() {
     this.DOM = {
       $sidebarToggle: $('.js-toggle-sidebar'),
@@ -52,14 +52,16 @@ class AdminSideBar {
   }
 
   setSidebarState() {
-    // Sidabar is always opened on page load.
+    // Sidebar is always opened on page load.
     if (!this.isSidebarOpened()) {
       this.toggleSidebar();
     }
   }
 
   toggleSidebarLocalStorageState() {
-    localStorage.setItem(this.localStorageKey.isSidebarOpened, this.isSidebarOpened() ? 'false' : 'true');
+    localStorage.setItem(
+      this.localStorageKey.isSidebarOpened, this.isSidebarOpened() ? 'false' : 'true',
+    );
   }
 
   toggleSidebar() {
@@ -70,49 +72,47 @@ class AdminSideBar {
    * https://www.jstree.com/
    */
   jsTreeInit() {
-    this.DOM.$sidebarTree
-      .jstree({
-        core: {
-          data: {
-            url: this.getTreeItemsUrl,
-            dataType: 'json',
-            data(node) {
-              return node.id === '#' ? false : { id: node.id };
+    this.DOM.$sidebarTree.jstree({
+      core: {
+        data: {
+          url: this.getTreeItemsUrl,
+          dataType: 'json',
+          data(node) {
+            return node.id === '#' ? false : { id: node.id };
+          },
+        },
+        check_callback: true,
+      },
+      plugins: ['contextmenu', 'state'],
+      contextmenu: {
+        items: {
+          'to-tableEditor': {
+            separator_before: false,
+            separator_after: false,
+            label: 'Table Editor',
+            icon: 'fa fa-columns',
+            action: (data) => {
+              window.location.assign(this.tableEditorPageUrl +
+                $(data.reference[0]).attr('search-term'));
+            },
+            _disabled(obj) {
+              const $referenceParent = $(obj.reference).parent();
+              return !($referenceParent.hasClass('jstree-leaf') ||
+                     $referenceParent.find('ul:first').find('li:first').hasClass('jstree-leaf'));
             },
           },
-          check_callback: true,
-        },
-        plugins: ['contextmenu', 'state'],
-        contextmenu: {
-          items: {
-            'to-tableEditor': {
-              separator_before: false,
-              separator_after: false,
-              label: 'Table Editor',
-              icon: 'fa fa-columns',
-              action: (data) => {
-                window.location.assign(this.tableEditorPageUrl +
-                  $(data.reference[0]).attr('search-term'));
-              },
-              _disabled(obj) {
-                const $referenceParent = $(obj.reference).parent();
-                return !($referenceParent.hasClass('jstree-leaf') ||
-                         $referenceParent.find('ul:first').find('li:first')
-                         .hasClass('jstree-leaf'));
-              },
-            },
-            'to-site-page': {
-              separator_before: false,
-              separator_after: false,
-              label: 'На страницу',
-              icon: 'fa fa-link',
-              action: data => {
-                window.location.assign($(data.reference[0]).attr('href-site-page'));
-              },
+          'to-site-page': {
+            separator_before: false,
+            separator_after: false,
+            label: 'На страницу',
+            icon: 'fa fa-link',
+            action(data) {
+              window.location.assign($(data.reference[0]).attr('href-site-page'));
             },
           },
         },
-      });
+      },
+    });
   }
 
   redirectToEditPage(_, data) {
@@ -125,10 +125,7 @@ class AdminSideBar {
   }
 
   slimScrollReinit() {
-    this.DOM.$sidebarTree.slimScroll({
-      destroy: true,
-    });
-
+    this.DOM.$sidebarTree.slimScroll({ destroy: true });
     this.slimScrollInit();
   }
 
