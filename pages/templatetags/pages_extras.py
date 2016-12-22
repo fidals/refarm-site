@@ -26,11 +26,6 @@ def breadcrumbs(page: Page, separator=''):
 
 @register.inclusion_tag('pages/breadcrumbs_with_siblings.html')
 def breadcrumbs_with_siblings(page: Page, separator='', include_self=False):
-    related_model_names = [
-        page.related_model_name
-        for page in ModelPage.objects.distinct('related_model_name')
-    ]
-
     def get_siblings(page):
         def is_node(page):
            return hasattr(page.model, 'children')
@@ -38,7 +33,7 @@ def breadcrumbs_with_siblings(page: Page, separator='', include_self=False):
         if not is_node(page):
             return []
 
-        siblings = page.get_siblings().select_related(*related_model_names)
+        siblings = page.get_siblings().select_related(page.related_model_name)
 
         return [
             sibling
@@ -47,7 +42,7 @@ def breadcrumbs_with_siblings(page: Page, separator='', include_self=False):
         ]
 
     def get_ancestors_crumbs() -> list:
-        ancestors_query = page.get_ancestors(include_self).select_related(*related_model_names)
+        ancestors_query = page.get_ancestors(include_self).select_related(page.related_model_name)
 
         if not ancestors_query.exists():
             return []

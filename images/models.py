@@ -21,6 +21,8 @@ def model_directory_path(instance, filename):
 
 class ImageManager(models.Manager):
     def get_main_images_by_pages(self, pages) -> dict:
+        pages = list(pages)
+
         images_query = (
             self.get_queryset()
                 .filter(object_id__in=[page.id for page in pages], is_main=True)
