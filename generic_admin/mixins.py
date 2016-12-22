@@ -133,7 +133,7 @@ class PageWithModels(AbstractPage, PermissionsControl, AutoCreateRedirects):
     @staticmethod
     def assert_is_proxy(qs: QuerySet):
         """Is it proxy for only one related model?"""
-        count = qs.distinct('related_model_name').order_by('related_model_name').count()
+        count = qs.distinct('related_model_name').count()
         assert count <= 1, 'You should split your model pages by proxy, before register it.'
 
     @classmethod
@@ -142,7 +142,7 @@ class PageWithModels(AbstractPage, PermissionsControl, AutoCreateRedirects):
 
         modified_qs = qs.all()
 
-        if qs.order_by('related_model_name').distinct('related_model_name').count() == 1:
+        if qs.distinct('related_model_name').count() == 1:
             related_model_name = qs.first().related_model_name
             modified_qs = modified_qs.annotate(**{
                 key: F('{}__{}'.format(related_model_name, value))

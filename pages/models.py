@@ -2,11 +2,11 @@ from unidecode import unidecode
 from datetime import date
 from itertools import chain
 
-from mptt import models as mptt_models
 from django.db import models, transaction
 from django.core.urlresolvers import reverse
 from django.template.defaultfilters import slugify
 
+from mptt import models as mptt_models
 from images.models import ImageMixin
 
 

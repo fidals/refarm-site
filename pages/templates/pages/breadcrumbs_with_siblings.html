@@ -11,7 +11,8 @@
       {% else %}
         <span itemprop="name">{{ name }}</span>
       {% endif %}
-      {% if siblings and not slug == index_slug %}
+
+      {% if siblings %}
         <ul class="breadcrumbs-siblings-links list-white">
           {% for sibling_page in siblings %}
             <li>

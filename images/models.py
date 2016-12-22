@@ -20,21 +20,21 @@ def model_directory_path(instance, filename):
 
 
 class ImageManager(models.Manager):
-    def get_main_images_by_pages(self, pages) -> list:
+    def get_main_images_by_pages(self, pages) -> dict:
         images_query = (
             self.get_queryset()
                 .filter(object_id__in=[page.id for page in pages], is_main=True)
         )
 
-        if images_query.exists():
-            images = tuple(
-                image if image.object_id == page.id else None
-                for image in images_query for page in pages
-            )
-        else:
-            images = (None,) * len(pages)
+        if not images_query.exists():
+            return {}
 
-        return images
+        return {
+            page: image
+            for image in images_query for page in pages
+            if image.object_id == page.id
+        }
+
 
 
 class Image(models.Model):

@@ -243,7 +243,8 @@ class PageMixin(TestCase):
         self.assertEqual(self.entity.parent, None)
         self.assertEqual(self.entity.page.parent, self.default_parent)
 
-    def test_update_page_name_after_update_entity_name(self):
+    def test_sync_page_name(self):
+        """Page's name should sync with related entity's name."""
         self.entity.name = 'New name'
         self.entity.save()
 
