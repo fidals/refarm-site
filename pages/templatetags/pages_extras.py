@@ -1,7 +1,9 @@
+from itertools import groupby
+
 from django import template
 from django.core.urlresolvers import reverse
 
-from pages.models import FlatPage, Page
+from pages.models import FlatPage, ModelPage, Page
 
 register = template.Library()
 
@@ -24,21 +26,49 @@ def breadcrumbs(page: Page, separator=''):
 
 @register.inclusion_tag('pages/breadcrumbs_with_siblings.html')
 def breadcrumbs_with_siblings(page: Page, separator='', include_self=False):
-    index = page.get_index()
-    ancestors = page.get_ancestors(include_self)
-    page_with_siblings = ((ancestor, ancestor.get_siblings()) for ancestor in ancestors)
+    def get_siblings(page):
+        def is_node(page):
+           return hasattr(page.model, 'children')
 
-    crumbs_list = (
-        (index.menu_title, index.url, tuple()) if index else ('Main', '/', tuple()),
-        *tuple(
-            (
-                current_crumb.menu_title,
-                current_crumb.url,
-                current_crumb_links
-            ) for current_crumb, current_crumb_links in page_with_siblings,
-        ),
-        (page.menu_title, '', tuple())
-    )
+        if not is_node(page):
+            return []
+
+        siblings = page.get_siblings().select_related(page.related_model_name)
+
+        return [
+            sibling
+            for sibling in siblings
+            if is_node(sibling)
+        ]
+
+    def get_ancestors_crumbs() -> list:
+        ancestors_query = page.get_ancestors(include_self).select_related(page.related_model_name)
+
+        if not ancestors_query.exists():
+            return []
+
+        catalog, *ancestors = ancestors_query
+
+        siblings = [
+            get_siblings(ancestor)
+            for ancestor in ancestors
+        ]
+
+        return [
+            (catalog.menu_title, catalog.url, []),
+            *[
+                (crumb.menu_title, crumb.url, crumb_links)
+                for crumb, crumb_links in zip(ancestors, siblings)
+            ],
+        ]
+
+    index = page.get_index()
+
+    crumbs_list = [
+        (index.menu_title, index.url, []) if index else ('Main', '/', []),
+        *get_ancestors_crumbs(),
+        (page.menu_title, '', get_siblings(page))
+    ]
 
     return {
         'index_slug': index.url if index else '/',
