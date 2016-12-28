@@ -1,9 +1,9 @@
 <div class="js-accordion">
   {% for section in sections %}
-    <div class="js-accordion-title" id="js-accordion-title-{{ section.id }}">
-      {{ section.title }}<i class="fa fa-caret-left"></i>
+    <div class="accordion-title js-accordion-title" id="js-accordion-title-{{ section.id }}">
+      {{ section.name }}<i class="fa fa-caret-left"></i>
     </div>
-    <div class="js-accordion-content" id="js-accordion-content-{{ section.id }}">
+    <div class="accordion-content js-accordion-content" id="js-accordion-content-{{ section.id }}">
       <p class="accordion-first-item">
         <a class="accordion-link-to-category" href="{{ section.get_absolute_url }}">
           перейти в категорию<i class="fa fa-long-arrow-right"></i>
