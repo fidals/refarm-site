@@ -1,15 +1,10 @@
-/**
- * Common helper classes for Admin Table Editor.
- */
-class Autocomplete {
-  constructor(url, pageType) {
+class TableEditorAutocomplete {
+  constructor(url) {
     this.url = url || '/admin/autocomplete/';
-    this.pageType = pageType || 'category';
   }
 
   category(elem) {
     const url = this.url;
-    const pageType = this.pageType;
 
     $(elem).autocomplete({
       source(request, response) {
@@ -18,16 +13,16 @@ class Autocomplete {
           url,
           data: {
             term: request.term,
-            pageType,
+            pageType: 'category',
           },
           success(responseData) {
             response(responseData);
           },
           error(jqXhr, textStatus, errorThrown) {
             console.group('Autocomplete failed.');
-            console.log(jqXhr);
-            console.log(textStatus);
-            console.log(errorThrown);
+            console.warn(jqXhr);
+            console.warn(textStatus);
+            console.warn(errorThrown);
             console.groupEnd();
           },
         });

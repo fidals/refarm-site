@@ -48,7 +48,7 @@ class TableEditorFieldsControlMixin:
     def _get_not_excluded_fields(self, model: Model, excluded_fields: list):
         return filter(lambda field: field.name not in excluded_fields, self._get_all_fields(model))
 
-    def get_related_model(self, related_field_name):
+    def get_related_model(self, related_field_name: str) -> Model:
         return self._get_field(self.model, related_field_name).related_model
 
     def get_related_model_fields(self) -> Iterator[Union[str, Field]]:
@@ -174,7 +174,7 @@ class TableEditorPut:
 
         if model_key in model_strategy:
             model_strategy[model_key](
-                product=entity, related_model_entity=model_entity,
+                entity=entity, related_model_entity=model_entity,
                 related_model_value=python_value,
             )
         else:
@@ -188,7 +188,7 @@ class TableEditorPut:
 
         if key in self.pattern_to_update_model:
             self.pattern_to_update_model[key](
-                product=entity, value=python_value)
+                entity=entity, value=python_value)
         else:
             setattr(entity, key, python_value)
 

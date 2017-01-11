@@ -15,10 +15,10 @@ module.exports = {
   admin: getAbsPaths([
     'js/components/plugins.es6',
     'js/components/sidebar.es6',
-    'js/components/tableEditor/utilities.es6',
-    'js/components/tableEditor/dialogBoxes.es6',
+    'js/components/tableEditor/autocomplete.es6',
+    'js/components/tableEditor/dialogs.es6',
     'js/components/tableEditor/filters.es6',
-    'js/components/tableEditor/colModels.es6',
+    'js/components/tableEditor/colModel.es6',
     'js/components/tableEditor/jqGrid.es6',
   ]),
   vendors: getAbsPaths([

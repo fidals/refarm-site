@@ -1,5 +1,6 @@
 class TableEditorColModel {
   constructor(customColModels = [], filters) {
+    this.autocomplete = new TableEditorAutocomplete();
     this.defaultColModels = [
       {
         name: 'id',
@@ -22,8 +23,8 @@ class TableEditorColModel {
         label: 'Category name',
         editable: true,
         editoptions: {
-          dataInit(elem) {
-            autocomplete.category(elem);
+          dataInit: (elem) => {
+            this.autocomplete.category(elem);
           },
         },
         width: 120,
@@ -194,7 +195,7 @@ class TableEditorColModel {
     return this.generateSettings(fieldNames);
   }
 
-  static getCheckedFieldNames($checkboxes) {
+  getCheckedFieldNames($checkboxes) {
     return $checkboxes.map(item => item.replace('filter-', ''));
   }
 
@@ -202,12 +203,12 @@ class TableEditorColModel {
     const storedFilters = localStorage.getItem(this.filters.storageKeys.filterFieldsPreset);
     if (storedFilters === null) return null;
 
-    return TableEditorColModel.getCheckedFieldNames(JSON.parse(storedFilters));
+    return this.getCheckedFieldNames(JSON.parse(storedFilters));
   }
 
   getStandardFieldNames() {
     const checkboxIds = $.map(this.filters.getSelectedFields(), item => $(item).attr('id'));
-    return TableEditorColModel.getCheckedFieldNames(checkboxIds);
+    return this.getCheckedFieldNames(checkboxIds);
   }
 
   getFieldByName(name) {

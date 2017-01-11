@@ -4,7 +4,7 @@ body.admin {
 }
 
 body.admin .table > thead > tr > th {
-  color: #000000;
+  color: #000;
 }
 
 body.admin .table > thead > tr > th,
@@ -36,13 +36,10 @@ body.admin th {
   position: relative;
 }
 
-.transition {
-  transition: all 0.5s ease;
-}
-
 .sidebar,
 .admin-logo,
 .images .fa,
+.transition,
 .messagelist,
 .main-content,
 .sidebar-links,
@@ -135,10 +132,6 @@ div.breadcrumbs {
   top: 60px;
   width: 450px;
   z-index: 100;
-}
-
-.collapsed .sidebar {
-  width: 0;
 }
 
 .sidebar-toggle {
@@ -240,6 +233,7 @@ div.breadcrumbs {
   width: 100%;
 }
 
+.collapsed .sidebar,
 .collapsed .sidebar-search-field {
   width: 0;
 }
@@ -262,10 +256,6 @@ div.breadcrumbs {
   margin-left: 450px;
   min-width: 750px;
   padding: 80px 15px 15px;
-}
-
-.collapsed .main-content {
-  margin-left: 0;
 }
 
 #content {
@@ -291,34 +281,29 @@ div.breadcrumbs {
 }
 
 .autocomplete-suggestions {
-  background-color: #f8f8f8;
-  border-radius: 2px;
+  background-color: #fff;
+  border-radius: 0 0 2px 2px;
   box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.25);
-  box-sizing: border-box;
   max-height: 460px;
   overflow: hidden;
   overflow-y: auto;
-  padding: 5px 0;
   position: absolute;
-  text-align: left;
-  z-index: 4;
-  font-weight: 400;
-  color: #212121;
-  width: 398px !important;
+  z-index: 5;
 }
 
-.autocomplete-suggestions .autocomplete-suggestion {
-  padding: 3px 2px;
+.autocomplete-suggestion {
+  padding: 5px 12px;
 }
 
-.autocomplete-suggestions .selected {
+.autocomplete-suggestion.selected {
   background: #79aec8;
+  color: #fff;
 }
 
 .actions span,
 .actions input,
 .actions label {
-  color: #000000;
+  color: #000;
 }
 
 .admin #changelist .actions select {
@@ -382,6 +367,7 @@ ul.messagelist {
   margin: 95px 0 -105px 450px;
 }
 
+.collapsed .main-content,
 .collapsed ul.messagelist {
   margin-left: 0;
 }
@@ -560,7 +546,6 @@ ul.messagelist li {
 }
 
 .modal-wrapper {
-  -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
   height: auto;
   left: 50%;
@@ -668,9 +653,5 @@ ul.messagelist li {
 }
 
 .table-editor-links-list li {
-  list-style-type: none;
-}
-
-.table-editor-links-list li {
-  list-style-type: none;
+  list-style: none;
 }

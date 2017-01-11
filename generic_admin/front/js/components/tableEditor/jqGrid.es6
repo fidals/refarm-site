@@ -1,5 +1,6 @@
 class TableEditor {
   constructor(colModel, dialogs) {
+    this.autocomplete = new TableEditorAutocomplete();
     this.colModel = colModel || new TableEditorColModel();
     this.dialogs = dialogs || new TableEditorDialogs();
 
@@ -65,7 +66,6 @@ class TableEditor {
   }
 
   init() {
-    new AdminCommonPlugins();
     this.initUtilities();
     this.setUpListeners();
     this.setupFormatter();
@@ -73,7 +73,7 @@ class TableEditor {
   }
 
   initUtilities() {
-    autocomplete.category(this.DOM.$modalCategoryInput);
+    this.autocomplete.category(this.DOM.$modalCategoryInput);
   }
 
   setUpListeners() {
@@ -298,12 +298,9 @@ class TableEditor {
   }
 
   setCreateBtnState() {
-    const filledFields = this.DOM.$modalRequiredFields.filter((_, item) => {
-      return $(item).val() !== '';
-    });
-    const isActive = () => filledFields.length === this.DOM.$modalRequiredFields.length;
-
-    this.DOM.$modalSaveBtn.attr('disabled', !isActive());
+    const isActive = Array.from(this.DOM.$modalRequiredFields)
+      .every(item => $(item).val() !== '');
+    this.DOM.$modalSaveBtn.attr('disabled', !isActive);
   }
 
   saveNewEntity() {

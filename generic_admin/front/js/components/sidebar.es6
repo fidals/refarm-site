@@ -96,9 +96,9 @@ class AdminSidebar {
                 $(data.reference[0]).attr('search-term'));
             },
             _disabled(obj) {
-              const $referenceParent = $(obj.reference).parent();
-              return !($referenceParent.hasClass('jstree-leaf') ||
-                     $referenceParent.find('ul:first').find('li:first').hasClass('jstree-leaf'));
+              const $parent = $(obj.reference).parent();
+              return !($parent.hasClass('jstree-leaf') ||
+                     $parent.find('ul:first').find('li:first').hasClass('jstree-leaf'));
             },
           },
           'to-site-page': {
