@@ -26,9 +26,17 @@ body.admin th {
   z-index: 10;
 }
 
-.admin .ui-jqgrid .ui-pg-input {
+.admin input:not([type="checkbox"]) {
   height: 34px;
   text-align: center;
+}
+
+.admin a.cancel-link,
+.delete-confirmation form input[type="submit"] {
+  font-size: 13px;
+  height: 34px;
+  line-height: 15px;
+  text-decoration: none;
 }
 
 .admin .content {
