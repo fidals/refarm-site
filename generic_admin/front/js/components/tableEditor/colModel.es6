@@ -1,5 +1,7 @@
 class TableEditorColModel {
   constructor(customColModels = [], filters) {
+    this.filters = filters || new TableEditorFilters();
+
     this.autocomplete = new TableEditorAutocomplete();
     this.defaultColModels = [
       {
@@ -175,7 +177,6 @@ class TableEditorColModel {
     ];
 
     this.colModels = this.mergeColModels(customColModels);
-    this.filters = filters || new TableEditorFilters();
   }
 
   mergeColModels(customColModel) {

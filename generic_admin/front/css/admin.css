@@ -28,7 +28,6 @@ body.admin th {
 
 .admin input:not([type="checkbox"]) {
   height: 34px;
-  text-align: center;
 }
 
 .admin a.cancel-link,

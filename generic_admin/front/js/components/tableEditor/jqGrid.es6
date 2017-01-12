@@ -4,18 +4,17 @@ class TableEditor {
     this.colModel = colModel || new TableEditorColModel();
     this.dialogs = dialogs || new TableEditorDialogs();
 
-    this.DOM = {
-      $: $('#jqGrid'),
-      redirectToLinks: '.js-to-site-page, .js-to-admin-page',
-      $newEntityForm: $('#add-entity-form'),
-      $newEntityTitle: $('#add-entity-title'),
-      $newEntityTitleSuccess: $('#add-entity-title-success'),
-      $modalCategoryInput: $('#entity-category'),
-      $modalFields: $('.js-new-entity'),
-      $modalRequiredFields: $('.js-required'),
-      $modalSaveBtn: $('#entity-save'),
-      $modalRefreshBtn: $('#refresh-table'),
-    };
+    this.filterFields = [
+      'name',
+      'category_name',
+      'price',
+    ];
+
+    this.newEntittyFields = [
+      'name',
+      'category',
+      'price',
+    ];
 
     this.urls = {
       jqGrid: '/admin/table-editor-api/',
@@ -56,11 +55,17 @@ class TableEditor {
       loadComplete: () => this.afterLoad(),
     };
 
-    this.filterFields = [
-      'name',
-      'category_name',
-      'price',
-    ];
+    this.DOM = {
+      $: $('#jqGrid'),
+      redirectToLinks: '.js-to-site-page, .js-to-admin-page',
+      $newEntityForm: $('#add-entity-form'),
+      $newEntityTitle: $('#add-entity-title'),
+      $newEntityTitleSuccess: $('#add-entity-title-success'),
+      $modalCategoryInput: $('#entity-category'),
+      $modalRequiredFields: $('.js-required'),
+      $modalSaveBtn: $('#entity-save'),
+      $modalRefreshBtn: $('#refresh-table'),
+    };
 
     this.init();
   }
@@ -79,7 +84,7 @@ class TableEditor {
   setUpListeners() {
     $(document).on('click', `${this.DOM.redirectToLinks}`, event => this.redirectTo(event));
     this.DOM.$modalRequiredFields.on('keyup', () => this.setCreateBtnState());
-    this.DOM.$modalSaveBtn.click(() => this.saveNewEntity());
+    this.DOM.$modalSaveBtn.click(() => this.createEntity());
     this.DOM.$modalRefreshBtn.click(() => this.refreshTable());
     this.dialogs.deleteDialog.$acceptBtn.click(event => this.deleteProduct(event));
     this.$searchField.on('keyup', () => this.searchInTable());
@@ -303,18 +308,28 @@ class TableEditor {
     this.DOM.$modalSaveBtn.attr('disabled', !isActive);
   }
 
-  saveNewEntity() {
-    const getValue = value => this.DOM.$modalFields.filter(`#entity-${value}`).val();
-    const data = {
-      name: getValue('name'),
-      category: getValue('category'),
-      price: getValue('price'),
-    };
+  /**
+   * Return object with user's inputted data for Entity creation.
+   * @returns {{}}
+   */
+  getDataForNewEntity() {
+    const newEntityData = {};
+    const getValue = value => this.DOM.$modalRequiredFields
+      .filter(`[data-id=${value}]`).val();
 
+    for (let i = 0; i < this.newEntittyFields.length; i += 1) {
+      const value = this.newEntittyFields[i];
+      newEntityData[value] = getValue(value);
+    }
+
+    return newEntityData;
+  }
+
+  createEntity() {
     $.ajax({
       url: this.urls.jqGrid,
       type: 'POST',
-      data,
+      data: this.getDataForNewEntity(),
       success: () => {
         this.setRefreshBtnState(false);
         this.afterEntitySaveCallback();
