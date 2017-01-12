@@ -3,14 +3,22 @@
  */
 const getAbsPath = fileName => `${__dirname}/${fileName}`;
 const getAbsPaths = fileNames => fileNames.map(getAbsPath);
+const cssPath = getAbsPaths([
+  'css/jquery-ui.css',
+  'css/jquery.webui-popover.css',
+  'css/ui.jqgrid-bootstrap.css',
+  'css/jstree.css',
+  'css/admin.css',
+]);
 
 module.exports = {
   admin: getAbsPaths([
     'js/components/plugins.es6',
     'js/components/sidebar.es6',
-    'js/components/tableEditor/dialogBoxes.es6',
+    'js/components/tableEditor/autocomplete.es6',
+    'js/components/tableEditor/dialogs.es6',
     'js/components/tableEditor/filters.es6',
-    'js/components/tableEditor/colModels.es6',
+    'js/components/tableEditor/colModel.es6',
     'js/components/tableEditor/jqGrid.es6',
   ]),
   vendors: getAbsPaths([
@@ -24,7 +32,10 @@ module.exports = {
     'js/vendors/jquery.webui-popover.min.js',
     'js/vendors/jstree.min.js',
   ]),
-  watch: getAbsPath('js/**/*'),
-  css: getAbsPath('css/*'),
+  watch: {
+    css: cssPath,
+    js: getAbsPath('js/**/*'),
+  },
+  css: cssPath,
   img: getAbsPath('images/**/*'),
 };

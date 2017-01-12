@@ -15,7 +15,7 @@ class TableEditorFilters {
       filterFieldsPreset: 'filterFieldsPreset',
     };
 
-    this.toggleFilterButtonTexts = {
+    this.toggleFilterBtnText = {
       show: 'Show filters',
       hide: 'Hide filters',
     };
@@ -26,8 +26,8 @@ class TableEditorFilters {
   setUpListeners() {
     this.DOM.$saveFiltersBtn.click(() => this.saveFilters());
     this.DOM.$resetFiltersBtn.click(() => this.dropFilters());
-    this.DOM.$toggleFilterBtn.click(() => this.toggleFilters());
-    this.DOM.$filterCheckbox.change(() => this.updateSortedFields());
+    this.DOM.$toggleFilterBtn.click(event => this.toggleFilters(event));
+    this.DOM.$filterCheckbox.change(event => this.updateSortedFields(event));
   }
 
   init() {
@@ -40,13 +40,14 @@ class TableEditorFilters {
     return this.DOM.$filterCheckbox.filter((_, item) => $(item).is(':checked'));
   }
 
-  updateSortedFields() {
-    const filterName = $(event.target).attr('id');
-    const filterText = $(event.target).prev().text();
+  updateSortedFields(event) {
+    const $target = $(event.target);
+    const filterName = $target.attr('id');
+    const filterText = $target.prev().text();
     const $filterField = this.DOM.$sortableList.find(`.${this.DOM.sortableClass}`)
       .filter(`[data-name=${filterName}]`);
 
-    if ($(event.target).is(':checked')) {
+    if ($target.is(':checked')) {
       this.DOM.$sortableList.append(`
         <li class="sortable-item ${this.DOM.sortableClass}" data-name="${filterName}">
           ${filterText}
@@ -73,14 +74,14 @@ class TableEditorFilters {
     location.reload();
   }
 
-  toggleFilters() {
+  toggleFilters(event) {
     const $target = $(event.target);
 
     if (this.DOM.$filterWrapper.is(':visible')) {
-      $target.html(this.toggleFilterButtonTexts.show);
+      $target.html(this.toggleFilterBtnText.show);
       localStorage.setItem(this.storageKeys.isFilterVisible, 'false');
     } else {
-      $target.html(this.toggleFilterButtonTexts.hide);
+      $target.html(this.toggleFilterBtnText.hide);
       localStorage.setItem(this.storageKeys.isFilterVisible, 'true');
     }
 
@@ -93,7 +94,7 @@ class TableEditorFilters {
 
   setFiltersState() {
     if (localStorage.getItem(this.storageKeys.isFilterVisible) === 'true') {
-      this.DOM.$toggleFilterBtn.html(this.toggleFilterButtonTexts.hide);
+      this.DOM.$toggleFilterBtn.html(this.toggleFilterBtnText.hide);
       this.DOM.$filterWrapper.slideToggle();
     }
   }
@@ -106,7 +107,7 @@ class TableEditorFilters {
       this.clearCheckboxes();
       fieldsHtml = this.renderCustomFilters(storedFields);
     } else {
-      fieldsHtml = this.renderStandardFilters();
+      fieldsHtml = this.renderDefaultFilters();
     }
 
     this.DOM.$sortableList
@@ -117,37 +118,31 @@ class TableEditorFilters {
       .disableSelection();
   }
 
-  renderStandardFilters() {
-    let fieldsHtml = '';
+  renderDefaultFilters() {
+    return $.map(this.getSelectedFields(), (item) => {
+      const id = $(item).attr('id');
+      const text = $(item).prev().text();
 
-    for (const field of this.getSelectedFields()) {
-      const id = $(field).attr('id');
-      const text = $(field).prev().text();
-
-      fieldsHtml += `
+      return `
         <li class="sortable-item ${this.DOM.sortableClass}" data-name="${id}">${text}</li>
       `;
-    }
-
-    return fieldsHtml;
+    }).join('');
   }
 
   renderCustomFilters(storedFields) {
     const fields = JSON.parse(storedFields);
-    let fieldsHtml = '';
 
-    for (const field of fields) {
-      const $inputToCheck = $(`#${field}`);
+    return fields.reduce((prev, next) => {
+      const $inputToCheck = $(`#${next}`);
       const filterText = $inputToCheck.prev().text();
-
       $inputToCheck.prop('checked', true);
-      fieldsHtml += `
-        <li class="sortable-item ${this.DOM.sortableClass} ui-sortable-handle" data-name="${field}">
+
+      return `
+        ${prev}
+        <li class="sortable-item ${this.DOM.sortableClass} ui-sortable-handle" data-name="${next}">
           ${filterText}
         </li>
       `;
-    }
-
-    return fieldsHtml;
+    }, '');
   }
 }

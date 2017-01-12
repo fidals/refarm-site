@@ -216,7 +216,7 @@ class PageMixin(models.Model):
     >>> obj1 = RelatedObject.objects.create(page=p1, ...)
 
     >>> p2 = Page.objects.create(name=obj1.name)
-    >>> obj2 = RelatedObject.objects.create(parent=obj1, ...) -> p2.parent = p1; p2.save();
+    >>> obj2 = RelatedObject.objects.create(parent=obj1, ...) -> p2.parent = p1; p2.save()
     """
     class Meta:
         abstract = True
@@ -228,7 +228,7 @@ class PageMixin(models.Model):
     )
 
     @classmethod
-    def get_default_parent(cls) -> Page:
+    def get_default_parent(cls):
         """You can override this method, if need a default parent"""
         return None
 

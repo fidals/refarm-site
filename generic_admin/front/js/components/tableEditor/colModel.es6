@@ -1,11 +1,7 @@
-class TableEditorColumnModel {
-  constructor(filters = new TableEditorFilters(), customColumnModels = []) {
-    this.columnModels = this.mergeColumnModels(customColumnModels);
-    this.filters = filters;
-  }
-
-  getDefaultColumnModels() {
-    return [
+class TableEditorColModel {
+  constructor(customColModels = [], filters) {
+    this.autocomplete = new TableEditorAutocomplete();
+    this.defaultColModels = [
       {
         name: 'id',
         label: 'ID',
@@ -20,40 +16,15 @@ class TableEditorColumnModel {
         editrules: {
           required: true,
         },
-        width: 150,
+        width: 120,
       },
       {
         name: 'category_name',
         label: 'Category name',
         editable: true,
         editoptions: {
-          dataInit(elem) {
-            $(elem).autocomplete({
-              source(request, response) {
-                $.ajax({
-                  type: 'GET',
-                  url: '/admin/autocomplete/',
-                  data: {
-                    term: request.term,
-                    pageType: 'category',
-                  },
-                  success(responseData) {
-                    response(responseData);
-                  },
-                  error(jqXhr, textStatus, errorThrown) {
-                    console.group('Autocomplete failed.');
-                    console.log(jqXhr);
-                    console.log(textStatus);
-                    console.log(errorThrown);
-                    console.groupEnd();
-                  },
-                });
-              },
-              // Set autocompleted value to input.
-              select(_, ui) {
-                $(elem).val(ui.item.label);
-              },
-            });
+          dataInit: (elem) => {
+            this.autocomplete.category(elem);
           },
         },
         width: 120,
@@ -202,21 +173,24 @@ class TableEditorColumnModel {
         width: 30,
       },
     ];
+
+    this.colModels = this.mergeColModels(customColModels);
+    this.filters = filters || new TableEditorFilters();
   }
 
-  mergeColumnModels(customColumnModel) {
-    return this.getDefaultColumnModels()
-      .filter(col => customColumnModel.every(customCol => customCol !== col.name))
-      .concat(customColumnModel);
+  mergeColModels(customColModel) {
+    return this.defaultColModels
+      .filter(col => customColModel.every(customCol => customCol !== col.name))
+      .concat(customColModel);
   }
 
   /**
-   * Get jQgrid settings from localStorage or return default.
+   * Get jQgrid localStorage or default settings.
    * Depends on Filters.
    */
   getSettings() {
     const customFieldNames = this.getCustomFieldNames();
-    const fieldNames = customFieldNames ? customFieldNames : this.getStandardFieldNames();
+    const fieldNames = customFieldNames || this.getStandardFieldNames();
 
     return this.generateSettings(fieldNames);
   }
@@ -237,19 +211,20 @@ class TableEditorColumnModel {
     return this.getCheckedFieldNames(checkboxIds);
   }
 
-  getFieldByName(name, fields) {
-    return fields.filter(field => field.name === name)[0];
+  getFieldByName(name) {
+    return this.colModels.filter(field => field.name === name)[0];
   }
 
   generateSettings(colNames) {
     const generatedSettings = colNames
-      .filter(col => this.getFieldByName(col, this.columnModels))
-      .map(col => this.getFieldByName(col, this.columnModels));
+      .filter(col => this.getFieldByName(col))
+      .map(col => this.getFieldByName(col));
 
-    // We always show id and tags columns.
-    generatedSettings.unshift(this.getFieldByName('id', this.columnModels));
-    generatedSettings.push(this.getFieldByName('linksTag', this.columnModels));
-    generatedSettings.push(this.getFieldByName('removeTag', this.columnModels));
+    // We always show `id` as first column.
+    // And `linksTag`, `removeTag` as last ones.
+    generatedSettings.unshift(this.getFieldByName('id'));
+    generatedSettings.push(this.getFieldByName('linksTag'));
+    generatedSettings.push(this.getFieldByName('removeTag'));
 
     return generatedSettings;
   }

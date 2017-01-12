@@ -8,7 +8,7 @@ class AdminCommonPlugins {
       autocompleteURL: '/admin/autocomplete/',
       minChars: 3,
       currentPageType: document.location.pathname.split('/').slice(-2, -1)[0],
-      pagesType: {'categorypage': 'category', 'productpage': 'product'},
+      pagesType: { categorypage: 'category', productpage: 'product' },
     };
 
     this.init();
@@ -28,7 +28,7 @@ class AdminCommonPlugins {
           xhr.setRequestHeader('X-CSRFToken', Cookies.get('csrftoken'));
         }
       },
-    })
+    });
   }
 
   /**

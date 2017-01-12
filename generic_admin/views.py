@@ -14,6 +14,10 @@ from django.http import HttpResponse, JsonResponse, QueryDict
 from django.template.response import TemplateResponse
 
 
+def get_request_body(request):
+    return {k: v[0] for k, v in dict(QueryDict(request.body)).items()}
+
+
 class TableEditorFieldsControlMixin:
     """Mixin gives simple access to model's fields."""
 
@@ -44,14 +48,15 @@ class TableEditorFieldsControlMixin:
     def _get_not_excluded_fields(self, model: Model, excluded_fields: list):
         return filter(lambda field: field.name not in excluded_fields, self._get_all_fields(model))
 
+    def get_related_model(self, related_field_name: str) -> Model:
+        return self._get_field(self.model, related_field_name).related_model
+
     def get_related_model_fields(self) -> Iterator[Union[str, Field]]:
         def get_fields(related_field_name):
             model = self._get_field(self.model, related_field_name).related_model
 
             included_fields = self.included_related_model_fields.get(related_field_name)
             excluded_fields = self.excluded_related_model_fields.get(related_field_name)
-
-            fields = None
 
             if included_fields:
                 fields = self._get_included_fields(model, included_fields)
@@ -89,8 +94,9 @@ class ABSTableEditor(MultipleObjectMixin, View):
     Handling CBV request, queryset logic and TableEditor fields control.
     """
     model = None
+    add_entity_form = None  # Defined from Client side.
+    page_creation = False  # Defined create or not Page related to new Entity.
     relation_field_names = []
-
     field_controller = TableEditorFieldsControlMixin(model, relation_field_names)
 
 
@@ -128,97 +134,105 @@ class TableEditorPut:
     pattern_to_update_model = {}
 
     def put(self, request, *args, **kwargs):
-        body = {k: v[0] for k, v in dict(QueryDict(request.body)).items()}
+        body = get_request_body(request)
 
         try:
-            product = self.model.objects.get(id=body['id'])
+            entity = self.model.objects.get(id=body['id'])
 
         except KeyError:
-            return HttpResponse(content='Request body has not `id` param.', status=422)
+            return HttpResponse(content='Request body has no `id` param.', status=422)
         except ObjectDoesNotExist:
             return HttpResponse(
-                'Product with id={} does not exists.'.format(body['id']), status=422)
+                'Object with id={} doesn`t exist.'.format(body['id']), status=422)
 
         try:
             with transaction.atomic():
                 for k, v in body.items():
                     if any(field_name in k for field_name in self.relation_field_names):
-                        self.update_related_model(product, k, v)
+                        self.update_related_model(entity, k, v)
                     else:
-                        self.update_model(product, k, v)
-                self.save(product)
+                        self.update_model(entity, k, v)
+                self.save(entity)
         except ValueError as err:
             return JsonResponse({
                 'message': next(iter(err.args)),
                 'field': k,
             }, status=422)
 
-        return HttpResponse('Product was updated.')
+        return HttpResponse('Entity was updated.')
 
-    def update_related_model(self, product, key, value):
-        related_model_name = next(filter(partial(key.startswith), self.relation_field_names))
-        related_model_entity = getattr(product, related_model_name)
+    def update_related_model(self, entity, key, value):
+        model_name = next(filter(partial(key.startswith), self.relation_field_names))
+        model_entity = getattr(entity, model_name)
+        model_key = key.replace('{}_'.format(model_name), '')
 
-        related_model_key = key.replace('{}_'.format(related_model_name), '')
+        if not hasattr(model_entity, model_key):
+            raise ValueError('{} hasn`t `{}` field.'.format(model_entity, model_key))
 
-        if not hasattr(related_model_entity, related_model_key):
-            raise ValueError('{} has not `{}` in fields'.format(
-                related_model_entity, related_model_key
-            ))
+        python_value = self.field_controller.value_to_python(model_entity, model_key, value)
+        model_strategy = self.pattern_to_update_related_model.get(model_name, {})
 
-        python_value = self.field_controller.value_to_python(related_model_entity, related_model_key, value)
-
-        related_model_strategy = self.pattern_to_update_related_model.get(related_model_name, {})
-
-        if related_model_key in related_model_strategy:
-            related_model_strategy[related_model_key](
-                product=product, related_model_entity=related_model_entity,
+        if model_key in model_strategy:
+            model_strategy[model_key](
+                entity=entity, related_model_entity=model_entity,
                 related_model_value=python_value,
             )
         else:
-            setattr(related_model_entity, related_model_key, python_value)
+            setattr(model_entity, model_key, python_value)
 
-    def update_model(self, product, key, value):
-        if not hasattr(product, key):
-            raise ValueError('{} has not `{}` in fields'.format(
-                product, key
-            ))
+    def update_model(self, entity, key, value):
+        if not hasattr(entity, key):
+            raise ValueError('{} hasn`t `{}` field.'.format(entity, key))
 
-        python_value = self.field_controller.value_to_python(product, key, value)
+        python_value = self.field_controller.value_to_python(entity, key, value)
 
         if key in self.pattern_to_update_model:
             self.pattern_to_update_model[key](
-                product=product, value=python_value)
+                entity=entity, value=python_value)
         else:
-            setattr(product, key, python_value)
+            setattr(entity, key, python_value)
 
-    def save(self, product):
-        product.save()
+    def save(self, entity):
+        entity.save()
         for field in self.relation_field_names:
-            getattr(product, field).save()
+            getattr(entity, field).save()
 
 
 class TableEditorDelete:
     def delete(self, request, *args, **kwargs):
         try:
             id_ = QueryDict(request.body)['id']
-            product = self.model.objects.get(id=id_)
+            entity = self.model.objects.get(id=id_)
         except KeyError:
-            return HttpResponse(content='Request body has not `id` param.', status=422)
+            return HttpResponse(content='Request body has no `id` param.', status=422)
         except ObjectDoesNotExist:
-            return HttpResponse('Product with id={} does not exists.'.format(id_), status=422)
+            return HttpResponse('Object with id={} doesn`t exist.'.format(id_), status=422)
 
-        product.delete()
+        entity.delete()
 
-        return HttpResponse('Product {} was deleted.'.format(product.id))
+        return HttpResponse('Object {} was deleted.'.format(entity.id))
 
 
 class TableEditorPost:
     def post(self, request, *args, **kwargs):
-        """
-        TODO: Logic for create Product is required
-        http://youtrack.stkmail.ru/issue/dev-787
-        """
+        params = get_request_body(request)
+
+        with transaction.atomic():
+            for k, v in params.items():
+                if any(related_field_name in k for related_field_name in self.relation_field_names):
+                    related_model = self.field_controller.get_related_model(k)
+                    params[k] = related_model.objects.get(name=v)
+
+            new_object = self.model.objects.create(**params)
+
+            if self.page_creation:
+                model_page = self.field_controller.get_related_model('page')
+                page = model_page.objects.create(name=params['name'])
+                new_object.page = page
+
+            new_object.save()
+
+        return HttpResponse('New entity was created.')
 
 
 @method_decorator(staff_member_required, name='dispatch')
@@ -237,7 +251,6 @@ class TableEditor(ABSTableEditor):
     """Admin view for TableEditor."""
     http_method_names = ['get']
     default_filters = ['name', 'price', 'is_popular', 'is_active']
-
     each_context = None  # Define from Admin's site.
 
     def prepare_related_model_fields(self, fields_data):
@@ -280,11 +293,11 @@ class TableEditor(ABSTableEditor):
         ]
 
     def get(self, request, *args, **kwargs):
-
         context = {
             **self.each_context(request),
             'title': 'Table editor',
             'filter_fields': self.get_filter(),
+            'add_entity_form': self.add_entity_form(),
         }
 
         return TemplateResponse(request, 'admin/table_editor.html', context)
@@ -303,7 +316,7 @@ class Tree(View, MultipleObjectMixin):
 
     def prepare_for_js_tree(self, entities):
         if not entities.exists():
-            return {'text': 'У категории нет товаров.'}
+            return {'text': 'This Category has no Products.'}
 
         is_category = isinstance(entities.first(), self.model)
         urlconf = 'admin:{}_{}_change'.format(
@@ -330,11 +343,13 @@ class Tree(View, MultipleObjectMixin):
         category = self.model.objects.get(id=category_id)
         children = category.children.all()
         products = category.products.all()
+
         return children if children.exists() else products
 
     def get(self, request, *args, **kwargs):
         category_id = request.GET.get('id')
         entities = self.get_queryset(category_id=category_id)
+
         return JsonResponse(self.prepare_for_js_tree(entities), safe=False)
 
 
@@ -345,7 +360,6 @@ class RedirectToProductPage(View):
 
     def get(self, request, *args, **kwargs):
         id_, is_to_site = request.GET.get('id'), int(request.GET.get('tosite'))
-        pattern_name = None
         if is_to_site:
             pattern_name = self.site_page_product_urlconf
         else:
