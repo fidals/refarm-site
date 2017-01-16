@@ -10,7 +10,7 @@ class TableEditor {
       'price',
     ];
 
-    this.newEntittyFields = [
+    this.newEntityFields = [
       'name',
       'category',
       'price',
@@ -316,11 +316,7 @@ class TableEditor {
     const newEntityData = {};
     const getValue = value => this.DOM.$modalRequiredFields
       .filter(`[data-id=${value}]`).val();
-
-    for (let i = 0; i < this.newEntittyFields.length; i += 1) {
-      const value = this.newEntittyFields[i];
-      newEntityData[value] = getValue(value);
-    }
+    this.newEntityFields.map(item => (newEntityData[item] = getValue(item)));
 
     return newEntityData;
   }
