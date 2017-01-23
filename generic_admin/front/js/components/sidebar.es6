@@ -35,7 +35,8 @@ class AdminSidebar {
       this.toggleSidebarLocalStorageState();
     });
     this.DOM.$sidebarTree.bind('state_ready.jstree',
-      () => this.DOM.$sidebarTree.bind('select_node.jstree', this.redirectToEditPage));
+      () => this.DOM.$sidebarTree.bind('select_node.jstree', this.redirectToEditPage),
+    );
     $(window).on('resize orientationChange', () => this.slimScrollReinit());
   }
 
@@ -117,7 +118,10 @@ class AdminSidebar {
 
   redirectToEditPage(_, data) {
     if (data.event.which === 1) {
-      const path = $(data.event.target).attr('href-admin-page');
+      const $target = $(data.event.target);
+      const path = $target.attr('href-admin-page') ||
+                   $target.parent().attr('href-admin-page');
+
       if (path !== window.location.pathname) {
         window.location.assign(path);
       }
