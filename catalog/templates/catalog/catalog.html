@@ -1,0 +1,17 @@
+{% load mptt_tags %}
+{% load pages_extras %}
+
+<h1>{{ page.h1 }}</h1>
+<p>{% breadcrumbs page %}</p>
+<ul>
+{% recursetree nodes %}
+  <li>
+    <a href="{{ node.get_absolute_url }}">{{ node.page.menu_title }}</a>
+    {% if not node.is_leaf_node %}
+        <ul class="children">
+            {{ children }}
+        </ul>
+    {% endif %}
+  </li>
+{% endrecursetree %}
+</ul>

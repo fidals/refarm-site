@@ -63,11 +63,15 @@ class AutoCreateRedirects(admin.ModelAdmin):
 
 class AbstractPage(ChangeItemsStateActions):
     """Generic class for each page."""
+
     actions = ['make_items_active', 'make_items_non_active']
     list_display_links = ['name']
     list_filter = ['is_active', filters.HasContent, filters.HasImages]
     save_on_top = True
     search_fields = ['id', 'name', 'slug']
+
+    def get_queryset(self, request):
+        return super(AbstractPage, self).get_queryset(request).select_related('parent')
 
     def custom_parent(self, obj, urlconf=None):
         parent = obj.parent
