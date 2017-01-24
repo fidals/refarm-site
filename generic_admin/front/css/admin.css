@@ -18,6 +18,10 @@ body.admin .table > thead > tr > th,
   padding: 15px 8px;
 }
 
+#changelist-filter {
+  z-index: 1;
+}
+
 .admin .clockbox,
 .admin .calendarbox {
   width: 300px;
