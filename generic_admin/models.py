@@ -12,22 +12,24 @@ class CustomPageAdmin(mixins.PageWithoutModels, mixins.PermissionsControl):
         ('Дополнительные характеристики', {
             'classes': ('seo-chars',),
             'fields': (
-                ('id', 'is_active'),
+                'id',
+                'is_active',
                 'name',
                 'date_published',
                 'menu_title',
                 'seo_text',
                 'position',
-                ('parent', 'correct_parent_id')
+                ('parent', 'correct_parent_id'),
             )
         }),
         ('Параметры страницы', {
             'classes': ('secondary-chars',),
             'fields': (
-                ('h1', 'title'),
+                'h1',
+                'title',
                 ('keywords', 'id'),
                 'description',
-                'content'
+                'content',
             )
         })
     )
@@ -38,22 +40,24 @@ class FlatPageAdmin(mixins.PageWithoutModels, mixins.AutoCreateRedirects):
         ('Дополнительные характеристики', {
             'classes': ('seo-chars',),
             'fields': (
-                ('id', 'is_active'),
+                'id',
+                'is_active',
                 ('name', 'slug'),
                 'date_published',
                 'menu_title',
                 'seo_text',
                 'position',
-                ('parent', 'correct_parent_id')
+                ('parent', 'correct_parent_id'),
             )
         }),
         ('Параметры страницы', {
             'classes': ('secondary-chars',),
             'fields': (
-                ('h1', 'title'),
+                'h1',
+                'title',
                 'keywords',
                 'description',
-                'content'
+                'content',
             )
         })
     )

@@ -111,7 +111,8 @@ class PageWithModels(AbstractPage, PermissionsControl, AutoCreateRedirects):
         ('Дополнительные характеристики', {
             'classes': ('seo-chars',),
             'fields': (
-                ('id', 'is_active'),
+                'id',
+                'is_active',
                 ('name', 'slug'),
                 'date_published',
                 'menu_title',
@@ -122,7 +123,8 @@ class PageWithModels(AbstractPage, PermissionsControl, AutoCreateRedirects):
         ('Параметры страницы', {
             'classes': ('secondary-chars',),
             'fields': (
-                ('h1', 'title'),
+                'h1',
+                'title',
                 'keywords',
                 'description',
                 'content'

@@ -46,21 +46,23 @@ class CategoryInline(admin.StackedInline):
 class ImageInline(GenericStackedInline):
     model = Image
     extra = 1
-    readonly_fields = ['picture']
+    readonly_fields = ['current_image']
     verbose_name = 'Image'
     fieldsets = (
         (None, {
             'classes': ('primary-chars', ),
             'fields': (
-                ('picture', 'image'),
-                ('slug', '_title', 'is_main'),
-                ('description', ),
+                'current_image',
+                'image',
+                ('slug', 'title'),
+                'is_main',
+                'description',
             ),
         }),
     )
 
-    def picture(self, obj):
+    def current_image(self, obj):
         return format_html(
-            '<img src="{url}" class="images-item">',
+            '<img src="{url}" class="img-responsive images-item">',
             url=obj.image.url
         )

@@ -38,7 +38,6 @@ class ImageManager(models.Manager):
         }
 
 
-
 class Image(models.Model):
     """
     Architect thoughts:
@@ -55,27 +54,24 @@ class Image(models.Model):
     model = GenericForeignKey('content_type', 'object_id')
     # --->
 
-    _title = models.CharField(max_length=400, blank=True)
+    title = models.CharField(max_length=400, blank=True)
     slug = models.SlugField(max_length=400, blank=True, db_index=True)
     description = models.TextField(default='', blank=True)
     created = models.DateField(auto_now_add=True)
     image = thumbnail.ImageField(upload_to=model_directory_path)
-
     is_main = models.BooleanField(default=False, db_index=True)
 
-    @property
-    def title(self):
-        return self._title or self.slug
-
-    @title.setter
-    def title(self, value):
-        self._title = value
-
     def __str__(self):
-        return self._title
+        return self.title
+
+    def __getattribute__(self, name):
+        """Some fields should give default value."""
+        attr = super(Image, self).__getattribute__(name)
+        if name in ['title'] and not attr:
+            return self.slug
+        return attr
 
     def save(self, *args, **kwargs):
-
         siblings = self.model.images.exclude(pk=self.pk)
 
         if self.is_main:
