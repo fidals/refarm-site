@@ -12,10 +12,34 @@ body.admin .table > thead > tr > th,
   background: #ededed;
 }
 
-body.admin td,
-body.admin th {
+.results td,
+.results th {
   font-size: 14px;
   padding: 15px 8px;
+}
+
+#changelist-filter {
+  z-index: 1;
+}
+
+.admin .clockbox,
+.admin .calendarbox {
+  width: 300px;
+}
+
+.main-content .inline-related h3 {
+  font-size: 14px;
+  padding: 11px;
+}
+
+.file-upload input[type=file] {
+  display: inline;
+}
+
+.delete input[type=checkbox],
+.main-content .inline-related h3 span.delete label {
+  margin: 0;
+  font-size: 13px;
 }
 
 .module.filtered {
@@ -50,7 +74,6 @@ body.admin th {
 .messagelist,
 .main-content,
 .sidebar-links,
-.images-item,
 .admin-breadcrumb-wrapper {
   transition: all 0.5s ease;
 }
@@ -283,10 +306,6 @@ div.breadcrumbs {
   height: auto;
 }
 
-.main-content input[type="file"] {
-  float: left;
-}
-
 .autocomplete-suggestions {
   background-color: #fff;
   border-radius: 0 0 2px 2px;
@@ -332,10 +351,6 @@ div.breadcrumbs {
   text-align: center;
 }
 
-.field-is_active {
-  text-align: center;
-}
-
 .admin-entity-list-form select,
 .admin-entity-list-form input[type="text"],
 .admin-entity-list-form input[type="number"] {
@@ -344,13 +359,14 @@ div.breadcrumbs {
 }
 
 .images-item {
-  border: 1px solid #444;
+  border: 1px solid #ccc;
   border-radius: 4px;
-  height: 150px;
+  max-height: 300px;
   padding: 2px;
-  position: relative;
-  top: 0;
-  max-width: 100%;
+}
+
+.admin-change-form .aligned label + p {
+  margin-left: 160px;
 }
 
 .admin-upload-form {

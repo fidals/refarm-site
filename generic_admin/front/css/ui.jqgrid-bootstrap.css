@@ -194,13 +194,6 @@ div.tablediv > .table-bordered {
   outline-style: none;
 }
 
-/*YozhEzhi: Commented for better customization:*/
-/*ui-jqgrid .ui-jqgrid-btable tbody tr.jqgrow td {*/
-/* overflow: hidden;*/
-/* white-space: pre;*/
-/* padding-right: 2px;*/
-/**/
-
 .ui-jqgrid tr.jqgfirstrow td {
   height: auto;
   border-top: none;
@@ -440,7 +433,6 @@ div.tablediv > .table-bordered {
 
 .ui-jqgrid a.ui-sghref {
   text-decoration: none;
-  /*color: #010101; default*/
 }
 
 .ui-jqgrid .ui-th-subgrid {
@@ -494,7 +486,7 @@ div.tablediv > .table-bordered {
 
 /*Modal Window*/
 .ui-jqdialog {
-  background: @c-white;
+  background: #fff;
   box-shadow: 0 0 30px rgba(0, 0, 0, 0.2);
   display: none;
   left: 50% !important;
@@ -508,7 +500,7 @@ div.tablediv > .table-bordered {
 }
 
 .ui-widget-overlay {
-  background: @c-black !important;
+  background: #000 !important;
   opacity: 0.4 !important;
 }
 
@@ -524,7 +516,7 @@ div.tablediv > .table-bordered {
 
 .ui-jqdialog-titlebar-close {
   cursor: pointer;
-  font-size: @f-size-base + 10;
+  font-size: 26px;
   padding: 8px;
   position: absolute;
   right: 12px !important;
@@ -551,7 +543,7 @@ div.tablediv > .table-bordered {
   height: 120px;
   width: 220px;
   text-align: center;
-  background-color: @c-white;
+  background-color: #fff;
   border-radius: 4px;
 }
 
@@ -850,7 +842,7 @@ a.g-menu-item, a.soptclass, a.clearsearchclass {
 }
 
 ul.ui-search-menu, ul.ui-nav-menu {
-  list-style-type: none;
+  list-style: none;
 }
 
 ul.ui-search-menu li a,
@@ -973,6 +965,7 @@ td.menu_text {
   padding: 8px !important;
 }
 
-.ui-jqgrid-hbox td, th {
-  font-size: @f-size-base - 2;
+.ui-jqgrid-hbox td,
+.ui-jqgrid-hbox th {
+  font-size: 14px;
 }
