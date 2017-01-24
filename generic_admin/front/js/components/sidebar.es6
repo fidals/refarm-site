@@ -108,7 +108,8 @@ class AdminSidebar {
             label: 'На страницу',
             icon: 'fa fa-link',
             action(data) {
-              window.location.assign($(data.reference[0]).attr('href-site-page'));
+              const url = $(data.reference[0]).attr('href-site-page');
+              window.open(url, '_blank');
             },
           },
         },
