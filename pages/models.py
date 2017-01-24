@@ -18,8 +18,7 @@ class AbstractSeo(models.Model):
     keywords = models.CharField(blank=True, max_length=255)
     description = models.TextField(blank=True)
     seo_text = models.TextField(blank=True)
-
-    title = models.CharField(blank=True, max_length=255)
+    title = models.TextField(blank=True)
 
 
 class Page(mptt_models.MPTTModel, AbstractSeo, ImageMixin):
