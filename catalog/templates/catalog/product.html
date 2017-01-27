@@ -1,0 +1,13 @@
+{% load pages_extras %}
+
+<h1> Product {{ page.title }} </h1>
+<p>{% breadcrumbs page %}</p>
+
+<p> Price: {{ product.price }} </p>
+
+<p> In stock: {{ product.in_stock }} </p>
+
+<p> Category: </p>
+<a href="{{ product.category.get_absolute_url }}">
+  {{ product.category.name }}
+</a>

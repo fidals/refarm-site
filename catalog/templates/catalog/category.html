@@ -1,0 +1,22 @@
+{% load pages_extras %}
+
+<h1> Category: {{ category.page.title }} </h1>
+<p>{% breadcrumbs page %}</p>
+{% if children %}
+  <h2>Subcategories: </h2>
+  <ul>
+    {% for child in children %}
+      <li><a href="{{ child.get_absolute_url }}">{{ child.page.menu_title }}</a></li>
+    {% endfor %}
+  </ul>
+{% endif %}
+{% if products %}
+  <h2> Products in category: </h2>
+  <ul>
+    {% for product in products %}
+        <li><a href="{{ product.get_absolute_url }}">{{ product.page.menu_title }}</a></li>
+    {% endfor %}
+  </ul>
+{% else %}
+  <h2>Category has no products.</h2>
+{% endif %}

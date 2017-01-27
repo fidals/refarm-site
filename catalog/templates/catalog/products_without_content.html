@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>{{ title }}</title>
+  <style>
+    table.price-list td {
+      border: 1px solid gainsboro;
+    }
+    .price-cell {
+      width: 105px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <h1>{{ title }}</h1>
+  <p>Всего позиций: {{ total_count }}</p>
+  <p>Позиций {{ title|lower }}: <b>{{ products|length }}</b></p>
+  <table class="price-list">
+    <tr>
+      <td>Изображение</td>
+      <td>Наименование</td>
+      <td>Розница</td>
+    </tr>
+    {% for product in products %}
+      <tr>
+        <td>
+          <a href="{{ product.url }}" title="{{ product.name }}">
+            {{ product.id }}
+          </a>
+        </td>
+        <td><span>{{ product.name }}</span></td>
+        <td class="price-cell"><span>{{ product.price }}</span></td>
+      </tr>
+    {% endfor %}
+  </table>
+</body>
+</html>

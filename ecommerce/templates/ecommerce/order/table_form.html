@@ -1,0 +1,18 @@
+<ul>
+  {% for id, position in cart %}
+    <li>
+      <p>{{ position.name }}</p>
+      <p>Price: {{ position.price }} rub.</p>
+      <p>Quantity: {{ position.quantity }}</p>
+    </li>
+  {% endfor %}
+</ul>
+
+<h2>Total cost: {{ cart.total_price }}</h2>
+<h2>Total quantity: {{ cart.total_quantity }}</h2>
+
+<form action="../" method="post" class="order-form">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <p><input type="submit" value="Make order"></p>
+</form>

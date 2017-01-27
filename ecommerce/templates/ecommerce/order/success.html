@@ -1,0 +1,22 @@
+<h1>{{ order }} accepted!</h1>
+
+<span>Thank you, {{ order.name }}!</span>
+
+<h2>Contact information:</h2>
+<p>Email: {{ order.email }}</p>
+<p>Phone: {{ order.phone }}</p>
+
+<h2>Order positions:</h2>
+<ul>
+  {% for item in order.positions.all %}
+    <ul>
+      <li>
+        {{ item.name }}
+        Price: {{ item.price }} rub.
+        Quantity: {{ item.quantity }}
+      </li>
+    </ul>
+  {% endfor %}
+</ul>
+
+<h3>Total cost: {{ order.total_price }}</h3>

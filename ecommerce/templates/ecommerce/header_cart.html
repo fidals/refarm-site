@@ -1,0 +1,11 @@
+<div>
+  <div>
+    {% if cart.total_quantity == 0 %}
+      <span>The cart is empty</span>
+    {% else %}
+      <span>In cart: {{ cart.total_quantity }}</span>
+      <span>Total price: {{ cart.total_price }}</span>
+      <a href="{{ cart_page.url }}">Checkout</a>
+    {% endif %}
+  </div>
+</div>
