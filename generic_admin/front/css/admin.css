@@ -67,6 +67,7 @@ body.admin .table > thead > tr > th,
 .admin .content {
   height: 100%;
   position: relative;
+  z-index: 1;
 }
 
 .sidebar,
