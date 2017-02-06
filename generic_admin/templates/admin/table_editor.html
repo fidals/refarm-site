@@ -58,6 +58,27 @@
   </div>
   <table id="jqGrid" class="jqgrid"></table>
   <a href="#" class="hidden" id="popover"></a>
+{% endblock %}
+
+{% block footer %}
+  <div class="modal-wrapper js-modal-wrapper" id="confirm-modal">
+    <div class="modal-box">
+      <h3 class="modal-box-title text-center">
+        Are you sure, that you want to delete <span id="product-to-remove"></span>?
+      </h3>
+      <div class="modal-box-buttons">
+        <button class="modal-delete btn btn-danger js-modal-delete">Accept</button>
+        <button class="btn btn-primary js-modal-delete-cancel">Cancel</button>
+      </div>
+    </div>
+  </div>
+  <div class="modal-overlay"></div>
+
+  {{ block.super }}
+{% endblock %}
+
+{% block modals %}
+  {{ block.super }}
 
   {% block new_entity_modal %}
     <div class="modal fade" id="add-entity" tabindex="-1" role="dialog" aria-labelledby="add-entity-title">
@@ -107,21 +128,4 @@
       </div>
     </div>
   {% endblock %}
-{% endblock %}
-
-{% block footer %}
-  <div class="modal-wrapper js-modal-wrapper" id="confirm-modal">
-    <div class="modal-box">
-      <h3 class="modal-box-title text-center">
-        Are you sure, that you want to delete <span id="product-to-remove"></span>?
-      </h3>
-      <div class="modal-box-buttons">
-        <button class="modal-delete btn btn-danger js-modal-delete">Accept</button>
-        <button class="btn btn-primary js-modal-delete-cancel">Cancel</button>
-      </div>
-    </div>
-  </div>
-  <div class="modal-overlay"></div>
-
-  {{ block.super }}
 {% endblock %}
