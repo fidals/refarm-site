@@ -76,7 +76,7 @@ class Search(CustomPageView, AbstractSearch):
         context.update({
             'categories': categories,
             'products': products,
-            'query': term
+            'term': term
         })
 
         return render(request, template, context)
