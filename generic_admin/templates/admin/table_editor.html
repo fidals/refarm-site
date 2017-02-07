@@ -60,7 +60,9 @@
   <a href="#" class="hidden" id="popover"></a>
 {% endblock %}
 
-{% block footer %}
+{% block modals %}
+  {{ block.super }}
+
   <div class="modal-wrapper js-modal-wrapper" id="confirm-modal">
     <div class="modal-box">
       <h3 class="modal-box-title text-center">
@@ -73,12 +75,6 @@
     </div>
   </div>
   <div class="modal-overlay"></div>
-
-  {{ block.super }}
-{% endblock %}
-
-{% block modals %}
-  {{ block.super }}
 
   {% block new_entity_modal %}
     <div class="modal fade" id="add-entity" tabindex="-1" role="dialog" aria-labelledby="add-entity-title">
