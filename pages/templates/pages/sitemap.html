@@ -7,9 +7,9 @@
   <h1>Page: {{ page.h1 }}</h1>
 
   <ul class="catalog-list">
-    {% for page in paginator_pages|dictsort:'h1' %}
+    {% for page in paginator_pages|dictsort:'name' %}
       <li class="catalog-list-item">
-        <a href="{{ page.url }}">{{ page.h1 }}</a>
+        <a href="{{ page.url }}">{{ page.name }}</a>
       </li>
     {% endfor %}
   </ul>
