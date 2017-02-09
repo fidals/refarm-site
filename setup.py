@@ -33,7 +33,9 @@ setup(
         'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
     ],
     install_requires=[
-        'Django == 1.9.5',
+        'Django==1.9.5',
+        'django-mptt==0.8.3',
+        'sorl-thumbnail==12.4a1',
         'unidecode',
     ],
 )
