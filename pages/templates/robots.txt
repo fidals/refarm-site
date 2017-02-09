@@ -5,7 +5,7 @@ Disallow: /service/
 Disallow: /*.css$
 Disallow: /*.js$
 Disallow: /*.txt$
-Clean-param: from&utm_source&utm_medium&utm_campaign&block&keyword&position /
+Clean-param: from&utm_source&utm_medium&utm_campaign&block&keyword&position&k50id /
 
 User-agent: Yandex
 Disallow: /search-results/
@@ -13,7 +13,7 @@ Disallow: /service/
 Disallow: /*.css$
 Disallow: /*.js$
 Disallow: /*.txt$
-Clean-param: from&utm_source&utm_medium&utm_campaign&block&keyword&position /
+Clean-param: from&utm_source&utm_medium&utm_campaign&block&keyword&position&k50id /
 
 Host: {{ url }}
 Sitemap: {{ url }}{% url 'sitemap' %}
