@@ -1,0 +1,4 @@
+celery
+django-mptt==0.8.3
+sorl-thumbnail==12.4a1
+-e .

@@ -4,6 +4,15 @@ from django.conf import settings
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
 
+from ecommerce.tasks import send_mail as celery_send_mail
+
+
+def send(use_celery=False, *args, **kwargs):
+    if use_celery:
+        celery_send_mail.delay(*args, **kwargs)
+    else:
+        send_mail(*args, **kwargs)
+
 
 def send_order(
         *,
@@ -12,6 +21,7 @@ def send_order(
         order=None,
         to_customer=True,
         to_shop=True,
+        use_celery=False,
         **extra_context
 ):
     """
@@ -35,7 +45,8 @@ def send_order(
     if to_shop:
         recipients.append(settings.EMAIL_RECIPIENT)
 
-    send_mail(
+    send(
+        use_celery=use_celery,
         subject=subject.format(order),
         message=email_template,
         from_email=settings.EMAIL_SENDER,
@@ -44,12 +55,13 @@ def send_order(
     )
 
 
-def send_backcall(*, template='ecommerce/order/backcall_email.html', subject, **fields):
+def send_backcall(*, template='ecommerce/order/backcall_email.html', subject, use_celery=False,**fields):
     """Send mail about ordered backcall to shop."""
 
     message = render_to_string(template, {'fields': fields})
 
-    send_mail(
+    send(
+        use_celery=use_celery,
         subject=subject,
         message=message,
         from_email=settings.EMAIL_SENDER,
@@ -58,12 +70,13 @@ def send_backcall(*, template='ecommerce/order/backcall_email.html', subject, **
     )
 
 
-def ya_feedback(user_email):
+def ya_feedback(user_email, use_celery=False):
     """Send email to user with Ya.Market feedback request."""
 
     email_template = render_to_string('ecommerce/yandex_feedback.html')
 
-    send_mail(
+    send(
+        use_celery=use_celery,
         subject=settings.EMAIL_SUBJECTS['ya_feedback_request'],
         message=email_template,
         from_email=settings.EMAIL_SENDER,
