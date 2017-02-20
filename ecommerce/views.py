@@ -37,8 +37,6 @@ class OrderPage(CustomPageView):
         args=('order-success',)
     )
 
-    use_celery = False
-
     template_name = 'ecommerce/order/order.html'
     email_extra_context = {}
 
@@ -86,7 +84,6 @@ class OrderPage(CustomPageView):
         mailer.send_order(
             subject=settings.EMAIL_SUBJECTS['order'],
             order=order,
-            use_celery=self.use_celery,
             **self.email_extra_context
         )
 
