@@ -4,6 +4,6 @@ python:
 env:
   - DJANGO=1.9.5
 install:
-  - pip install -r requirements.txt
+  - pip install -e .
 script:
   - python runtests.py
