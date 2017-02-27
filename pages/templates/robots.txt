@@ -2,6 +2,7 @@ User-agent: *{% if debug %}
 Disallow: /
 {% else %}
 Disallow: /search/
+Disallow: /search-results/
 Disallow: /service/
 Disallow: /*.css$
 Disallow: /*.js$
@@ -14,6 +15,7 @@ Clean-param: from&utm_source&utm_medium&utm_campaign&block&keyword&position&k50i
 
 User-agent: Yandex
 Disallow: /search/
+Disallow: /search-results/
 Disallow: /service/
 Disallow: /*.css$
 Disallow: /*.js$
