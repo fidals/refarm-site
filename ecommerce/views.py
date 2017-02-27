@@ -1,9 +1,11 @@
 """Reusable views for eCommerce app."""
 
 from django.conf import settings
+from django.contrib.humanize.templatetags.humanize import intcomma
 from django.core.urlresolvers import reverse_lazy
 from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404, Http404
+from django.template.defaultfilters import floatformat
 from django.template.loader import render_to_string
 from django.views.generic import View
 
@@ -120,9 +122,8 @@ class CartModifier(View):
     cart = Cart
 
     def json_response(self, request):
-        header = render_to_string(
-            self.header_template, request=request,
-        )
+        cart = self.cart(request.session)
+        header = render_to_string(self.header_template, request=request)
 
         table = render_to_string(
             self.table_template,
@@ -131,7 +132,9 @@ class CartModifier(View):
         )
         return JsonResponse({
             'header': header,
-            'table': table
+            'table': table,
+            'total_price': cart.total_price,
+            'total_quantity': intcomma(floatformat(cart.total_quantity, 0)),
         })
 
 
