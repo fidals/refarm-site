@@ -73,7 +73,6 @@ def ya_feedback(user_email):
     email_template = render_to_string('ecommerce/yandex_feedback.html')
 
     send(
-        use_celery=use_celery,
         subject=settings.EMAIL_SUBJECTS['ya_feedback_request'],
         message=email_template,
         from_email=settings.EMAIL_SENDER,
