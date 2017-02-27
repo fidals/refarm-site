@@ -30,13 +30,11 @@ def get_keys_from_post(request, *args):
 class OrderPage(CustomPageView):
     order_form = OrderForm
     cart = Cart
-
     success_url = reverse_lazy(
         Page.CUSTOM_PAGES_URL_NAME,
         current_app='ecommerce',
         args=('order-success',)
     )
-
     template_name = 'ecommerce/order/order.html'
     email_extra_context = {}
 

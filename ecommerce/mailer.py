@@ -1,7 +1,7 @@
 """Contain functions to send eCommerce emails."""
 
 from django.conf import settings
-from django.core.mail import send_mail
+from django.core.mail import send_mail as django_send_mail
 from django.template.loader import render_to_string
 
 from ecommerce.tasks import send_mail as celery_send_mail
@@ -11,7 +11,7 @@ def send(*args, **kwargs):
     if settings.USE_CELERY:
         celery_send_mail.delay(*args, **kwargs)
     else:
-        send_mail(*args, **kwargs)
+        django_send_mail(*args, **kwargs)
 
 
 def send_order(
