@@ -47,7 +47,7 @@ class AbstractCategory(mptt_models.MPTTModel):
     name = models.CharField(max_length=255, db_index=True)
 
     parent = mptt_models.TreeForeignKey(
-        'self', null=True, blank=True, related_name='children',
+        'self', on_delete=models.CASCADE, null=True, blank=True, related_name='children',
     )
 
     def __str__(self):
