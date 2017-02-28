@@ -40,10 +40,11 @@ class AbstractCategory(mptt_models.MPTTModel):
     class Meta:
         abstract = True
         verbose_name_plural = 'categories'
+        unique_together = (('name', 'parent'))
 
     objects = CategoryManager()
 
-    name = models.CharField(max_length=255, unique=True, db_index=True)
+    name = models.CharField(max_length=255, db_index=True)
 
     parent = mptt_models.TreeForeignKey(
         'self', null=True, blank=True, related_name='children',

@@ -25,7 +25,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 PLACEHOLDER_IMAGE = 'logo.svg'
 PLACEHOLDER_ALT = 'Some useful logo'
 
-
+USE_CELERY = False
 
 TEMPLATES = [
     {
