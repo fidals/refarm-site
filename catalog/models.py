@@ -102,7 +102,7 @@ class AbstractProduct(models.Model):
     objects = ProductManager()
 
     name = models.CharField(max_length=255, db_index=True)
-    price = models.FloatField(blank=True, null=True, db_index=True)
+    price = models.FloatField(blank=True, default=0, db_index=True)
     in_stock = models.PositiveIntegerField(default=0, db_index=True)
     is_popular = models.BooleanField(default=False, db_index=True)
 
