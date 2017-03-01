@@ -134,17 +134,17 @@ class Page(mptt_models.MPTTModel, AbstractSeo, ImageMixin):
 
 
 # ------- Managers -------
-class CustomPageManager(models.Manager):
+class CustomPageManager(mptt_models.TreeManager):
     def get_queryset(self):
         return super(CustomPageManager, self).get_queryset().filter(type=Page.CUSTOM_TYPE)
 
 
-class FlatPageManager(models.Manager):
+class FlatPageManager(mptt_models.TreeManager):
     def get_queryset(self):
         return super(FlatPageManager, self).get_queryset().filter(type=Page.FLAT_TYPE)
 
 
-class ModelPageManager(models.Manager):
+class ModelPageManager(mptt_models.TreeManager):
     def get_queryset(self):
         return super(ModelPageManager, self).get_queryset().filter(type=Page.MODEL_TYPE)
 
@@ -187,7 +187,7 @@ class ModelPage(Page):
         """Create managers for dividing ModelPage entities"""
         assert isinstance(model, type(models.Model)), 'arg should be ModelBase type'
 
-        class ModelPageManager(models.Manager):
+        class ModelPageManager(mptt_models.TreeManager):
             def get_queryset(self):
                 return super(ModelPageManager, self).get_queryset().filter(
                     related_model_name=model._meta.db_table)
