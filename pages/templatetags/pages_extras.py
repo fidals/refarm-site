@@ -1,9 +1,7 @@
-from itertools import groupby
-
 from django import template
 from django.core.urlresolvers import reverse
 
-from pages.models import FlatPage, ModelPage, Page
+from pages.models import FlatPage, Page
 
 register = template.Library()
 
