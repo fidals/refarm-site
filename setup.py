@@ -34,8 +34,8 @@ setup(
     ],
     install_requires=[
         'celery',
-        'Django==1.9.5',
-        'django-mptt==0.8.3',
+        'Django==1.10',
+        'django-mptt==0.8.7',
         'sorl-thumbnail==12.4a1',
         'unidecode',
     ],
