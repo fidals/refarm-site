@@ -1,9 +1,8 @@
-from itertools import groupby
-
 from django import template
+from django.conf import settings
 from django.core.urlresolvers import reverse
 
-from pages.models import FlatPage, ModelPage, Page
+from pages.models import FlatPage, Page
 
 register = template.Library()
 
@@ -103,3 +102,8 @@ def accordion(links_per_item=10, sort_field='position'):
 @register.simple_tag
 def custom_url(*args):
     return reverse(Page.CUSTOM_PAGES_URL_NAME, args=args or ('',))
+
+
+@register.simple_tag
+def full_url(url_name, *args):
+    return settings.BASE_URL + reverse(url_name, args=args)
