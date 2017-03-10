@@ -5,6 +5,7 @@ from itertools import chain
 from django.db import models, transaction
 from django.core.urlresolvers import reverse
 from django.template.defaultfilters import slugify
+from django.utils.translation import ugettext_lazy as _
 
 from mptt import models as mptt_models
 from images.models import ImageMixin
@@ -15,10 +16,10 @@ class AbstractSeo(models.Model):
         abstract = True
 
     h1 = models.CharField(blank=True, max_length=255)
-    keywords = models.CharField(blank=True, max_length=255)
-    description = models.TextField(blank=True)
-    seo_text = models.TextField(blank=True)
-    title = models.TextField(blank=True)
+    keywords = models.CharField(blank=True, max_length=255, verbose_name=_('keywords'))
+    description = models.TextField(blank=True, verbose_name=_('description'))
+    seo_text = models.TextField(blank=True, verbose_name=_('seo text'))
+    title = models.TextField(blank=True, verbose_name=_('title'))
 
 
 class Page(mptt_models.MPTTModel, AbstractSeo, ImageMixin):
@@ -38,24 +39,43 @@ class Page(mptt_models.MPTTModel, AbstractSeo, ImageMixin):
 
     class Meta:
         unique_together = ('type', 'slug', 'related_model_name')
+        verbose_name = _('Page')
+        verbose_name_plural = _('Pages')
 
-    name = models.CharField(max_length=255, default='', db_index=True)
+    name = models.CharField(max_length=255, default='', db_index=True, verbose_name=_('name'))
     type = models.CharField(default=FLAT_TYPE, max_length=100, editable=False, db_index=True)
     # Name for reversing at related model
     related_model_name = models.CharField(blank=True, max_length=255, editable=False)
 
     parent = mptt_models.TreeForeignKey(
-        'self', on_delete=models.CASCADE, related_name='children', null=True, blank=True)
+        'self',
+        on_delete=models.CASCADE,
+        related_name='children',
+        null=True,
+        blank=True,
+        verbose_name=_('parent'),
+    )
 
-    slug = models.SlugField(max_length=400, blank=True, db_index=True)
-    is_active = models.BooleanField(default=True, blank=True, db_index=True)
-    position = models.IntegerField(default=0, blank=True, db_index=True)
-    content = models.TextField(blank=True)
-    date_published = models.DateField(default=date.today, blank=True, db_index=True)
+    slug = models.SlugField(max_length=400, blank=True, db_index=True, verbose_name=_('slug'))
+    is_active = models.BooleanField(
+        default=True,
+        blank=True,
+        db_index=True,
+        verbose_name=_('is active'),
+    )
+    position = models.IntegerField(default=0, blank=True, db_index=True, verbose_name=_('position'))
+    content = models.TextField(blank=True, verbose_name=_('content'))
+    date_published = models.DateField(
+        default=date.today,
+        blank=True,
+        db_index=True,
+        verbose_name=_('date published'),
+    )
 
     menu_title = models.CharField(
         max_length=255, blank=True,
-        help_text='This field will be shown in the breadcrumbs, menu items and etc.'
+        help_text=_('This field will be shown in the breadcrumbs, menu items and etc.'),
+        verbose_name=_('menu title'),
     )
 
     @classmethod
@@ -153,6 +173,8 @@ class ModelPageManager(mptt_models.TreeManager):
 class CustomPage(Page):
     class Meta:
         proxy = True
+        verbose_name = _('Custom Page')
+        verbose_name_plural = _('Custom Pages')
 
     objects = CustomPageManager()
 
@@ -164,6 +186,8 @@ class CustomPage(Page):
 class FlatPage(Page):
     class Meta:
         proxy = True
+        verbose_name = _('Flat Page')
+        verbose_name_plural = _('Flat Pages')
 
     objects = FlatPageManager()
 
@@ -223,7 +247,7 @@ class PageMixin(models.Model):
     page = models.OneToOneField(
         Page, on_delete=models.CASCADE,
         related_name='%(app_label)s_%(class)s',  # docs: https://goo.gl/MJIAYd
-        null=True
+        null=True,
     )
 
     @classmethod
@@ -306,7 +330,7 @@ class SyncPageMixin(PageMixin):
                 'name': getattr(self, 'name', ''),
                 'related_model_name': self.related_model_name,
                 'slug': slug,
-                **kwargs
+                **kwargs,
             }
 
             self.page = ModelPage.objects.create(**page_data)

@@ -29,6 +29,10 @@ body.admin .table > thead > tr > th,
   width: 300px;
 }
 
+.admin .module h2 {
+  text-transform: uppercase;
+}
+
 .main-content .inline-related h3 {
   font-size: 14px;
   padding: 11px;
@@ -52,8 +56,14 @@ body.admin .table > thead > tr > th,
   z-index: 10;
 }
 
-.admin input:not([type="checkbox"]) {
+#toolbar input[type="submit"],
+.admin #changelist .actions .button,
+.admin input:not([type="checkbox"]):not([type="submit"]) {
   height: 34px;
+}
+
+.admin form .aligned input + p.help {
+  padding: 0;
 }
 
 .admin a.cancel-link,
@@ -342,7 +352,7 @@ div.breadcrumbs {
 }
 
 .admin #changelist .actions .button {
-  vertical-align: text-bottom;
+  vertical-align: top;
 }
 
 .field-link {
@@ -438,7 +448,7 @@ ul.messagelist li {
 .filter-fields {
   background: #fff;
   border: 1px solid #ddd;
-  height: 212px;
+  height: 302px;
   overflow-y: auto;
 }
 
@@ -600,7 +610,6 @@ ul.messagelist li {
 }
 
 .admin .modal-box .btn {
-  color: #fff;
   height: 40px;
   font-size: 16px;
   margin: 0 12px;

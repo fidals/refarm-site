@@ -109,8 +109,8 @@ class TableEditor {
               <span class="caret"></span>
             </button>
             <ul class="dropdown-menu dropdown-menu-right table-editor-links-list">
-              <li><a class="js-to-site-page">Look on site page</a></li>
-              <li><a class="js-to-admin-page">Look on admin page</a></li>
+              <li><a class="js-to-site-page">Посмотреть на сайте</a></li>
+              <li><a class="js-to-admin-page">Посмотреть в Админке</a></li>
             </ul>
           </div>
         `;

@@ -29,7 +29,6 @@ class GenericTableEditor:
         ],
     }
 
-
     field_controller = views.TableEditorFieldsControlMixin(
         model,
         relation_field_names=relation_field_names,
@@ -53,12 +52,10 @@ class TestsTableEditorFieldsControl(TestCase):
         super(TestsTableEditorFieldsControl, cls).setUpClass()
         cls.model = TableEditorAPI.model
         cls.field_controller = TableEditorAPI.field_controller
-
         cls.relation_field_names = TableEditorAPI.relation_field_names
         cls.excluded_model_fields = TableEditorAPI.excluded_model_fields
         cls.included_related_model_fields = TableEditorAPI.included_related_model_fields
         cls.excluded_related_model_fields = TableEditorAPI.excluded_related_model_fields
-
 
     def test_get_all_field(self):
         field_count = len(list(self.field_controller._get_all_fields(self.model)))
@@ -81,6 +78,7 @@ class TestsTableEditorFieldsControl(TestCase):
             for field in fields
         ))
 
+    # TODO: Fails
     def test_get_related_model_fields(self):
         related_entity, another_related_entity = list(
             self.field_controller.get_related_model_fields())

@@ -61,7 +61,7 @@ class TableEditorDialogs {
         content: message,
         offsetTop: offset.top,
         offsetLeft: offset.left + (this.popover.settings.width / 2),
-        title: 'Error',
+        title: 'Ошибка',
       });
 
     $(this.popover.className).webuiPopover('destroy').webuiPopover(extendedSettings);

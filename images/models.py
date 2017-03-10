@@ -4,6 +4,7 @@ import time
 from django.db import models
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
+from django.utils.translation import ugettext_lazy as _
 from sorl import thumbnail
 from sorl.thumbnail import delete
 
@@ -15,8 +16,7 @@ def model_directory_path(instance, filename):
 
     result_filename = generate_filename(filename, instance.slug)
     models_folder_name = type(instance.model).__name__.lower()
-    return '{}/{}/{}'.format(
-        models_folder_name, instance.model.pk, result_filename)
+    return '{}/{}/{}'.format(models_folder_name, instance.model.pk, result_filename)
 
 
 class ImageManager(models.Manager):
@@ -45,6 +45,9 @@ class Image(models.Model):
     And to use sorl app for image fields.
     Django by Example, chapter 5. http://bit.ly/django-by-example-book
     """
+    class Meta:
+        verbose_name = _('image')
+        verbose_name_plural = _('images')
 
     objects = ImageManager()
 
@@ -54,12 +57,12 @@ class Image(models.Model):
     model = GenericForeignKey('content_type', 'object_id')
     # --->
 
-    title = models.CharField(max_length=400, blank=True)
-    slug = models.SlugField(max_length=400, blank=True, db_index=True)
-    description = models.TextField(default='', blank=True)
-    created = models.DateField(auto_now_add=True)
-    image = thumbnail.ImageField(upload_to=model_directory_path)
-    is_main = models.BooleanField(default=False, db_index=True)
+    title = models.CharField(max_length=400, blank=True, verbose_name=_('title'))
+    slug = models.SlugField(max_length=400, blank=True, db_index=True, verbose_name=_('slug'))
+    description = models.TextField(default='', blank=True, verbose_name=_('description'))
+    created = models.DateField(auto_now_add=True, verbose_name=_('created'))
+    image = thumbnail.ImageField(upload_to=model_directory_path, verbose_name=_('image'))
+    is_main = models.BooleanField(default=False, db_index=True, verbose_name=_('is main'))
 
     def __str__(self):
         return self.title
@@ -107,7 +110,7 @@ class ImageMixin(models.Model):
         content_type_field='content_type',
         object_id_field='object_id',
         related_query_name='images',
-        blank=True
+        blank=True,
     )
 
     @property

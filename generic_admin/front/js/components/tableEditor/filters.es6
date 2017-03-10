@@ -1,5 +1,11 @@
 class TableEditorFilters {
-  constructor() {
+  constructor(toggleFilterBtnText) {
+    this.defaultToggleFilterBtnText = {
+      show: 'Show filters',
+      hide: 'Hide filters',
+    };
+    this.toggleFilterBtnText = toggleFilterBtnText || this.defaultToggleFilterBtnText;
+
     this.DOM = {
       $sortableList: $('#sortable'),
       $filterWrapper: $('.js-filter-wrapper'),
@@ -13,11 +19,6 @@ class TableEditorFilters {
     this.storageKeys = {
       isFilterVisible: 'isFilterVisible',
       filterFieldsPreset: 'filterFieldsPreset',
-    };
-
-    this.toggleFilterBtnText = {
-      show: 'Show filters',
-      hide: 'Hide filters',
     };
 
     this.init();
