@@ -85,14 +85,13 @@ class SitemapPage(SingleObjectMixin, ListView):
                 return range(current_page.number, current_page.number + max_links)
 
         context = super(SitemapPage, self).get_context_data(**kwargs)
+        paginator_links = prepare_page_range(context['paginator'], context['page_obj'])
 
         return {
             **context,
             'url_pagination_hash': self.page_kwarg,
             'paginator_pages': context['page_obj'],
-            'paginator_links': prepare_page_range(
-                context['paginator'], context['page_obj']
-            ),
+            'paginator_links': paginator_links,
         }
 
 
