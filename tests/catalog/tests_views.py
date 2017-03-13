@@ -202,8 +202,8 @@ class SearchTests(TestCase):
 
     def get_search_results(self, term: str):
         url = '{}?term={}'.format(self.search.url, term)
-
-        return self.client.get(url)
+        # `follow=True` is required for 301 urls
+        return self.client.get(url, follow=True)
 
     def test_search_have_results(self):
         """Search page based on correct term should have results"""
