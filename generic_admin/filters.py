@@ -43,25 +43,6 @@ class PriceRange(admin.SimpleListFilter):
         })
 
 
-class PageParent(admin.SimpleListFilter):
-    """https://goo.gl/IYojpl"""
-    title = _('parent')
-    parameter_name = 'parent'
-
-    def lookups(self, request, model_admin):
-        return (
-            ('news', _('news')),
-            ('regions', _('regions')),
-            ('client-feedbacks', _('client feedbacks')),
-        )
-
-    def queryset(self, request, queryset):
-        if not self.value():
-            return
-
-        return queryset.filter(parent__slug=self.value())
-
-
 class HasImages(admin.SimpleListFilter):
     """https://goo.gl/IYojpl"""
     title = _('has images')

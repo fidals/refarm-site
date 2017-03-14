@@ -105,12 +105,7 @@ class PageWithoutModels(AbstractPage):
     list_display = ['id', 'name', 'slug', 'date_published', 'custom_parent', 'is_active']
     readonly_fields = ['id', 'correct_parent_id']
     inlines = [inlines.ImageInline]
-    list_filter = [
-        'is_active',
-        filters.HasContent,
-        filters.HasImages,
-        filters.PageParent,
-    ]
+    list_filter = ['is_active', filters.HasContent, filters.HasImages]
 
     def correct_parent_id(self, obj):
         """Needed for correct short_description attr"""
