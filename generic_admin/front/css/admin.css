@@ -189,9 +189,6 @@ div.breadcrumbs {
 .sidebar .jstree-anchor {
   color: #eee;
   user-select: none;
-  display: inline-block;
-  text-overflow: ellipsis;
-  overflow: hidden;
   width: 90%;
 }
 

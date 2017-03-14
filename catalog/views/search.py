@@ -1,4 +1,4 @@
-# TODO: move this into separate module
+from itertools import chain
 from typing import List, Tuple
 
 from django.core.urlresolvers import reverse_lazy
@@ -61,14 +61,20 @@ class Search(CustomPageView, AbstractSearch):
             raise Http404('Define "term" get parameter')
 
         # if we have product with id == int(term)
-        # just render this product on it's page
+        # then redirect to this product
         product = self._search_product_by_id(term)
         if product:
             return redirect(product.url, permanent=True)
 
         categories, products = self.search(term, self.search_limit)
-        self.object = self.get_object()
 
+        # if there is only one autocompleted entity
+        # then redirect to this entity
+        merged_queryset = list(chain(categories, products))
+        if len(merged_queryset) == 1:
+            return redirect(merged_queryset[0].url, permanent=True)
+
+        self.object = self.get_object()
         template = self.template_path.format(
             'results' if categories or products else 'no_results')
 

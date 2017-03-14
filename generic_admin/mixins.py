@@ -66,7 +66,11 @@ class AbstractPage(ChangeItemsStateActions):
 
     actions = ['make_items_active', 'make_items_non_active']
     list_display_links = ['name']
-    list_filter = ['is_active', filters.HasContent, filters.HasImages]
+    list_filter = [
+        'is_active',
+        filters.HasContent,
+        filters.HasImages,
+    ]
     save_on_top = True
     search_fields = ['id', 'name', 'slug']
 
@@ -101,6 +105,7 @@ class PageWithoutModels(AbstractPage):
     list_display = ['id', 'name', 'slug', 'date_published', 'custom_parent', 'is_active']
     readonly_fields = ['id', 'correct_parent_id']
     inlines = [inlines.ImageInline]
+    list_filter = ['is_active', filters.HasContent, filters.HasImages]
 
     def correct_parent_id(self, obj):
         """Needed for correct short_description attr"""

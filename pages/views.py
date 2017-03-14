@@ -66,55 +66,33 @@ class FlatPageView(DetailView):
 
 
 class SitemapPage(SingleObjectMixin, ListView):
-    # pagination_page is a text part of pagination hash in url
+    # `page_kwarg` is a text part of pagination hash in url
     page_kwarg = 'sitemap_page'
     paginate_by = 50
     paginator_max_links_per_page = 10
     slug_url_kwarg = 'page'
     template_name = 'pages/sitemap.html'
-    queryset = Page.objects.all()
+    queryset = Page.objects.order_by('name')
 
-    def get_paginator_links_range(self, paginator, paginator_page):
-        """
-        paginator_links - calculated Paginator links per page
-        paginator.num_pages - total Pages count for Sitemap links
-        paginator.count - total Pages links
-        pages.number - current Sitemap page number
-        """
-        paginator_links = self.calculate_paginator_links(paginator.count)
-        remaining_pages = paginator.num_pages - paginator_page.number
-
-        if remaining_pages > paginator_links:
-            paginator_links = range(paginator_page.number, paginator_page.number + paginator_links)
-        else:
-            paginator_links = range(paginator.num_pages - paginator_links + 1, paginator.num_pages + 1)
-
-        return paginator_links
-
-    def calculate_paginator_links(self, paginator_count):
-        """
-        Limit Paginator links count from calculated_count to max_count.
-        """
-        calculated_count = math.ceil(paginator_count / self.paginate_by)
-
-        if calculated_count < self.paginator_max_links_per_page:
-            return calculated_count
-        else:
-            return self.paginator_max_links_per_page
+    def get(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        return super(SitemapPage, self).get(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
+        def prepare_page_range(paginator, current_page):
+            max_links = self.paginator_max_links_per_page
+            if len(paginator.page_range) > max_links:
+                return range(current_page.number, current_page.number + max_links)
+
         context = super(SitemapPage, self).get_context_data(**kwargs)
+        paginator_links = prepare_page_range(context['paginator'], context['page_obj'])
 
         return {
             **context,
             'url_pagination_hash': self.page_kwarg,
             'paginator_pages': context['page_obj'],
-            'paginator_links': self.get_paginator_links_range(context['paginator'], context['page_obj']),
+            'paginator_links': paginator_links,
         }
-
-    def get(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        return super(SitemapPage, self).get(request, *args, **kwargs)
 
 
 def robots(request):
