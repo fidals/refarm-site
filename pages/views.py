@@ -83,6 +83,8 @@ class SitemapPage(SingleObjectMixin, ListView):
             max_links = self.paginator_max_links_per_page
             if len(paginator.page_range) > max_links:
                 return range(current_page.number, current_page.number + max_links)
+            else:
+                return range(1, len(paginator.page_range))
 
         context = super(SitemapPage, self).get_context_data(**kwargs)
         paginator_links = prepare_page_range(context['paginator'], context['page_obj'])
