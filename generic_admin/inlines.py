@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.contrib.contenttypes.admin import GenericStackedInline
 from django.utils.html import format_html
+from django.utils.translation import ugettext_lazy as _
 
 from images.models import Image
 
@@ -21,7 +22,7 @@ class ProductInline(admin.StackedInline):
     def correct_category_id(self, obj):
         """Needed for correct short_description attr"""
         return obj.category_id
-    correct_category_id.short_description = 'Category ID'
+    correct_category_id.short_description = _('Category ID')
 
 
 class CategoryInline(admin.StackedInline):
@@ -34,29 +35,28 @@ class CategoryInline(admin.StackedInline):
             ('parent', 'correct_parent_id'),
         )
     }),)
+    readonly_fields = ['id', 'correct_parent_id']
 
     def correct_parent_id(self, obj):
         """Needed for correct short_description attr"""
         return obj.parent_id
-    correct_parent_id.short_description = 'Parent ID'
 
-    readonly_fields = ['id', 'correct_parent_id']
+    correct_parent_id.short_description = _('Parent ID')
 
 
 class ImageInline(GenericStackedInline):
     model = Image
     extra = 1
     readonly_fields = ['current_image']
-    verbose_name = 'Image'
+    verbose_name = _('Image')
     fieldsets = (
         (None, {
             'classes': ('primary-chars', ),
             'fields': (
                 'current_image',
                 'image',
-                ('slug', 'title'),
-                'is_main',
-                'description',
+                ('title', 'description'),
+                ('slug', 'is_main'),
             ),
         }),
     )
@@ -66,3 +66,5 @@ class ImageInline(GenericStackedInline):
             '<img src="{url}" class="img-responsive images-item">',
             url=obj.image.url
         )
+
+    current_image.short_description = _('current image')

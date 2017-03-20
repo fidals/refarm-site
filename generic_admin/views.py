@@ -1,21 +1,24 @@
 from itertools import chain
 from functools import partial
-from typing import Iterator, Union
+from typing import Iterator, Tuple
 
+from django.contrib.admin.views.decorators import staff_member_required
 from django.core.urlresolvers import reverse
 from django.core.exceptions import ValidationError
-from django.contrib.admin.views.decorators import staff_member_required
 from django.db import transaction
 from django.db.models import F, ObjectDoesNotExist, Model, Field
+from django.http import HttpResponse, JsonResponse, QueryDict
+from django.template.response import TemplateResponse
 from django.views.generic import View
 from django.views.generic.list import MultipleObjectMixin
 from django.utils.decorators import method_decorator
-from django.http import HttpResponse, JsonResponse, QueryDict
-from django.template.response import TemplateResponse
+from django.utils.translation import ugettext_lazy as _
 
 
 def get_request_body(request):
     return {k: v[0] for k, v in dict(QueryDict(request.body)).items()}
+
+RelatedModelField = Field
 
 
 class TableEditorFieldsControlMixin:
@@ -51,9 +54,10 @@ class TableEditorFieldsControlMixin:
     def get_related_model(self, related_field_name: str) -> Model:
         return self._get_field(self.model, related_field_name).related_model
 
-    def get_related_model_fields(self) -> Iterator[Union[str, Field]]:
+    def get_related_model_fields(self) -> Iterator[Tuple[RelatedModelField, Iterator[Field]]]:
         def get_fields(related_field_name):
-            model = self._get_field(self.model, related_field_name).related_model
+            model_fields = self._get_field(self.model, related_field_name)
+            model = model_fields.related_model
 
             included_fields = self.included_related_model_fields.get(related_field_name)
             excluded_fields = self.excluded_related_model_fields.get(related_field_name)
@@ -67,7 +71,7 @@ class TableEditorFieldsControlMixin:
             else:
                 fields = self._get_all_fields(model)
 
-            return related_field_name, fields
+            return model_fields, fields
 
         return map(get_fields, self.relation_field_names)
 
@@ -102,11 +106,12 @@ class ABSTableEditor(MultipleObjectMixin, View):
 
 class TableEditorGet:
     def prepare_related_model_fields(self, fields_data):
-        def prepare_fields(related_field_name, fields):
+        def prepare_fields(related_model_field, fields):
+            related_model = related_model_field.related_model
             return (
                 (
-                    '{}_{}'.format(related_field_name, field.name),
-                    F('{}__{}'.format(related_field_name, field.name))
+                    '{}_{}'.format(related_model._meta.model_name, field.name),
+                    F('{}__{}'.format(related_model_field.name, field.name))
                 ) for field in fields
             )
 
@@ -119,9 +124,9 @@ class TableEditorGet:
 
         return (
             super(TableEditorGet, self)
-                .get_queryset()
-                .select_related(*self.relation_field_names)
-                .annotate(**annotate_data)
+            .get_queryset()
+            .select_related(*self.relation_field_names)
+            .annotate(**annotate_data)
         )
 
     def get(self, request, *args, **kwargs):
@@ -254,13 +259,12 @@ class TableEditor(ABSTableEditor):
     each_context = None  # Define from Admin's site.
 
     def prepare_related_model_fields(self, fields_data):
-        def prepare_fields(related_field_name, fields):
-            capitalize_related_field_name = related_field_name.capitalize()
-
+        def prepare_fields(related_model_field, fields):
+            related_model = related_model_field.related_model
             return (
-                ('{}_{}'.format(related_field_name, field.name),
-                 '{} {}'.format(
-                     capitalize_related_field_name,
+                ('{}_{}'.format(related_model_field.name, field.name),
+                 '{}: {}'.format(
+                     related_model._meta.verbose_name,
                      getattr(field, 'verbose_name', field.name)))
                 for field in fields
             )
@@ -275,13 +279,16 @@ class TableEditor(ABSTableEditor):
         )
 
     def get_filter(self):
-        prepared_related_model_fields = self.prepare_related_model_fields(
-            self.field_controller.get_related_model_fields()
-        )
+        def get_second_el(arr):
+            return arr[1]
 
-        prepared_model_fields = self.prepare_model_fields(
+        prepared_related_model_fields = sorted(self.prepare_related_model_fields(
+            self.field_controller.get_related_model_fields()
+        ), key=get_second_el)
+
+        prepared_model_fields = sorted(self.prepare_model_fields(
             self.field_controller.get_model_fields()
-        )
+        ), key=get_second_el)
 
         filter_data = chain(prepared_model_fields, prepared_related_model_fields)
 
@@ -295,7 +302,7 @@ class TableEditor(ABSTableEditor):
     def get(self, request, *args, **kwargs):
         context = {
             **self.each_context(request),
-            'title': 'Table editor',
+            'title': _('Table editor'),
             'filter_fields': self.get_filter(),
             'add_entity_form': self.add_entity_form(),
         }

@@ -2,9 +2,10 @@ from functools import reduce
 from typing import Union
 
 from django.db import models
+from django.db.models import Q, F, When, Case, Value, BooleanField
 from django.core.urlresolvers import reverse
 from django.shortcuts import _get_queryset
-from django.db.models import Q, F, When, Case, Value, BooleanField
+from django.utils.translation import ugettext_lazy as _
 from mptt import models as mptt_models, managers as mptt_managers
 
 
@@ -39,15 +40,19 @@ class AbstractCategory(mptt_models.MPTTModel):
 
     class Meta:
         abstract = True
-        verbose_name_plural = 'categories'
-        unique_together = (('name', 'parent'))
+        unique_together = ('name', 'parent')
+        verbose_name = _('Category')
+        verbose_name_plural = _('Categories')
 
     objects = CategoryManager()
-
-    name = models.CharField(max_length=255, db_index=True)
-
+    name = models.CharField(max_length=255, db_index=True, verbose_name=_('name'))
     parent = mptt_models.TreeForeignKey(
-        'self', on_delete=models.CASCADE, null=True, blank=True, related_name='children',
+        'self',
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='children',
+        verbose_name=_('parent'),
     )
 
     def __str__(self):
@@ -98,13 +103,27 @@ class AbstractProduct(models.Model):
     class Meta:
         abstract = True
         ordering = ['name']
+        verbose_name = _('Product')
+        verbose_name_plural = _('Products')
 
     objects = ProductManager()
-
-    name = models.CharField(max_length=255, db_index=True)
-    price = models.FloatField(blank=True, default=0, db_index=True)
-    in_stock = models.PositiveIntegerField(default=0, db_index=True)
-    is_popular = models.BooleanField(default=False, db_index=True)
+    name = models.CharField(max_length=255, db_index=True, verbose_name=_('name'))
+    price = models.FloatField(
+        blank=True,
+        default=0,
+        db_index=True,
+        verbose_name=_('price'),
+    )
+    in_stock = models.PositiveIntegerField(
+        default=0,
+        db_index=True,
+        verbose_name=_('in stock'),
+    )
+    is_popular = models.BooleanField(
+        default=False,
+        db_index=True,
+        verbose_name=_('is popular'),
+    )
 
     @property
     def url(self):
