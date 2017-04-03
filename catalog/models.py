@@ -22,6 +22,15 @@ def search(term: str, model_type: Union[models.Model, models.Manager, models.Que
     ).order_by(F('is_name_start_by_term').desc(), *ordering or ('name', ))
 
 
+class AdminTreeDisplayMixin(object):
+
+    def get_admin_tree_title(self):
+        """
+        Returns string that used as title of entity in sidebar at admin panel
+        """
+        return '[{id}] {name}'.format(id=self.id, name=self.name)
+
+
 class CategoryManager(mptt_managers.TreeManager):
     def get_root_categories_by_products(self, products: models.QuerySet) -> dict:
         root_categories = self.root_nodes()
@@ -36,7 +45,7 @@ class CategoryManager(mptt_managers.TreeManager):
         }
 
 
-class AbstractCategory(mptt_models.MPTTModel):
+class AbstractCategory(mptt_models.MPTTModel, AdminTreeDisplayMixin):
 
     class Meta:
         abstract = True
@@ -94,7 +103,7 @@ class ProductManager(models.Manager):
         return self.get_queryset().get_by_category(category, ordering)
 
 
-class AbstractProduct(models.Model):
+class AbstractProduct(models.Model, AdminTreeDisplayMixin):
     """
     Product model.
     Defines basic functionality and primitives for Product in typical e-shop.
