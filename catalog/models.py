@@ -15,11 +15,15 @@ def search(term: str, model_type: Union[models.Model, models.Manager, models.Que
     query_set = _get_queryset(model_type)
     query = reduce(lambda q, lookup: q | Q(**{lookup: term}), lookups, Q())
 
-    return query_set.filter(query).annotate(
-        is_name_start_by_term=Case(When(
-            name__istartswith=term, then=Value(True)), default=Value(False),
-            output_field=BooleanField())
-    ).order_by(F('is_name_start_by_term').desc(), *ordering or ('name', ))
+    return (
+        query_set.filter(query, page__is_active=True)
+            .annotate(
+                is_name_start_by_term=Case(When(
+                name__istartswith=term, then=Value(True)), default=Value(False),
+                output_field=BooleanField())
+            )
+            .order_by(F('is_name_start_by_term').desc(), *ordering or ('name', ))
+    )
 
 
 class AdminTreeDisplayMixin(object):
@@ -83,6 +87,9 @@ class AbstractCategory(mptt_models.MPTTModel, AdminTreeDisplayMixin):
 
 class ProductQuerySet(models.QuerySet):
 
+    def get_filtered_queryset(self):
+        return self.filter(page__is_active=True)
+
     def get_offset(self, start, step):
         return self[start:start + step]
 
@@ -98,6 +105,9 @@ class ProductManager(models.Manager):
 
     def get_queryset(self):
         return ProductQuerySet(self.model, using=self._db)
+
+    def get_filtered_queryset(self):
+        return self.get_queryset().get_filtered_queryset()
 
     def get_by_category(self, category: models.Model, ordering: [str]=None) -> models.QuerySet:
         return self.get_queryset().get_by_category(category, ordering)
