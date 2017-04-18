@@ -53,7 +53,7 @@ class Image(models.Model):
 
     # <--- Generic relation fields | http://bit.ly/django-generic-relations
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, db_index=True)
-    object_id = models.PositiveIntegerField()
+    object_id = models.PositiveIntegerField(db_index=True)
     model = GenericForeignKey('content_type', 'object_id')
     # --->
 
