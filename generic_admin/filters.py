@@ -7,7 +7,6 @@ from django.utils.translation import ugettext_lazy as _
 class PriceRange(admin.SimpleListFilter):
     """https://goo.gl/IYojpl"""
     title = _('price')
-
     parameter_name = 'price'
 
     def lookups(self, request, model_admin):
@@ -47,13 +46,12 @@ class PriceRange(admin.SimpleListFilter):
 class HasImages(admin.SimpleListFilter):
     """https://goo.gl/IYojpl"""
     title = _('has images')
-
     parameter_name = 'has_images'
 
     def lookups(self, request, model_admin):
         return (
             ('yes', _('Has images')),
-            ('no', _('Has not images')),
+            ('no', _('Has no images')),
         )
 
     def queryset(self, request, queryset):
@@ -70,13 +68,12 @@ class HasImages(admin.SimpleListFilter):
 class HasContent(admin.SimpleListFilter):
     """https://goo.gl/IYojpl"""
     title = _('has content')
-
     parameter_name = 'has_content'
 
     def lookups(self, request, model_admin):
         return (
             ('yes', _('Has content')),
-            ('no', _('Has not content')),
+            ('no', _('Has no content')),
         )
 
     def queryset(self, request, queryset):

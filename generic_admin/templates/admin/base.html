@@ -1,20 +1,21 @@
-{% load i18n admin_static %}
-{% load staticfiles %}
+{% load i18n %}
+{% load admin_static %}
+{% load static %}
+
 <!DOCTYPE html>
 {% get_current_language as LANGUAGE_CODE %}{% get_current_language_bidi as LANGUAGE_BIDI %}
 <html lang="{{ LANGUAGE_CODE|default:'ru-ru' }}" {% if LANGUAGE_BIDI %}dir="rtl"{% endif %}>
 <head>
   <title>{% block title %}{% endblock %}</title>
   <link rel="stylesheet" href="{% block stylesheet %}{% static 'admin/css/base.css' %}{% endblock %}">
-  {% block favicon %}<link rel="icon" type="image/x-icon" href="{% static 'favicon.ico' %}">{% endblock %}
   {% block css %}
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
-    <link rel="stylesheet" href="{% static 'css/admin.min.css' %}">
+    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <link href="{% static 'css/admin.min.css' %}" rel="stylesheet">
   {% endblock %}
   {% block extrastyle %}{% endblock %}
   {% if LANGUAGE_BIDI %}
-    <link rel="stylesheet" href="{% block stylesheet_rtl %}{% static 'admin/css/rtl.css' %}{% endblock %}">
+    <link href="{% block stylesheet_rtl %}{% static 'admin/css/rtl.css' %}{% endblock %}" rel="stylesheet">
   {% endif %}
   {% block extrahead %}{% endblock %}
   {% block blockbots %}<meta name="robots" content="none, noarchive"/>{% endblock %}
@@ -37,31 +38,31 @@
         </span>
 
         <div id="branding">{% block branding %}{% endblock %}</div>
-        {% block usertools %}
-          {% if has_permission %}
-            <div id="user-tools">
-              {% block welcome-msg %}
-                {% trans 'Welcome,' %}
-                <strong>{% firstof user.get_short_name user.get_username %}</strong>.
-              {% endblock %}
-              {% block userlinks %}
-                {% if site_url %}
-                  <a href="{{ site_url }}">{% trans 'View site' %}</a> /
-                {% endif %}
-                {% if user.is_active and user.is_staff %}
-                  {% url 'django-admindocs-docroot' as docsroot %}
-                  {% if docsroot %}
-                    <a href="{{ docsroot }}">{% trans 'Documentation' %}</a> /
+          {% block usertools %}
+            {% if has_permission %}
+              <div id="user-tools">
+                {% block welcome-msg %}
+                  {% trans 'Welcome,' %}
+                  <strong>{% firstof user.get_short_name user.get_username %}</strong>.
+                {% endblock %}
+                {% block userlinks %}
+                  {% if site_url %}
+                    <a href="{{ site_url }}">{% trans 'View site' %}</a> /
                   {% endif %}
-                {% endif %}
-                {% if user.has_usable_password %}
-                  <a href="{% url 'admin:password_change' %}">{% trans 'Change password' %}</a> /
-                {% endif %}
-                <a href="{% url 'admin:logout' %}">{% trans 'Log out' %}</a>
-              {% endblock %}
-            </div>
-          {% endif %}
-        {% endblock %}
+                  {% if user.is_active and user.is_staff %}
+                    {% url 'django-admindocs-docroot' as docsroot %}
+                    {% if docsroot %}
+                      <a href="{{ docsroot }}">{% trans 'Documentation' %}</a> /
+                    {% endif %}
+                  {% endif %}
+                  {% if user.has_usable_password %}
+                    <a href="{% url 'admin:password_change' %}">{% trans 'Change password' %}</a> /
+                  {% endif %}
+                  <a href="{% url 'admin:logout' %}">{% trans 'Log out' %}</a>
+                {% endblock %}
+              </div>
+            {% endif %}
+          {% endblock %}
         {% block nav-global %}{% endblock %}
       </div>
 

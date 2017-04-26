@@ -18,24 +18,20 @@ def related_entity_name_strategy(**kwargs):
 class GenericTableEditor:
     model = TestEntityWithRelations
     relation_field_names = ['related_entity', 'another_related_entity']
-
     excluded_model_fields = ['id', 'is_active']
     excluded_related_model_fields = {
         'another_related_entity': ['is_active'],
     }
     included_related_model_fields = {
-        'related_entity': [
-            'name'
-        ],
+        'related_entity': ['name'],
     }
-
 
     field_controller = views.TableEditorFieldsControlMixin(
         model,
         relation_field_names=relation_field_names,
         excluded_model_fields=excluded_model_fields,
         included_related_model_fields=included_related_model_fields,
-        excluded_related_model_fields=excluded_related_model_fields
+        excluded_related_model_fields=excluded_related_model_fields,
     )
 
 
@@ -53,12 +49,10 @@ class TestsTableEditorFieldsControl(TestCase):
         super(TestsTableEditorFieldsControl, cls).setUpClass()
         cls.model = TableEditorAPI.model
         cls.field_controller = TableEditorAPI.field_controller
-
         cls.relation_field_names = TableEditorAPI.relation_field_names
         cls.excluded_model_fields = TableEditorAPI.excluded_model_fields
         cls.included_related_model_fields = TableEditorAPI.included_related_model_fields
         cls.excluded_related_model_fields = TableEditorAPI.excluded_related_model_fields
-
 
     def test_get_all_field(self):
         field_count = len(list(self.field_controller._get_all_fields(self.model)))
@@ -81,17 +75,19 @@ class TestsTableEditorFieldsControl(TestCase):
             for field in fields
         ))
 
+    # TODO: Fails
     def test_get_related_model_fields(self):
         related_entity, another_related_entity = list(
-            self.field_controller.get_related_model_fields())
+            self.field_controller.get_related_model_fields()
+        )
 
         self.assertEqual(len(related_entity), 2)
         self.assertEqual(len(list(related_entity[1])), 1)
         self.assertEqual(len(another_related_entity), 2)
         self.assertEqual(len(list(another_related_entity[1])), 3)
 
-        self.assertEqual(related_entity[0], self.relation_field_names[0])
-        self.assertEqual(another_related_entity[0], self.relation_field_names[1])
+        self.assertEqual(related_entity[0].name, self.relation_field_names[0])
+        self.assertEqual(another_related_entity[0].name, self.relation_field_names[1])
 
         self.assertTrue(all(
             field.name not in self.excluded_related_model_fields
@@ -137,7 +133,7 @@ class TestsTableEditorApi(TestCase):
 
         for i in range(cls.entities_count):
             name = 'test entity #{}'.format(i)
-            is_active = bool(i%2)
+            is_active = bool(i % 2)
             TestEntityWithRelations.objects.create(
                 name=name,
                 is_active=is_active,

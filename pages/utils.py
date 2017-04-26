@@ -14,7 +14,7 @@ def save_custom_pages():
     >>> custom_page = CustomPage.objects.get(slug='order')
     """
     for fields in settings.CUSTOM_PAGES.values():
-        page_in_db = CustomPage.objects.filter(**fields).exists()
+        page_in_db = CustomPage.objects.filter(slug=fields['slug']).exists()
         if not page_in_db:
             CustomPage.objects.create(**fields)
 

@@ -30,13 +30,12 @@ class CategoryPage(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super(CategoryPage, self).get_context_data(**kwargs)
-        model = context['page'].model
-
+        model = self.object.model
         return {
             **context,
-            'products': model.products.all(),
-            'children': model.get_children(),
             'category': model,
+            'children': model.get_children(),
+            'products': model.products.all(),
         }
 
 

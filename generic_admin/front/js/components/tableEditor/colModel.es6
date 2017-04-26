@@ -13,7 +13,7 @@ class TableEditorColModel {
       },
       {
         name: 'name',
-        label: 'Name',
+        label: 'Название',
         editable: true,
         editrules: {
           required: true,
@@ -22,7 +22,7 @@ class TableEditorColModel {
       },
       {
         name: 'category_name',
-        label: 'Category name',
+        label: 'Категория: название',
         editable: true,
         editoptions: {
           dataInit: (elem) => {
@@ -37,7 +37,7 @@ class TableEditorColModel {
       },
       {
         name: 'price',
-        label: 'Price',
+        label: 'Цена',
         editable: true,
         editoptions: {
           type: 'number',
@@ -61,7 +61,7 @@ class TableEditorColModel {
       },
       {
         name: 'in_stock',
-        label: 'In stock',
+        label: 'Наличие',
         editable: true,
         editoptions: {
           type: 'number',
@@ -79,7 +79,7 @@ class TableEditorColModel {
       },
       {
         name: 'is_popular',
-        label: 'Is popular',
+        label: 'Популярность',
         align: 'center',
         editable: true,
         editoptions: { value: '1:0' },
@@ -89,13 +89,13 @@ class TableEditorColModel {
       },
       {
         name: 'page_title',
-        label: 'Title',
+        label: 'Заголовок',
         editable: true,
         width: 150,
       },
       {
         name: 'page_position',
-        label: 'Position',
+        label: 'Позиция',
         editable: true,
         editoptions: {
           type: 'number',
@@ -118,19 +118,19 @@ class TableEditorColModel {
       },
       {
         name: 'page_keywords',
-        label: 'Keywords',
+        label: 'Ключевые слова',
         editable: true,
         width: 150,
       },
       {
         name: 'page_description',
-        label: 'Description',
+        label: 'Описание',
         editable: true,
         width: 150,
       },
       {
         name: 'page_seo_text',
-        label: 'Seo text',
+        label: 'Seo текст',
         editable: true,
         width: 150,
       },
@@ -144,13 +144,13 @@ class TableEditorColModel {
       },
       {
         name: 'page_menu_title',
-        label: 'Menu title',
+        label: 'Заголовок в меню',
         editable: true,
         width: 150,
       },
       {
         name: 'page_is_active',
-        label: 'Is active',
+        label: 'Активность',
         align: 'center',
         editable: true,
         editoptions: { value: '1:0' },
@@ -168,7 +168,7 @@ class TableEditorColModel {
       },
       {
         name: 'linksTag',
-        label: 'Links',
+        label: 'Ссылки',
         align: 'center',
         formatter: 'linksTag',
         sortable: false,
