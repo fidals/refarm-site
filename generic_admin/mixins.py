@@ -125,18 +125,14 @@ class PageWithModels(AbstractPage, PermissionsControl, AutoCreateRedirects):
                 ('name', 'slug'),
                 'date_published',
                 'menu_title',
-                'seo_text',
+                'template',
                 'position',
             )
         }),
         ('Параметры страницы', {
             'classes': ('secondary-chars',),
             'fields': (
-                'h1',
-                'title',
-                'keywords',
-                'description',
-                'content'
+                'content',
             )
         })
     )

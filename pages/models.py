@@ -4,6 +4,7 @@ from itertools import chain
 
 from django.db import models, transaction
 from django.core.urlresolvers import reverse
+from django.template import Template, Context
 from django.template.defaultfilters import slugify
 from django.utils.translation import ugettext_lazy as _
 
@@ -11,18 +12,28 @@ from mptt import models as mptt_models
 from images.models import ImageMixin
 
 
-class AbstractSeo(models.Model):
-    class Meta:
-        abstract = True
+class PageTemplate(models.Model):
 
+    name = models.CharField(blank=False, max_length=255, unique=True)
     h1 = models.CharField(blank=True, max_length=255)
     keywords = models.CharField(blank=True, max_length=255, verbose_name=_('keywords'))
     description = models.TextField(blank=True, verbose_name=_('description'))
-    seo_text = models.TextField(blank=True, verbose_name=_('seo text'))
     title = models.TextField(blank=True, verbose_name=_('title'))
 
+    class Meta:
+        verbose_name = _('PageTemplate')
+        verbose_name_plural = _('PageTemplates')
 
-class Page(mptt_models.MPTTModel, AbstractSeo, ImageMixin):
+    def __str__(self):
+        return self.name
+
+    def render(self, field, context):
+        template = Template(field)
+        context = Context(context)
+        return template.render(context)
+
+
+class Page(mptt_models.MPTTModel, ImageMixin):
     # pages with same templates (ex. news, about)
     FLAT_TYPE = 'flat'
     # pages with unique templates (ex. index, order)
@@ -77,6 +88,11 @@ class Page(mptt_models.MPTTModel, AbstractSeo, ImageMixin):
         help_text=_('This field will be shown in the breadcrumbs, menu items and etc.'),
         verbose_name=_('menu title'),
     )
+
+    template = models.ForeignKey(
+        PageTemplate,
+        default=1,  # базовый шаблон страницы (ID=1), создается при миграции
+        verbose_name=_('page template'))
 
     @classmethod
     def get_index(cls):
@@ -151,6 +167,64 @@ class Page(mptt_models.MPTTModel, AbstractSeo, ImageMixin):
             fields = tuple(chain.from_iterable(fields))
 
         return fields
+
+    '''
+    SEO fields backward compatility attributes
+    '''
+
+    def get_template_render_context(self):
+        return {
+            'page': self,
+        }
+
+    @property
+    def title(self):
+        return self.template.render(
+            self.template.title,
+            self.get_template_render_context()
+        )
+
+    @title.setter
+    def title(self, value):
+        self.template.title = value
+        self.template.save()
+
+    @property
+    def h1(self):
+        return self.template.render(
+            self.template.h1,
+            self.get_template_render_context()
+        )
+
+    @h1.setter
+    def h1(self, value):
+        self.template.h1 = value
+        self.template.save()
+
+    @property
+    def description(self):
+        return self.template.render(
+            self.template.description,
+            self.get_template_render_context(),
+        )
+
+    @description.setter
+    def description(self, value):
+        self.template.description = value
+        self.template.save()
+
+    @property
+    def keywords(self):
+        return self.template.render(
+            self.template.keywords,
+            self.get_template_render_context(),
+        )
+
+    @keywords.setter
+    def keywords(self, value):
+        self.template.keywords = value
+        self.template.save()
+
 
 
 # ------- Managers -------
