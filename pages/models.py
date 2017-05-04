@@ -19,6 +19,7 @@ class PageTemplate(models.Model):
     keywords = models.CharField(blank=True, max_length=255, verbose_name=_('keywords'))
     description = models.TextField(blank=True, verbose_name=_('description'))
     title = models.TextField(blank=True, verbose_name=_('title'))
+    seo_text = models.TextField(blank=True, verbose_name=_('seo text'))
 
     class Meta:
         verbose_name = _('Page Template')
@@ -224,6 +225,18 @@ class Page(mptt_models.MPTTModel, ImageMixin):
     @keywords.setter
     def keywords(self, value):
         self.template.keywords = value
+        self.template.save()
+
+    @property
+    def seo_text(self):
+        return self.template.render(
+            self.template.seo_text,
+            self.get_template_render_context(),
+        )
+
+    @seo_text.setter
+    def seo_text(self, value):
+        self.template.seo_text = value
         self.template.save()
 
 

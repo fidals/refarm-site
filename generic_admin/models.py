@@ -20,6 +20,7 @@ class CustomPageTemplateAdmin(mixins.PermissionsControl):
                 'keywords',
                 'description',
                 'h1',
+                'seo_text',
             )
         }),
     )
