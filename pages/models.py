@@ -21,8 +21,8 @@ class PageTemplate(models.Model):
     title = models.TextField(blank=True, verbose_name=_('title'))
 
     class Meta:
-        verbose_name = _('PageTemplate')
-        verbose_name_plural = _('PageTemplates')
+        verbose_name = _('Page Template')
+        verbose_name_plural = _('Page Templates')
 
     def __str__(self):
         return self.name
@@ -92,7 +92,8 @@ class Page(mptt_models.MPTTModel, ImageMixin):
     template = models.ForeignKey(
         PageTemplate,
         default=1,  # базовый шаблон страницы (ID=1), создается при миграции
-        verbose_name=_('page template'))
+        verbose_name=_('page template')
+    )
 
     @classmethod
     def get_index(cls):
@@ -169,7 +170,7 @@ class Page(mptt_models.MPTTModel, ImageMixin):
         return fields
 
     '''
-    SEO fields backward compatility attributes
+    SEO fields attributes for backward compatibility
     '''
 
     def get_template_render_context(self):
@@ -224,7 +225,6 @@ class Page(mptt_models.MPTTModel, ImageMixin):
     def keywords(self, value):
         self.template.keywords = value
         self.template.save()
-
 
 
 # ------- Managers -------
