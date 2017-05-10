@@ -134,19 +134,6 @@ class Page(mptt_models.MPTTModel, ImageMixin):
     def __str__(self):
         return self.slug
 
-    def __getattribute__(self, name):
-        """Some fields should give default value."""
-        attr = super(Page, self).__getattribute__(name)
-        if not attr:
-            if name in {'title', 'h1', 'description', 'keywords', 'seo_text'}:
-                return self.template.render(
-                    getattr(self.template, name),
-                    self.get_template_render_context(),
-                )
-            elif name in {'menu_title'}:
-                return self.name
-        return attr
-
     def get_absolute_url(self):
         """Different page types reverse different urls"""
         if self.is_model:
@@ -186,6 +173,36 @@ class Page(mptt_models.MPTTModel, ImageMixin):
         return {
             'page': self,
         }
+
+    def display_attribute(self, name):
+        return getattr(self, name) or self.template.render(
+            getattr(self.template, name),
+            self.get_template_render_context(),
+        )
+
+    @property
+    def display_title(self):
+        return self.display_attribute('title')
+
+    @property
+    def display_h1(self):
+        return self.display_attribute('h1')
+
+    @property
+    def display_keywords(self):
+        return self.display_attribute('keywords')
+
+    @property
+    def display_description(self):
+        return self.display_attribute('description')
+
+    @property
+    def display_seo_text(self):
+        return self.display_attribute('seo_text')
+
+    @property
+    def display_menu_title(self):
+        return self.menu_title or self.name
 
 
 # ------- Managers -------
