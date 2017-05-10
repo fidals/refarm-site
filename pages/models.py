@@ -139,8 +139,10 @@ class Page(mptt_models.MPTTModel, ImageMixin):
         attr = super(Page, self).__getattribute__(name)
         if not attr:
             if name in {'title', 'h1', 'description', 'keywords'}:
-                attr = 'display_{name}'.format(name=name)
-                return super(Page, self).__getattribute__(name)
+                return self.template.render(
+                    getattr(self.template, name),
+                    self.get_template_render_context(),
+                )
             elif name in {'menu_title'}:
                 return self.name
         return attr
@@ -180,49 +182,10 @@ class Page(mptt_models.MPTTModel, ImageMixin):
 
         return fields
 
-    '''
-    SEO fields attributes for backward compatibility
-    '''
-
     def get_template_render_context(self):
         return {
             'page': self,
         }
-
-    @property
-    def display_title(self):
-        return self.title or self.template.render(
-            self.template.title,
-            self.get_template_render_context()
-        )
-
-    @property
-    def display_h1(self):
-        return self.h1 or self.template.render(
-            self.template.h1,
-            self.get_template_render_context()
-        )
-
-    @property
-    def display_description(self):
-        return self.description or self.template.render(
-            self.template.description,
-            self.get_template_render_context(),
-        )
-
-    @property
-    def display_keywords(self):
-        return self.keywords or self.template.render(
-            self.template.keywords,
-            self.get_template_render_context(),
-        )
-
-    @property
-    def display_seo_text(self):
-        return self.seo_text or self.template.render(
-            self.template.seo_text,
-            self.get_template_render_context(),
-        )
 
 
 # ------- Managers -------

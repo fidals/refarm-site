@@ -109,7 +109,7 @@ class PageTests(TestCase):
         page_with_custom_fields = create_page(
             Page, name='some page', slug='test', h1='test h1'
         )
-        self.assertEqual(page_with_custom_fields.display_h1, 'test h1')
+        self.assertEqual(page_with_custom_fields.h1, 'test h1')
 
         custom_page_template = PageTemplate.objects.create(
             name='test',
@@ -120,7 +120,7 @@ class PageTests(TestCase):
             Page, name='different page', template=custom_page_template
         )
 
-        self.assertEqual(page_with_template.display_h1, 'different page - купить в СПб')
+        self.assertEqual(page_with_template.h1, 'different page - купить в СПб')
 
 
 class CustomPageTests(TestCase):

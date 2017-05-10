@@ -1,9 +1,9 @@
 {% load pages_extras %}
 <head>
-  <title>{{ page.display_title }}</title>
+  <title>{{ page.title }}</title>
 </head>
 <body>
-  <h1>Page: {{ page.display_h1 }}</h1>
+  <h1>Page: {{ page.h1 }}</h1>
   <p>{% breadcrumbs page %}</p>
   <p>{{ page.content }}</p>
 
@@ -11,7 +11,7 @@
     <div>Sub pages:
       <ul>
         {% for item in page.children.all %}
-          <li><a href="{{ item.get_absolute_url }}">{{ item.display_title }}</a></li>
+          <li><a href="{{ item.get_absolute_url }}">{{ item.title }}</a></li>
         {% endfor %}
       </ul>
     </div>
