@@ -138,7 +138,7 @@ class Page(mptt_models.MPTTModel, ImageMixin):
         """Some fields should give default value."""
         attr = super(Page, self).__getattribute__(name)
         if not attr:
-            if name in {'title', 'h1', 'description', 'keywords'}:
+            if name in {'title', 'h1', 'description', 'keywords', 'seo_text'}:
                 return self.template.render(
                     getattr(self.template, name),
                     self.get_template_render_context(),
