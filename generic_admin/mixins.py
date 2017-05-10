@@ -132,7 +132,11 @@ class PageWithModels(AbstractPage, PermissionsControl, AutoCreateRedirects):
         ('Параметры страницы', {
             'classes': ('secondary-chars',),
             'fields': (
-                'content',
+                'h1',
+                'title',
+                'keywords',
+                'description',
+                'content'
             )
         })
     )
