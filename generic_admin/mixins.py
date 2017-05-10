@@ -125,6 +125,7 @@ class PageWithModels(AbstractPage, PermissionsControl, AutoCreateRedirects):
                 ('name', 'slug'),
                 'date_published',
                 'menu_title',
+                'seo_text',
                 'template',
                 'position',
             )
