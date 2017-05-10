@@ -137,8 +137,12 @@ class Page(mptt_models.MPTTModel, ImageMixin):
     def __getattribute__(self, name):
         """Some fields should give default value."""
         attr = super(Page, self).__getattribute__(name)
-        if name in ['title', 'h1', 'menu_title'] and not attr:
-            return self.name
+        if not attr:
+            if name in {'title', 'h1', 'description', 'keywords'}:
+                attr = 'display_{name}'.format(name=name)
+                return super(Page, self).__getattribute__(name)
+            elif name in {'menu_title'}:
+                return self.name
         return attr
 
     def get_absolute_url(self):
@@ -186,64 +190,39 @@ class Page(mptt_models.MPTTModel, ImageMixin):
         }
 
     @property
-    def title(self):
-        return self.template.render(
+    def display_title(self):
+        return self.title or self.template.render(
             self.template.title,
             self.get_template_render_context()
         )
 
-    @title.setter
-    def title(self, value):
-        self.template.title = value
-        self.template.save()
-
     @property
-    def h1(self):
-        return self.template.render(
+    def display_h1(self):
+        return self.h1 or self.template.render(
             self.template.h1,
             self.get_template_render_context()
         )
 
-    @h1.setter
-    def h1(self, value):
-        self.template.h1 = value
-        self.template.save()
-
     @property
-    def description(self):
-        return self.template.render(
+    def display_description(self):
+        return self.description or self.template.render(
             self.template.description,
             self.get_template_render_context(),
         )
 
-    @description.setter
-    def description(self, value):
-        self.template.description = value
-        self.template.save()
-
     @property
-    def keywords(self):
-        return self.template.render(
+    def display_keywords(self):
+        return self.keywords or self.template.render(
             self.template.keywords,
             self.get_template_render_context(),
         )
 
-    @keywords.setter
-    def keywords(self, value):
-        self.template.keywords = value
-        self.template.save()
-
     @property
-    def seo_text(self):
-        return self.template.render(
+    def display_seo_text(self):
+        return self.seo_text or self.template.render(
             self.template.seo_text,
             self.get_template_render_context(),
         )
-
-    @seo_text.setter
-    def seo_text(self, value):
-        self.template.seo_text = value
-        self.template.save()
 
 
 # ------- Managers -------
