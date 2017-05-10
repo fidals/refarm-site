@@ -43,26 +43,6 @@ class Migration(migrations.Migration):
                 'verbose_name_plural': 'Page Templates',
             },
         ),
-        migrations.RemoveField(
-            model_name='page',
-            name='description',
-        ),
-        migrations.RemoveField(
-            model_name='page',
-            name='h1',
-        ),
-        migrations.RemoveField(
-            model_name='page',
-            name='keywords',
-        ),
-        migrations.RemoveField(
-            model_name='page',
-            name='seo_text',
-        ),
-        migrations.RemoveField(
-            model_name='page',
-            name='title',
-        ),
         migrations.AddField(
             model_name='page',
             name='template',

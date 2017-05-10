@@ -90,6 +90,12 @@ class Page(mptt_models.MPTTModel, ImageMixin):
         verbose_name=_('menu title'),
     )
 
+    h1 = models.CharField(blank=True, max_length=255)
+    keywords = models.CharField(blank=True, max_length=255, verbose_name=_('keywords'))
+    description = models.TextField(blank=True, verbose_name=_('description'))
+    seo_text = models.TextField(blank=True, verbose_name=_('seo text'))
+    title = models.TextField(blank=True, verbose_name=_('title'))
+
     template = models.ForeignKey(
         PageTemplate,
         default=1,  # базовый шаблон страницы (ID=1), создается при миграции
