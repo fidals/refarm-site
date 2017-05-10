@@ -19,7 +19,7 @@ class ViewsTests(TestCase):
         :return:
         """
         super(ViewsTests, cls).setUpClass()
-        cls.page_index = CustomPage.objects.get_or_create(h1='Index', slug='')[0]
+        cls.page_index = CustomPage.objects.get_or_create(name='Index', slug='')[0]
         cls.category_tree_page = CustomPage.objects.get_or_create(slug='catalog')[0]
 
         cls.test_category = TestCategory.objects.create(
