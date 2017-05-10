@@ -39,6 +39,7 @@ class CustomPageAdmin(mixins.PageWithoutModels, mixins.PermissionsControl):
                 'name',
                 'date_published',
                 'menu_title',
+                'seo_text',
                 'template',
                 'position',
                 ('parent', 'correct_parent_id'),
@@ -47,6 +48,10 @@ class CustomPageAdmin(mixins.PageWithoutModels, mixins.PermissionsControl):
         ('Параметры страницы', {
             'classes': ('secondary-chars',),
             'fields': (
+                'h1',
+                'title',
+                ('keywords', 'id'),
+                'description',
                 'content',
             )
         })
@@ -63,6 +68,7 @@ class FlatPageAdmin(mixins.PageWithoutModels, mixins.AutoCreateRedirects):
                 ('name', 'slug'),
                 'date_published',
                 'menu_title',
+                'seo_text',
                 'template',
                 'position',
                 ('parent', 'correct_parent_id'),
@@ -71,6 +77,10 @@ class FlatPageAdmin(mixins.PageWithoutModels, mixins.AutoCreateRedirects):
         ('Параметры страницы', {
             'classes': ('secondary-chars',),
             'fields': (
+                'h1',
+                'title',
+                'keywords',
+                'description',
                 'content',
             )
         })
