@@ -98,7 +98,6 @@ class Page(mptt_models.MPTTModel, ImageMixin):
 
     template = models.ForeignKey(
         PageTemplate,
-        default=None,
         null=True,
         verbose_name=_('page template')
     )
