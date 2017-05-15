@@ -177,7 +177,7 @@ class Page(mptt_models.MPTTModel, ImageMixin):
     def display_attribute(self, name):
 
         if not self.template:
-            return getattr(self, name)
+            return getattr(self, name) or self.name
 
         return getattr(self, name) or self.template.render(
             getattr(self.template, name),
