@@ -32,6 +32,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='page',
             name='template',
-            field=models.ForeignKey(default=None, null=True, on_delete=django.db.models.deletion.CASCADE, to='pages.PageTemplate', verbose_name='page template'),
+            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='pages.PageTemplate', verbose_name='page template'),
         ),
     ]
