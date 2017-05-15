@@ -6,20 +6,6 @@ from django.db import migrations, models
 import django.db.models.deletion
 
 
-def migrate_forward(apps, schema_editor):
-    PageTemplate = apps.get_model('pages', 'PageTemplate')
-    PageTemplate.objects.create(
-        name='Базовый шаблон страницы',
-        title='{{ page.name }}',
-        h1='{{ page.name }}',
-    )
-
-
-def migrate_backward(apps, schema_editor):
-    PageTemplate = apps.get_model('pages', 'PageTemplate')
-    PageTemplate.objects.get(id=1).delete()
-
-
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -46,7 +32,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='page',
             name='template',
-            field=models.ForeignKey(default=1, on_delete=django.db.models.deletion.CASCADE, to='pages.PageTemplate', verbose_name='page template'),
+            field=models.ForeignKey(default=None, null=True, on_delete=django.db.models.deletion.CASCADE, to='pages.PageTemplate', verbose_name='page template'),
         ),
-        migrations.RunPython(migrate_forward, migrate_backward),
     ]
