@@ -179,7 +179,7 @@ class Page(mptt_models.MPTTModel, ImageMixin):
         if not self.template:
             return getattr(self, name) or self.name
 
-        return getattr(self, name) or self.template.render(
+        return self.template.render(
             getattr(self.template, name),
             self.get_template_render_context(),
         )

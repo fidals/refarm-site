@@ -122,6 +122,19 @@ class PageTests(TestCase):
 
         self.assertEqual(page_with_template.display_h1, 'different page - купить в СПб')
 
+    def test_display_attribute_uses_template(self):
+        custom_page_template = PageTemplate.objects.create(
+            name='test',
+            h1='{{ page.h1 }} - template',
+        )
+        page_with_template = create_page(
+            Page,
+            name='different page',
+            h1='page h1',
+            template=custom_page_template,
+        )
+        self.assertEqual(page_with_template.display_h1, 'page h1 - template')
+
 
 class CustomPageTests(TestCase):
     def test_should_get_only_custom_type_pages(self):
