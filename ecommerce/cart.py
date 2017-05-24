@@ -74,28 +74,30 @@ class Cart:
             self._cart[item['id']]['price'] = item['price']
         self.save()
 
+    def get_product_data(self, product):
+        page = getattr(product, 'page', None)
+        image_path = (
+            page.main_image.url
+            if (page and page.main_image) else placeholder_image_url()
+        )
+        return {
+            'name': product.name,
+            'price': product.price if product.price else 0,
+            'in_stock': product.in_stock,
+            'image': image_path,
+            'url': product.get_absolute_url(),
+        }
+
     def add(self, product: Model, quantity=1):
         """Add a Product to the Cart or update its quantity if it's already in it."""
-        def get_product_attributes():
-            page = getattr(product, 'page', None)
-            image_path = (
-                page.main_image.url
-                if (page and page.main_image) else placeholder_image_url()
-            )
-            return {
-                'name': product.name,
-                'price': product.price if product.price else 0,
-                'quantity': quantity,
-                'image': image_path,
-                'url': product.get_absolute_url(),
-            }
 
         required_fields = ['id', 'name', 'price']
         for field in required_fields:
             assert hasattr(product, field), 'Product has not required field {}'.format(field)
 
         if product.id not in self:
-            self._cart[product.id] = get_product_attributes()
+            self._cart[product.id] = self.get_product_data(product)
+            self._cart[product.id]['quantity'] = quantity
         else:
             self._cart[product.id]['quantity'] += quantity
         self.save()
