@@ -126,6 +126,7 @@ class PageWithModels(AbstractPage, PermissionsControl, AutoCreateRedirects):
                 'date_published',
                 'menu_title',
                 'seo_text',
+                'template',
                 'position',
             )
         }),

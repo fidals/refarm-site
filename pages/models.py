@@ -4,6 +4,7 @@ from itertools import chain
 
 from django.db import models, transaction
 from django.core.urlresolvers import reverse
+from django.template import Template, Context
 from django.template.defaultfilters import slugify
 from django.utils.translation import ugettext_lazy as _
 
@@ -11,18 +12,29 @@ from mptt import models as mptt_models
 from images.models import ImageMixin
 
 
-class AbstractSeo(models.Model):
-    class Meta:
-        abstract = True
+class PageTemplate(models.Model):
 
+    name = models.CharField(blank=False, max_length=255, unique=True)
     h1 = models.CharField(blank=True, max_length=255)
     keywords = models.CharField(blank=True, max_length=255, verbose_name=_('keywords'))
     description = models.TextField(blank=True, verbose_name=_('description'))
-    seo_text = models.TextField(blank=True, verbose_name=_('seo text'))
     title = models.TextField(blank=True, verbose_name=_('title'))
+    seo_text = models.TextField(blank=True, verbose_name=_('seo text'))
+
+    class Meta:
+        verbose_name = _('Page Template')
+        verbose_name_plural = _('Page Templates')
+
+    def __str__(self):
+        return self.name
+
+    def render(self, field, context):
+        template = Template(field)
+        context = Context(context)
+        return template.render(context)
 
 
-class Page(mptt_models.MPTTModel, AbstractSeo, ImageMixin):
+class Page(mptt_models.MPTTModel, ImageMixin):
     # pages with same templates (ex. news, about)
     FLAT_TYPE = 'flat'
     # pages with unique templates (ex. index, order)
@@ -78,6 +90,18 @@ class Page(mptt_models.MPTTModel, AbstractSeo, ImageMixin):
         verbose_name=_('menu title'),
     )
 
+    h1 = models.CharField(blank=True, max_length=255)
+    keywords = models.CharField(blank=True, max_length=255, verbose_name=_('keywords'))
+    description = models.TextField(blank=True, verbose_name=_('description'))
+    seo_text = models.TextField(blank=True, verbose_name=_('seo text'))
+    title = models.TextField(blank=True, verbose_name=_('title'))
+
+    template = models.ForeignKey(
+        PageTemplate,
+        null=True,
+        verbose_name=_('page template')
+    )
+
     @classmethod
     def get_index(cls):
         return Page.objects.filter(type=cls.CUSTOM_TYPE, slug=cls.INDEX_PAGE_SLUG).first()
@@ -109,13 +133,6 @@ class Page(mptt_models.MPTTModel, AbstractSeo, ImageMixin):
 
     def __str__(self):
         return self.slug
-
-    def __getattribute__(self, name):
-        """Some fields should give default value."""
-        attr = super(Page, self).__getattribute__(name)
-        if name in ['title', 'h1', 'menu_title'] and not attr:
-            return self.name
-        return attr
 
     def get_absolute_url(self):
         """Different page types reverse different urls"""
@@ -151,6 +168,45 @@ class Page(mptt_models.MPTTModel, AbstractSeo, ImageMixin):
             fields = tuple(chain.from_iterable(fields))
 
         return fields
+
+    def get_template_render_context(self):
+        return {
+            'page': self,
+        }
+
+    def display_attribute(self, name):
+
+        if not self.template:
+            return getattr(self, name) or self.name
+
+        return self.template.render(
+            getattr(self.template, name),
+            self.get_template_render_context(),
+        )
+
+    @property
+    def display_title(self):
+        return self.display_attribute('title')
+
+    @property
+    def display_h1(self):
+        return self.display_attribute('h1')
+
+    @property
+    def display_keywords(self):
+        return self.display_attribute('keywords')
+
+    @property
+    def display_description(self):
+        return self.display_attribute('description')
+
+    @property
+    def display_seo_text(self):
+        return self.display_attribute('seo_text')
+
+    @property
+    def display_menu_title(self):
+        return self.menu_title or self.name
 
 
 # ------- Managers -------

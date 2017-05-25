@@ -12,7 +12,7 @@
       {% for page in section.pages %}
         <p class="accordion-item">
           <a class="accordion-link" href="{{ page.get_absolute_url }}">
-            {{ page.menu_title }}
+            {{ page.display_menu_title }}
           </a>
         </p>
       {% endfor %}

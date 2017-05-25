@@ -17,23 +17,25 @@
   <h1>{{ title }}</h1>
   <p>Всего позиций: {{ total_count }}</p>
   <p>Позиций {{ title|lower }}: <b>{{ products|length }}</b></p>
-  <table class="price-list">
-    <tr>
-      <td>Изображение</td>
-      <td>Наименование</td>
-      <td>Розница</td>
-    </tr>
-    {% for product in products %}
+  {% block table %}
+    <table class="price-list">
       <tr>
-        <td>
-          <a href="{{ product.url }}" title="{{ product.name }}">
-            {{ product.id }}
-          </a>
-        </td>
-        <td><span>{{ product.name }}</span></td>
-        <td class="price-cell"><span>{{ product.price }}</span></td>
+        <td>Изображение</td>
+        <td>Наименование</td>
+        <td>Розница</td>
       </tr>
-    {% endfor %}
-  </table>
+      {% for product in products %}
+        <tr>
+          <td>
+            <a href="{{ product.url }}" title="{{ product.name }}">
+              {{ product.id }}
+            </a>
+          </td>
+          <td><span>{{ product.name }}</span></td>
+          <td class="price-cell"><span>{{ product.price }}</span></td>
+        </tr>
+      {% endfor %}
+    </table>
+  {% endblock %}
 </body>
 </html>

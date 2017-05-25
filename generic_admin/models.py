@@ -4,6 +4,28 @@ from django.utils.translation import ugettext_lazy as _
 from generic_admin import mixins, filters
 
 
+class CustomPageTemplateAdmin(mixins.PermissionsControl):
+
+    list_display = ['id', 'name']
+
+    fieldsets = (
+        ('Базовые характеристики', {
+            'classes': ('secondary-chars', ),
+            'fields': ('name', ),
+        }),
+        ('Шаблоны', {
+            'classes': ('seo-chars', ),
+            'fields': (
+                'title',
+                'keywords',
+                'description',
+                'h1',
+                'seo_text',
+            )
+        }),
+    )
+
+
 class CustomPageAdmin(mixins.PageWithoutModels, mixins.PermissionsControl):
     delete = False
     add = False
@@ -18,6 +40,7 @@ class CustomPageAdmin(mixins.PageWithoutModels, mixins.PermissionsControl):
                 'date_published',
                 'menu_title',
                 'seo_text',
+                'template',
                 'position',
                 ('parent', 'correct_parent_id'),
             )
@@ -46,6 +69,7 @@ class FlatPageAdmin(mixins.PageWithoutModels, mixins.AutoCreateRedirects):
                 'date_published',
                 'menu_title',
                 'seo_text',
+                'template',
                 'position',
                 ('parent', 'correct_parent_id'),
             )

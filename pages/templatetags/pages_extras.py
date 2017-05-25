@@ -12,9 +12,9 @@ def breadcrumbs(page: Page, separator=''):
     index = page.get_index()
 
     crumbs_list = (
-        (index.menu_title, index.url) if index else ('Main', '/'),
-        *page.get_ancestors_fields('menu_title', 'url', include_self=False),
-        (page.menu_title, '')
+        (index.display_menu_title, index.url) if index else ('Main', '/'),
+        *page.get_ancestors_fields('display_menu_title', 'url', include_self=False),
+        (page.display_menu_title, '')
     )
 
     return {
@@ -54,9 +54,9 @@ def breadcrumbs_with_siblings(page: Page, separator='', include_self=False):
         ]
 
         return [
-            (catalog.menu_title, catalog.url, []),
+            (catalog.display_menu_title, catalog.url, []),
             *[
-                (crumb.menu_title, crumb.url, crumb_links)
+                (crumb.display_menu_title, crumb.url, crumb_links)
                 for crumb, crumb_links in zip(ancestors, siblings)
             ],
         ]
@@ -64,9 +64,9 @@ def breadcrumbs_with_siblings(page: Page, separator='', include_self=False):
     index = page.get_index()
 
     crumbs_list = [
-        (index.menu_title, index.url, []) if index else ('Main', '/', []),
+        (index.display_menu_title, index.url, []) if index else ('Main', '/', []),
         *get_ancestors_crumbs(),
-        (page.menu_title, '', get_siblings(page))
+        (page.display_menu_title, '', get_siblings(page))
     ]
 
     return {

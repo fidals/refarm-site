@@ -334,7 +334,7 @@ class Tree(View, MultipleObjectMixin):
         # jsTree has restriction on the field's names.
         return [{
            'id': entity.id,
-           'text': '[ {id} ] {name}'.format(id=entity.id, name=entity.name),
+           'text': entity.get_admin_tree_title(),
            'children': is_category,  # if False, then lazy load switch off
            'a_attr': {  # it is <a> tag's attributes
                'href-site-page': entity.get_absolute_url(),
