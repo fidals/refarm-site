@@ -1,4 +1,10 @@
 include LICENSE
 include README.rst
-recursive-include blog/static *
-recursive-include blog/templates *
+recursive-include catalog/templates *
+recursive-include ecommerce/front *
+recursive-include ecommerce/templates *
+recursive-include generic_admin/front *
+recursive-include generic_admin/templates *
+recursive-include pages/templates *
+global-exclude __pycache__
+global-exclude *.py[co]
