@@ -3,6 +3,7 @@ from typing import Union
 
 from django.db import models
 from django.db.models import Q, F, When, Case, Value, BooleanField
+from django.contrib.postgres.search import TrigramSimilarity
 from django.core.urlresolvers import reverse
 from django.shortcuts import _get_queryset
 from django.utils.translation import ugettext_lazy as _
@@ -33,6 +34,28 @@ class AdminTreeDisplayMixin(object):
         Returns string that used as title of entity in sidebar at admin panel
         """
         return '[{id}] {name}'.format(id=self.id, name=self.name)
+
+
+def trigram_search(queryset, query: str, fields: list):
+    """
+    Trigram similarity search. https://goo.gl/8QkFGj
+    """
+    query = query.strip()
+    init_field, *fields = fields
+
+    def get_trigram_similarity(field):
+        return TrigramSimilarity(field, query)
+
+    def get_trigram_query(x, y):
+        return x + get_trigram_similarity(y)
+
+    query = reduce(
+        get_trigram_query,
+        fields,
+        get_trigram_similarity(init_field),
+    )
+
+    return queryset.annotate(similarity=query).order_by('-similarity')
 
 
 class CategoryManager(mptt_managers.TreeManager):
