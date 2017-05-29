@@ -75,6 +75,7 @@ class Position(models.Model):
         related_name='positions', db_index=True
     )
     product_id = models.IntegerField()
+    vendor_code = models.PositiveSmallIntegerField(default=0)
     name = models.CharField(max_length=255)
     quantity = models.PositiveSmallIntegerField(default=0)
     price = models.FloatField(blank=True, null=True)
