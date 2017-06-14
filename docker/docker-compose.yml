@@ -1,0 +1,24 @@
+version: '2'
+
+services:
+
+  refarm:
+    image: python:alpine
+    volumes:
+      - ./../:/usr/apps/src
+    container_name: refarm
+    working_dir: /usr/apps/src
+    environment:
+      DB_HOST: refarm_postgres
+      DB_PORT: 5432
+      DB_NAME: $DB_NAME
+      DB_PASS: $DB_PASS
+    links:
+      - refarm_postgres
+
+  refarm_postgres:
+    image: postgres:alpine
+    environment:
+      POSTGRES_DB: $DB_NAME
+      POSTGRES_PASSWORD: $DB_PASS
+    container_name: refarm_postgres

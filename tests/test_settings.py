@@ -6,9 +6,13 @@ DIRNAME = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DEBUG = True
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-    }
+   'default': {
+       'ENGINE': 'django.db.backends.postgresql_psycopg2',
+       'NAME': os.environ.get('DB_NAME', 'postgres'),
+       'PASSWORD': os.environ.get('DB_PASS', 'postgres'),
+       'HOST': os.environ.get('DB_HOST'),
+       'PORT': os.environ.get('DB_PORT'),
+   },
 }
 
 ROOT_URLCONF = 'tests.urls'
@@ -72,6 +76,7 @@ INSTALLED_APPS = (
     'catalog',
     'ecommerce',
     'pages',
+    'search',
     'generic_admin',
     'tests',
 )
@@ -101,4 +106,3 @@ EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'
 SHOP_EMAIL = 'test@test.test'
 EMAIL_RECIPIENT = 'test@test.test'
 EMAIL_SENDER = 'test@test.test'
-

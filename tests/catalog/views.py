@@ -1,13 +1,9 @@
-from catalog.views import search, catalog
+from catalog.views import catalog
 from tests.catalog.models import TestCategory, TestProduct
 
 
 class TestCategoryTree(catalog.CategoryTree):
     category_model = TestCategory
-
-
-class TestSearch(search.Search):
-    model_map = {'category': TestCategory, 'product': TestProduct}
 
 
 class TestProductPage(catalog.ProductPage):

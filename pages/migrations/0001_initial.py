@@ -26,6 +26,13 @@ class Migration(migrations.Migration):
         ('sites', '0002_alter_domain_unique'),
     ]
 
+    run_before = [
+        ('catalog', '0001_initial'),
+        ('ecommerce', '0001_initial'),
+        ('images', '0001_initial'),
+        ('search', '0001_trigram_search'),
+    ]
+
     operations = [
         migrations.CreateModel(
             name='Page',

@@ -6,5 +6,6 @@ recursive-include ecommerce/templates *
 recursive-include generic_admin/front *
 recursive-include generic_admin/templates *
 recursive-include pages/templates *
+recursive-include search/templates *
 global-exclude __pycache__
 global-exclude *.py[co]

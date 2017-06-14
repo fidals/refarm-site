@@ -1,11 +1,8 @@
 """Defines tests for models in Catalog app."""
-from functools import partial
-
 from django.test import TestCase
 
 from pages.models import CustomPage
 
-from catalog.models import search
 from tests.catalog.models import TestCategory, TestProduct, TestCategoryWithDefaultPage
 
 
@@ -75,7 +72,7 @@ class CategoryToPageRelationTests(TestCase):
 
     @classmethod
     def setUpClass(cls):
-        super(CategoryToPageRelationTests, cls).setUpClass()
+        super().setUpClass()
         cls.category_tree_page, _ = CustomPage.objects.get_or_create(slug='catalog')
         cls.root_category = TestCategoryWithDefaultPage.objects.create(
             name='All batteries',
@@ -141,7 +138,7 @@ class ProductToPageRelationTests(TestCase):
 
     @classmethod
     def setUpClass(cls):
-        super(ProductToPageRelationTests, cls).setUpClass()
+        super().setUpClass()
         cls.root_category = TestCategory.objects.create(
             name='All batteries',
         )
@@ -196,7 +193,7 @@ class ProductTests(TestCase):
 
     @classmethod
     def setUpClass(cls):
-        super(ProductTests, cls).setUpClass()
+        super().setUpClass()
         cls.category_id = 1
         cls.category = TestCategory.objects.create(name='some category', id=cls.category_id)
 
@@ -243,72 +240,3 @@ class ProductTests(TestCase):
         products_offset = TestProduct.objects.all().get_offset(1, 3)
 
         self.assertEqual(len(products_offset), 2)
-
-
-class SearchTests(TestCase):
-    """Test suite for catalog model's search"""
-
-    lookups = ['name__icontains', 'id__contains']
-
-    @classmethod
-    def setUpClass(cls):
-        super(SearchTests, cls).setUpClass()
-        cls.batteries_category = TestCategory.objects.create(
-            name='Batteries'
-        )
-
-        # first product in search results
-        cls.results_first_product = TestProduct.objects.create(
-            name='Battery Т-34',
-            price=20,
-            category=cls.batteries_category,
-            in_stock=10,
-            is_popular=True,
-        )
-
-        # second product in search results
-        cls.results_second_product = TestProduct.objects.create(
-            name="Cool battery for deers",
-            price=20,
-            category=cls.batteries_category,
-            in_stock=10,
-            is_popular=True,
-        )
-
-        cls.search = partial(search, model_type=TestProduct, lookups=cls.lookups)
-
-    def test_results_order_is_right(self):
-        """Search results order should be right"""
-        term = 'Battery'
-
-        products = iter(self.search(term))
-
-        self.assertEqual(next(products).name, self.results_first_product.name)
-        self.assertEqual(next(products).name, self.results_second_product.name)
-
-    def test_wrong_term_leads_to_empty_results(self):
-        """Search results for wrong term should be empty"""
-        term = 'Wrong query <some hash here>'
-
-        products = self.search(term)
-
-        self.assertFalse(products)
-
-    def test_unique_term_leads_to_single_result(self):
-        """Unique search term leads to single result"""
-        term = 'Battery Т-34'
-
-        products = self.search(term)
-
-        self.assertEqual(len(products), 1)
-
-    def test_middle_term_inclusion_is_searchable(self):
-        """
-        User can search by term even
-        term is at the middle of the items name
-        """
-        term = 'for deer'
-
-        products = iter(self.search(term))
-
-        self.assertEqual(next(products).name, self.results_second_product.name)

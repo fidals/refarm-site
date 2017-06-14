@@ -1,9 +1,31 @@
+sudo: required
+
+services:
+  - docker
+
 language: python
+
 python:
   - "3.6"
 env:
-  - DJANGO=1.10
+  global:
+    - DOCKER_COMPOSE_VERSION=1.11.2
+    - DJANGO=1.10
+
+before_install:
+  - sudo rm /usr/local/bin/docker-compose
+  - curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
+  - chmod +x docker-compose
+  - sudo mv docker-compose /usr/local/bin
+
 install:
   - pip install -e .
+  - cd docker
+  - sudo docker-compose up -d
+
 script:
-  - python runtests.py
+  - docker-compose exec refarm python runtests.py
+
+after_failure:
+  - docker-compose logs
+  - cat docker-build.log
