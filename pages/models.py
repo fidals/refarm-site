@@ -1,25 +1,49 @@
-from unidecode import unidecode
 from datetime import date
 from itertools import chain
+from unidecode import unidecode
 
-from django.db import models, transaction
+from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
+from django.db import models, transaction
 from django.template import Template, Context
 from django.template.defaultfilters import slugify
+from django.template.exceptions import TemplateSyntaxError
 from django.utils.translation import ugettext_lazy as _
 
 from mptt import models as mptt_models
 from images.models import ImageMixin
 
 
+def validate_template(value):
+    try:
+        Template(value)
+    except TemplateSyntaxError as error:
+        raise ValidationError(
+            '{}: %(error)s'.format(_('Template error occurred')),
+            params={'error': error},
+        )
+
+
 class PageTemplate(models.Model):
 
     name = models.CharField(blank=False, max_length=255, unique=True)
-    h1 = models.CharField(blank=True, max_length=255)
-    keywords = models.CharField(blank=True, max_length=255, verbose_name=_('keywords'))
-    description = models.TextField(blank=True, verbose_name=_('description'))
-    title = models.TextField(blank=True, verbose_name=_('title'))
-    seo_text = models.TextField(blank=True, verbose_name=_('seo text'))
+    h1 = models.CharField(
+        blank=True, max_length=255, validators=[validate_template]
+    )
+    keywords = models.CharField(
+        blank=True, max_length=255, verbose_name=_('keywords'),
+        validators=[validate_template]
+    )
+    description = models.TextField(
+        blank=True, verbose_name=_('description'),
+        validators=[validate_template]
+    )
+    title = models.TextField(
+        blank=True, verbose_name=_('title'), validators=[validate_template]
+    )
+    seo_text = models.TextField(
+        blank=True, verbose_name=_('seo text'), validators=[validate_template]
+    )
 
     class Meta:
         verbose_name = _('Page Template')
