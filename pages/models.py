@@ -28,21 +28,21 @@ class PageTemplate(models.Model):
 
     name = models.CharField(blank=False, max_length=255, unique=True)
     h1 = models.CharField(
-        blank=True, max_length=255, validators=[validate_template]
+        blank=True, max_length=255, validators=[validate_template],
     )
     keywords = models.CharField(
         blank=True, max_length=255, verbose_name=_('keywords'),
-        validators=[validate_template]
+        validators=[validate_template],
     )
     description = models.TextField(
         blank=True, verbose_name=_('description'),
-        validators=[validate_template]
+        validators=[validate_template],
     )
     title = models.TextField(
-        blank=True, verbose_name=_('title'), validators=[validate_template]
+        blank=True, verbose_name=_('title'), validators=[validate_template],
     )
     seo_text = models.TextField(
-        blank=True, verbose_name=_('seo text'), validators=[validate_template]
+        blank=True, verbose_name=_('seo text'), validators=[validate_template],
     )
 
     class Meta:
