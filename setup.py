@@ -37,6 +37,7 @@ setup(
         'Django==1.10',
         'django-mptt==0.8.7',
         'sorl-thumbnail==12.4a1',
+        'Sphinx',
         'unidecode',
     ],
 )
