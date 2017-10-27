@@ -4,5 +4,6 @@ __pycache__/
 *.egg*
 dist/
 doc/build/
+docker/.env
 .idea/
 tests/media/

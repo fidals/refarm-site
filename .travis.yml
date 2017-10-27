@@ -24,7 +24,7 @@ install:
   - sudo docker-compose up -d
 
 script:
-  - docker-compose exec refarm python runtests.py
+  - docker-compose run --rm rf-python
 
 after_failure:
   - docker-compose logs

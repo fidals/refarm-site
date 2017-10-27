@@ -6,7 +6,7 @@ from search.search import search
 from tests.catalog.models import TestCategory, TestProduct
 
 
-class SearchTests(TestCase):
+class TestSearch(TestCase):
     """Test suite for catalog model's search"""
 
     lookups = ['name__icontains', 'id__contains']
@@ -29,7 +29,7 @@ class SearchTests(TestCase):
 
         # second product in search results
         cls.results_second_product = TestProduct.objects.create(
-            name="Cool battery for deers",
+            name='Cool battery for deers',
             price=20,
             category=cls.batteries_category,
             in_stock=10,

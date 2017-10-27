@@ -8,10 +8,10 @@ DEBUG = True
 DATABASES = {
    'default': {
        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-       'NAME': os.environ.get('DB_NAME', 'postgres'),
-       'PASSWORD': os.environ.get('DB_PASS', 'postgres'),
-       'HOST': os.environ.get('DB_HOST'),
-       'PORT': os.environ.get('DB_PORT'),
+       'NAME': os.environ['DB_NAME'],
+       'PASSWORD': os.environ['DB_PASS'],
+       'HOST': os.environ['DB_HOST'],
+       'PORT': os.environ['DB_PORT'],
    },
 }
 
@@ -81,6 +81,7 @@ INSTALLED_APPS = (
     'tests',
 )
 
+# TODO - maybe remove it
 test_models = {
     'catalog': 'TestCategory',
     'product': 'TestProduct',

@@ -31,6 +31,7 @@ def search(term: str, model_type: Union[models.Model, models.Manager, models.Que
     )
 
 
+# TODO - refactor code style
 def trigram_search(query: str, queryset, fields: List[str]):
     """
     Trigram similarity search. https://goo.gl/8QkFGj
@@ -41,7 +42,11 @@ def trigram_search(query: str, queryset, fields: List[str]):
     def get_trigram_similarity(field):
         return TrigramSimilarity(field, query)
 
-    trigram_query = reduce(add, map(get_trigram_similarity, fields), get_trigram_similarity(init_field))
+    trigram_query = reduce(
+        add,
+        map(get_trigram_similarity, fields),
+        get_trigram_similarity(init_field)
+    )
     return queryset.annotate(similarity=trigram_query).order_by('-similarity')
 
 
