@@ -1,18 +1,16 @@
 import os
 import tests
 
+import dj_database_url
+
 DIRNAME = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 DEBUG = True
 
 DATABASES = {
-   'default': {
-       'ENGINE': 'django.db.backends.postgresql_psycopg2',
-       'NAME': os.environ['DB_NAME'],
-       'PASSWORD': os.environ['DB_PASS'],
-       'HOST': os.environ['DB_HOST'],
-       'PORT': os.environ['DB_PORT'],
-   },
+    'default': dj_database_url.config(
+        env='DATABASE_URL',
+    )
 }
 
 ROOT_URLCONF = 'tests.urls'

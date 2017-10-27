@@ -3,7 +3,10 @@ version: '2'
 services:
 
   rf-python:
-    image: python:alpine
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.python
+    image: fidals/rf:test
     container_name: rf-python
     working_dir: $SRC_DIR
     environment:
