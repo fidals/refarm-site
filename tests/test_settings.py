@@ -98,7 +98,7 @@ SITE_DOMAIN_NAME = 'www.shopelectro.ru'
 
 # Settings for eCommerce app.
 CART_ID = 'cart'
-FAKE_ORDER_NUMBER = 777
+FAKE_ORDER_NUMBER = 777  # for seo magic
 PRODUCT_MODEL = 'tests.TestProduct'
 
 EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'

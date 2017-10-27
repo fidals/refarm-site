@@ -1,5 +1,6 @@
 """Tests for models in eCommerce app."""
 
+from django.conf import settings
 from django.test import TestCase
 
 from ecommerce.cart import Cart
@@ -70,8 +71,7 @@ class ModelsTest(TestCase):
         self.assertEqual(item.total_price, 10 * 30)
 
     def test_fake_number_order(self):
-        """Number order should be increase by a FAKE_ORDER_NUMBER const"""
+        """Order number should be increased by a FAKE_ORDER_NUMBER const"""
         order = Order()
         order.save()
-        test_fake_order_number = 778
-        self.assertEqual(test_fake_order_number, order.fake_order_number)
+        self.assertGreater(order.fake_order_number, settings.FAKE_ORDER_NUMBER)
