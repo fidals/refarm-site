@@ -29,7 +29,7 @@ def create_image_model(model: models.Model, filename: str, slug: str):
     return image_model
 
 
-class ImageTests(TestCase):
+class TestImage(TestCase):
     """
     Assume this:
      - Page - model with few images. type(page.images) == QuerySet<Image>
@@ -44,7 +44,7 @@ class ImageTests(TestCase):
     image_model = None
 
     def setUp(self):
-        super().setUpClass()
+        super().setUp()
         self.page = CustomPage.objects.create(h1='Test h1', slug='')
         self.image_model = create_image_model(
             model=self.page,

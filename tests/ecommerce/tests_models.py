@@ -6,18 +6,18 @@ from django.test import TestCase
 from ecommerce.cart import Cart
 from ecommerce.models import Order, Position
 
-from tests.ecommerce.models import EcommerceTestProduct, EcommerceTestCategory
+from tests.ecommerce.models import MockEcommerceProduct, MockEcommerceCategory
 
 
-class ModelsTest(TestCase):
+class TestModel(TestCase):
     """Test suite for Order and Position models in eCommerce app"""
 
     @classmethod
     def setUpClass(cls):
-        super(ModelsTest, cls).setUpClass()
+        super(TestModel, cls).setUpClass()
         cls.mail = 'nobody@nowhere.net'
-        category = EcommerceTestCategory.objects.create(name='Category')
-        cls.model = EcommerceTestProduct
+        category = MockEcommerceCategory.objects.create(name='Category')
+        cls.model = MockEcommerceProduct
         cls.product1, _ = cls.model.objects.get_or_create(
             name='Product one', price=10.1, category=category)
         cls.product2, _ = cls.model.objects.get_or_create(
@@ -25,6 +25,7 @@ class ModelsTest(TestCase):
 
     def setUp(self):
         """Initialize test data for every test case."""
+        super().setUp()
         self.session = self.client.session
         self.cart = Cart(self.client.session)
 

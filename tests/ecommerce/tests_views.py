@@ -9,7 +9,7 @@ from django.core.urlresolvers import reverse
 
 from pages.models import CustomPage
 
-from tests.ecommerce.models import EcommerceTestProduct, EcommerceTestCategory
+from tests.ecommerce.models import MockEcommerceProduct, MockEcommerceCategory
 from ecommerce.cart import Cart
 
 
@@ -18,15 +18,15 @@ def get_json_carts(response):
     return response.json()['header'], response.json()['table']
 
 
-class ViewsTest(TestCase):
+class TestView(TestCase):
     """Test suite for views in eCommerce app."""
 
     @classmethod
     def setUpClass(cls):
         """Set up test models, get urls for tests."""
-        super(ViewsTest, cls).setUpClass()
-        cls.model = EcommerceTestProduct
-        category = EcommerceTestCategory.objects.create(name='Category')
+        super(TestView, cls).setUpClass()
+        cls.model = MockEcommerceProduct
+        category = MockEcommerceCategory.objects.create(name='Category')
         cls.product1, _ = cls.model.objects.get_or_create(
             name='Product one', price=10, category=category)
         cls.product2, _ = cls.model.objects.get_or_create(

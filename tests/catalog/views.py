@@ -1,19 +1,19 @@
 from catalog.views import catalog
-from tests.catalog.models import TestCategory, TestProduct
+from tests.catalog.models import MockCategory, MockProduct
 
 
 class TestCategoryTree(catalog.CategoryTree):
-    category_model = TestCategory
+    category_model = MockCategory
 
 
 class TestProductPage(catalog.ProductPage):
     """Product page view."""
-    model = TestProduct
+    model = MockProduct
 
 
 class TestProductsWithoutImages(catalog.ProductsWithoutImages):
-    model = TestProduct
+    model = MockProduct
 
 
 class TestProductsWithoutText(catalog.ProductsWithoutImages):
-    model = TestProduct
+    model = MockProduct

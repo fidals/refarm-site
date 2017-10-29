@@ -1,13 +1,12 @@
 from django.conf.urls import url, include
 
+from pages.models import Page
+from pages.views import CustomPageView
+
 from tests.catalog.views import (
     TestCategoryTree, TestProductPage, TestProductsWithoutImages,
     TestProductsWithoutText
 )
-from tests.search.views import TestSearch
-
-from pages.models import Page
-from pages.views import CustomPageView
 
 
 urlpatterns = [

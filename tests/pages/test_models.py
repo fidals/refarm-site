@@ -19,8 +19,9 @@ def create_entity(model_path, **kwargs):
 create_test_entity_with_sync = partial(create_entity, model_path=settings.ENTITY_MODEL_WITH_SYNC)
 
 
-class PageTests(TestCase):
+class TestPage(TestCase):
     def setUp(self):
+        super().setUp()
         self.custom_page = create_page(CustomPage, slug='')
         self.model_page = create_page(ModelPage, name='Unique h1')
         self.flat_page = create_page(FlatPage, name='Another unique h1')
@@ -136,7 +137,7 @@ class PageTests(TestCase):
         self.assertEqual(page_with_template.display_h1, 'page h1 - template')
 
 
-class CustomPageTests(TestCase):
+class TestCustomPage(TestCase):
     def test_should_get_only_custom_type_pages(self):
         types = [CustomPage, FlatPage, ModelPage]
 
@@ -164,7 +165,7 @@ class CustomPageTests(TestCase):
         self.assertIn(page.slug, page.url)
 
 
-class FlatPageTests(TestCase):
+class TestFlatPage(TestCase):
     def setUp(self):
 
         def create_flat_page(parent=None):
@@ -204,7 +205,7 @@ class FlatPageTests(TestCase):
             self.assertIn(slug, url)
 
 
-class ModelPageTests(TestCase):
+class TestModelPage(TestCase):
 
     def setUp(self):
         self.default_parent = CustomPage.objects.create(slug='catalog')
@@ -215,7 +216,7 @@ class ModelPageTests(TestCase):
         self.assertEqual(self.product.get_absolute_url(), self.page.url)
 
 
-class SyncPageMixinTests(TestCase):
+class TestSyncPageMixin(TestCase):
     @staticmethod
     def get_page(name):
         return ModelPage.objects.filter(name=name).first()
@@ -253,7 +254,7 @@ class SyncPageMixinTests(TestCase):
         self.assertEqual(self.entity.page.parent, self.default_parent)
 
 
-class PageMixin(TestCase):
+class TestPageMixin(TestCase):
     def setUp(self):
         self.name = 'Test entity'
         self.default_parent = CustomPage.objects.create(slug='catalog')

@@ -3,10 +3,10 @@ from django.test import TestCase
 
 from pages.models import CustomPage
 
-from tests.catalog.models import TestCategory, TestProduct, TestCategoryWithDefaultPage
+from tests.catalog.models import MockCategory, MockProduct, MockCategoryWithDefaultPage
 
 
-class CategoryTreeTests(TestCase):
+class TestCategoryTree(TestCase):
     """Test suite for category operations"""
 
     def setUp(self):
@@ -16,28 +16,28 @@ class CategoryTreeTests(TestCase):
         Two products: popular and unpopular (both from Child category)
         """
 
-        self.test_root_category = TestCategory.objects.get_or_create(
+        self.test_root_category = MockCategory.objects.get_or_create(
             name='Test root'
         )[0]
 
-        self.test_child_of_root_category = TestCategory.objects.get_or_create(
+        self.test_child_of_root_category = MockCategory.objects.get_or_create(
             name='Test child',
             parent=self.test_root_category
         )[0]
 
-        self.test_child_of_ancestor_category = TestCategory.objects.get_or_create(
+        self.test_child_of_ancestor_category = MockCategory.objects.get_or_create(
             name='Test descendants',
             parent=self.test_child_of_root_category
         )[0]
 
-        self.test_unpopular_product = TestProduct.objects.get_or_create(
+        self.test_unpopular_product = MockProduct.objects.get_or_create(
             name='Unpopular',
             price=10,
             category=self.test_child_of_root_category,
             in_stock=10
         )[0]
 
-        self.test_popular_product = TestProduct.objects.get_or_create(
+        self.test_popular_product = MockProduct.objects.get_or_create(
             name='Popular',
             price=20,
             category=self.test_child_of_ancestor_category,
@@ -48,14 +48,14 @@ class CategoryTreeTests(TestCase):
     def test_root_categories(self):
         """There should be only one root category."""
 
-        roots = TestCategory.objects.root_nodes()
+        roots = MockCategory.objects.root_nodes()
         self.assertEqual(len(roots), 1)
         self.assertEqual(roots[0].name, self.test_root_category.name)
 
     def test_children_of_root(self):
         """Should be one direct child of root category."""
 
-        roots = TestCategory.objects.root_nodes()[0]
+        roots = MockCategory.objects.root_nodes()[0]
         children = roots.get_children()
         self.assertEqual(len(children), 1)
         self.assertEqual(children[0].name, self.test_child_of_root_category.name)
@@ -63,7 +63,7 @@ class CategoryTreeTests(TestCase):
     def test_root_has_no_products(self):
         """Root category shouldn't have any products."""
 
-        roots = TestCategory.objects.root_nodes()[0]
+        roots = MockCategory.objects.root_nodes()[0]
         products = roots.products.all()
         self.assertFalse(products.exists())
 
@@ -74,7 +74,7 @@ class CategoryToPageRelationTests(TestCase):
     def setUpClass(cls):
         super().setUpClass()
         cls.category_tree_page, _ = CustomPage.objects.get_or_create(slug='catalog')
-        cls.root_category = TestCategoryWithDefaultPage.objects.create(
+        cls.root_category = MockCategoryWithDefaultPage.objects.create(
             name='All batteries',
         )
         cls.root_category.page.slug = 'all'
@@ -82,7 +82,7 @@ class CategoryToPageRelationTests(TestCase):
         cls.page_type = cls.root_category.related_model_name
 
     def __create_category(self, slug, page=None):
-        category = TestCategoryWithDefaultPage.objects.create(
+        category = MockCategoryWithDefaultPage.objects.create(
             name='Battery {}'.format(slug),
             page=page,
             parent=self.root_category
@@ -93,8 +93,8 @@ class CategoryToPageRelationTests(TestCase):
 
     def test_category_create_related_page(self):
         """
-        TestCategoryWithDefaultPage without related page should create and return related page
-        by TestCategoryWithDefaultPage.save() call
+        MockCategoryWithDefaultPage without related page should create and return related page
+        by MockCategoryWithDefaultPage.save() call
         """
         category = self.__create_category(slug='first')
         self.assertTrue('category' in category.page.related_model_name)
@@ -103,12 +103,12 @@ class CategoryToPageRelationTests(TestCase):
 
     def test_category_tree_page_parent(self):
         """
-        TestCategoryWithDefaultPage tree page should be auto-created as page parent
-        for every root TestCategoryWithDefaultPage. In other words:
-        TestCategoryWithDefaultPage.page.parent == category_tree_page
+        MockCategoryWithDefaultPage tree page should be auto-created as page parent
+        for every root MockCategoryWithDefaultPage. In other words:
+        MockCategoryWithDefaultPage.page.parent == category_tree_page
         """
         slug = 'fifth'
-        category = TestCategoryWithDefaultPage.objects.create(
+        category = MockCategoryWithDefaultPage.objects.create(
             name='Battery {}'.format(slug), parent=None)
         category.page.slug = slug
         category.page.save()
@@ -116,7 +116,7 @@ class CategoryToPageRelationTests(TestCase):
 
     def test_category_create_page_for_sync_tree(self):
         """
-        TestCategoryWithDefaultPage should bind parent for it's page if parent doesn't exist
+        MockCategoryWithDefaultPage should bind parent for it's page if parent doesn't exist
         """
         category = self.__create_category(slug='sixth')
         self.assertEqual(category.parent.page, category.page.parent)
@@ -124,8 +124,8 @@ class CategoryToPageRelationTests(TestCase):
 
     def test_category_return_page_by_sync_tree(self):
         """
-        If TestCategoryWithDefaultPage page have parent,
-        TestCategoryWithDefaultPage save() hook should do nothing
+        If MockCategoryWithDefaultPage page have parent,
+        MockCategoryWithDefaultPage save() hook should do nothing
         """
         category = self.__create_category(slug='seventh')
         category.page.parent = self.root_category.page
@@ -134,12 +134,12 @@ class CategoryToPageRelationTests(TestCase):
         self.assertEqual(category.page.parent, self.root_category.page)
 
 
-class ProductToPageRelationTests(TestCase):
+class TestProductToPageRelation(TestCase):
 
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.root_category = TestCategory.objects.create(
+        cls.root_category = MockCategory.objects.create(
             name='All batteries',
         )
         cls.root_category.page.slug = 'all'
@@ -148,7 +148,7 @@ class ProductToPageRelationTests(TestCase):
 
     @classmethod
     def create_product(self, slug, page=None):
-        return TestProduct.objects.create(
+        return MockProduct.objects.create(
             name=slug,
             page=page,
             category=self.root_category,
@@ -161,7 +161,7 @@ class ProductToPageRelationTests(TestCase):
 
     def test_product_create_related_page(self):
         """
-        TestProduct without related page should create and return related page
+        MockProduct without related page should create and return related page
         by product.save() call
         """
         product = self.create_product(slug='first')
@@ -170,7 +170,7 @@ class ProductToPageRelationTests(TestCase):
 
     def test_category_create_page_for_sync_tree(self):
         """
-        TestProduct should bind parent for it's page if parent doesn't exist
+        MockProduct should bind parent for it's page if parent doesn't exist
         """
         product = self.create_product(slug='sixth')
         category = product.category
@@ -189,32 +189,32 @@ class ProductToPageRelationTests(TestCase):
         self.assertEqual(product.page.parent, self.root_category.page)
 
 
-class ProductTests(TestCase):
+class TestProduct(TestCase):
 
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
         cls.category_id = 1
-        cls.category = TestCategory.objects.create(name='some category', id=cls.category_id)
+        cls.category = MockCategory.objects.create(name='some category', id=cls.category_id)
 
-        cls.test_popular_product = TestProduct.objects.create(
+        cls.test_popular_product = MockProduct.objects.create(
             name="Popular",
             price=20,
             category=cls.category,
             in_stock=10,
             is_popular=True,
         )
-        TestProduct.objects.create(
+        MockProduct.objects.create(
             name="unpopular #1",
             price=20,
             category=cls.category,
             in_stock=10,
             is_popular=False,
         )
-        TestProduct.objects.create(
+        MockProduct.objects.create(
             name="unpopular #2",
             price=20,
-            category=TestCategory.objects.create(name='another category', id=777),
+            category=MockCategory.objects.create(name='another category', id=777),
             in_stock=10,
             is_popular=False,
         )
@@ -222,14 +222,14 @@ class ProductTests(TestCase):
 
     def test_popular_products(self):
         """Should be one popular product."""
-        popular = TestProduct.objects.filter(is_popular=True)
+        popular = MockProduct.objects.filter(is_popular=True)
 
         self.assertEqual(len(popular), 1)
         self.assertEqual(popular[0].name, self.test_popular_product.name)
 
     def test_get_product_by_category(self):
         """We can get products related to category by category_id or Category instance"""
-        products_by_instance = TestProduct.objects.get_by_category(self.category)
+        products_by_instance = MockProduct.objects.get_by_category(self.category)
 
         self.assertEqual(products_by_instance.count(), 2)
 
@@ -237,6 +237,6 @@ class ProductTests(TestCase):
             self.assertEqual(products_by_instance.category, self.category)
 
     def test_get_offset(self):
-        products_offset = TestProduct.objects.all().get_offset(1, 3)
+        products_offset = MockProduct.objects.all().get_offset(1, 3)
 
         self.assertEqual(len(products_offset), 2)

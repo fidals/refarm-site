@@ -21,6 +21,7 @@ before_install:
 install:
   - pip install -e .
   - cd docker
+  # TODO - try without sudo
   - sudo docker-compose up -d
 
 script:

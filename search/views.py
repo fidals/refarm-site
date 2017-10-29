@@ -42,14 +42,22 @@ class SearchView(CustomPageView):
             for entity in self.search_entities
         }
 
+
         # if there is only one autocompleted entity
         # then redirect to this entity
         if search_limit.size == 1:
-            return redirect(list(search_result.values())[0][0].url, permanent=True)
+            for results_qs in search_result.values():
+                if results_qs:
+                    return redirect(
+                        to=results_qs.first().url,
+                        permanent=True
+                    )
 
+        has_result = any(search_result.values())
         self.object = self.get_object()
         template = self.template_path.format(
-            'results' if search_result else 'no_results')
+            'results' if has_result else 'no_results'
+        )
 
         context = self.get_context_data(object=self.object)
         context.update({

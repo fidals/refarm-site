@@ -1,19 +1,19 @@
 from search import views as search, search as search_engine
 
-from tests.catalog.models import TestCategory, TestProduct
+from tests.catalog.models import MockCategory, MockProduct
 
 
-class TestSearch(search.SearchView):
+class MockSearchView(search.SearchView):
 
     search_entities = [
         search_engine.Search(
             name='category',
-            qs=TestCategory.objects.all(),
+            qs=MockCategory.objects.all(),
             fields=['name', 'id']
         ),
         search_engine.Search(
             name='product',
-            qs=TestProduct.objects.all(),
+            qs=MockProduct.objects.all(),
             fields=['name', 'id']
         )
     ]

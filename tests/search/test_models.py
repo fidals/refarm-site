@@ -3,7 +3,7 @@ from functools import partial
 from django.test import TestCase
 
 from search.search import search
-from tests.catalog.models import TestCategory, TestProduct
+from tests.catalog.models import MockCategory, MockProduct
 
 
 class TestSearch(TestCase):
@@ -14,12 +14,12 @@ class TestSearch(TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.batteries_category = TestCategory.objects.create(
+        cls.batteries_category = MockCategory.objects.create(
             name='Batteries'
         )
 
         # first product in search results
-        cls.results_first_product = TestProduct.objects.create(
+        cls.results_first_product = MockProduct.objects.create(
             name='Battery Т-34',
             price=20,
             category=cls.batteries_category,
@@ -28,7 +28,7 @@ class TestSearch(TestCase):
         )
 
         # second product in search results
-        cls.results_second_product = TestProduct.objects.create(
+        cls.results_second_product = MockProduct.objects.create(
             name='Cool battery for deers',
             price=20,
             category=cls.batteries_category,
@@ -36,7 +36,7 @@ class TestSearch(TestCase):
             is_popular=True,
         )
 
-        cls.search = partial(search, model_type=TestProduct, lookups=cls.lookups)
+        cls.search = partial(search, model_type=MockProduct, lookups=cls.lookups)
 
     def test_results_order_is_right(self):
         """Search results order should be right"""

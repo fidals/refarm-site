@@ -6,10 +6,10 @@ from django.core.urlresolvers import reverse
 
 from pages.models import CustomPage
 
-from tests.catalog.models import TestCategory, TestProduct
+from tests.catalog.models import MockCategory, MockProduct
 
 
-class ViewsTests(TestCase):
+class TestView(TestCase):
     @classmethod
     def setUpClass(cls):
         """
@@ -17,40 +17,40 @@ class ViewsTests(TestCase):
         Instantiates two test objects: test_category and test_product.
         :return:
         """
-        super(ViewsTests, cls).setUpClass()
+        super(TestView, cls).setUpClass()
         cls.page_index = CustomPage.objects.get_or_create(name='Index', slug='')[0]
         cls.category_tree_page = CustomPage.objects.get_or_create(slug='catalog')[0]
 
-        cls.test_category = TestCategory.objects.create(
+        cls.test_category = MockCategory.objects.create(
             name='Test',
         )
         cls.test_category.page.slug = 'akkumuliatory-aaa'
         cls.test_category.page.position = 1
         cls.test_category.page.save()
-        cls.test_product = TestProduct.objects.create(
+        cls.test_product = MockProduct.objects.create(
             name='Test product',
             price=14.88,
             category_id=cls.test_category.id,
             in_stock=25
         )
-        cls.test_root = TestCategory.objects.create(
+        cls.test_root = MockCategory.objects.create(
             name='Root',
         )
         cls.test_root.page.slug = 'root'
         cls.test_root.page.save()
-        cls.test_medium = TestCategory.objects.create(
+        cls.test_medium = MockCategory.objects.create(
             name='Medium',
             parent=cls.test_root,
         )
         cls.test_medium.slug = 'medium'
         cls.test_medium.save()
-        cls.test_last = TestCategory.objects.create(
+        cls.test_last = MockCategory.objects.create(
             name='Last',
             parent=cls.test_medium,
         )
         cls.test_last.page.slug = 'last'
         cls.test_last.save()
-        cls.test_product_nested = TestProduct.objects.create(
+        cls.test_product_nested = MockProduct.objects.create(
             name='Nested product',
             category_id=cls.test_last.id,
             price=123.45,
@@ -119,7 +119,7 @@ class ViewsTests(TestCase):
             self.assertContains(response, crumb)
 
     def test_product_crumbs(self):
-        """TestProduct should have valid crumbs"""
+        """MockProduct should have valid crumbs"""
         page = self.test_product_nested.page
         crumbs_to_test = [
             self.page_index.menu_title, self.page_index.get_absolute_url(),

@@ -79,17 +79,10 @@ INSTALLED_APPS = (
     'tests',
 )
 
-# TODO - maybe remove it
-test_models = {
-    'catalog': 'TestCategory',
-    'product': 'TestProduct',
-    'catalog_with_default_page': 'TestCategoryWithDefaultPage',
-}
-
 SEARCH_SEE_ALL_LABEL = 'See all results'
 
 ENTITY_MODEL = 'tests.TestEntity'
-ENTITY_MODEL_WITH_SYNC = 'tests.TestEntityWithSync'
+ENTITY_MODEL_WITH_SYNC = 'tests.MockEntityWithSync'
 
 # <--- transitive depends on pages app
 SITE_ID = 1
@@ -99,7 +92,8 @@ SITE_DOMAIN_NAME = 'www.shopelectro.ru'
 # Settings for eCommerce app.
 CART_ID = 'cart'
 FAKE_ORDER_NUMBER = 777  # for seo magic
-PRODUCT_MODEL = 'tests.TestProduct'
+# TODO - maybe remove it
+PRODUCT_MODEL = 'tests.MockProduct'
 
 EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'
 SHOP_EMAIL = 'test@test.test'

@@ -5,6 +5,7 @@ from pages.models import FlatPage, CustomPage
 
 class PageTests(TestCase):
     def setUp(self):
+        super().setUp()
         self.index = CustomPage.objects.create(slug='', name='Index')
         # -- set up section navi --
         self.section_navi = FlatPage.objects.create(

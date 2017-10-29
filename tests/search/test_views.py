@@ -3,26 +3,25 @@ from unittest import expectedFailure
 
 from pages.models import CustomPage
 
-from tests.catalog.models import TestCategory, TestProduct
+from tests.catalog.models import MockCategory, MockProduct
 
 
 @override_settings(ROOT_URLCONF='tests.urls')
-class SearchTests(TestCase):
+class TestSearchView(TestCase):
     @classmethod
-    def setUpClass(cls):
+    def setUpTestData(cls):
         """Instantiate two test objects: test_category and test_product"""
         cls.search, _ = CustomPage.objects.get_or_create(slug='search')
 
         def generate_products(cls):
             return [
-                TestProduct.objects.create(
+                MockProduct.objects.create(
                     name=name,
                     category=cls.test_category,
                 ) for name in cls.test_products
             ]
 
-        super(SearchTests, cls).setUpClass()
-        cls.test_category = TestCategory.objects.create(
+        cls.test_category = MockCategory.objects.create(
             name='Batteries for deers',
         )
         cls.test_category.slug = ''
@@ -36,7 +35,7 @@ class SearchTests(TestCase):
         generate_products(cls)
 
     def get_search_results(self, term: str):
-        url = '{}?term={}'.format(self.search.url, term)
+        url = f'{self.search.url}?term={term}'
         # `follow=True` is required for 301 urls
         return self.client.get(url, follow=True)
 
