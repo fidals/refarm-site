@@ -18,12 +18,8 @@ before_install:
   - chmod +x docker-compose
   - sudo mv docker-compose /usr/local/bin
 
-install:
-  - pip install -e .
-  - cd docker
-  - docker-compose up -d
-
 script:
+  - cd docker/
   - docker-compose run --rm rf-python
 
 after_failure:

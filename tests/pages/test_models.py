@@ -1,31 +1,25 @@
-from functools import partial
-
-from django.apps.registry import apps
-from django.conf import settings
-from django.db import models
 from django.test import TestCase
 
 from pages.models import ModelPage, CustomPage, FlatPage, Page, PageTemplate
 
-
-def create_page(model: models.Model, **extra_field) -> models.Model:
-    return model.objects.create(**{'name': 'Test h1', **extra_field})
+from tests.models import MockEntity, MockEntityWithSync
 
 
-def create_entity(model_path, **kwargs):
-    model = apps.get_model(model_path)
-    return model.objects.create(**kwargs)
-
-create_test_entity_with_sync = partial(create_entity, model_path=settings.ENTITY_MODEL_WITH_SYNC)
+def create_instance(with_sync=True, **kwargs):
+    cls = with_sync and MockEntityWithSync or MockEntity
+    # noinspection PyUnresolvedReferences
+    return cls.objects.create(**kwargs)
 
 
 class TestPage(TestCase):
     def setUp(self):
         super().setUp()
-        self.custom_page = create_page(CustomPage, slug='')
-        self.model_page = create_page(ModelPage, name='Unique h1')
-        self.flat_page = create_page(FlatPage, name='Another unique h1')
-        self.child_flat_page = create_page(FlatPage, name='Child unique h1', parent=self.flat_page)
+        self.custom_page = CustomPage.objects.create(slug='')
+        self.model_page = ModelPage.objects.create(name='Unique h1')
+        self.flat_page = FlatPage.objects.create(name='Another unique h1')
+        self.child_flat_page = FlatPage.objects.create(
+            name='Child unique h1', parent=self.flat_page
+        )
 
     def get_ancestors(self):
         ancestors = self.child_flat_page.get_ancestors(include_self=True)
@@ -102,13 +96,13 @@ class TestPage(TestCase):
         self.assertTrue(is_str_fields)
 
     def test_slug_should_auto_generate(self):
-        page = create_page(Page)
+        page = Page.objects.create(name='Test name')
 
         self.assertTrue(page.slug)
 
     def test_display_seo_fields(self):
-        page_with_custom_fields = create_page(
-            Page, name='some page', slug='test', h1='test h1'
+        page_with_custom_fields = Page.objects.create(
+            name='some page', slug='test', h1='test h1'
         )
         self.assertEqual(page_with_custom_fields.display_h1, 'test h1')
 
@@ -117,8 +111,8 @@ class TestPage(TestCase):
             h1='{{ page.name }} - купить в СПб',
         )
 
-        page_with_template = create_page(
-            Page, name='different page', template=custom_page_template
+        page_with_template = Page.objects.create(
+            name='different page', template=custom_page_template
         )
 
         self.assertEqual(page_with_template.display_h1, 'different page - купить в СПб')
@@ -128,8 +122,7 @@ class TestPage(TestCase):
             name='test',
             h1='{{ page.h1 }} - template',
         )
-        page_with_template = create_page(
-            Page,
+        page_with_template = Page.objects.create(
             name='different page',
             h1='page h1',
             template=custom_page_template,
@@ -142,7 +135,7 @@ class TestCustomPage(TestCase):
         types = [CustomPage, FlatPage, ModelPage]
 
         for type in types:
-            create_page(type)
+            type.objects.create()
 
         custom_pages = CustomPage.objects.all()
         truthy, falsy_first, falsy_second = [
@@ -155,13 +148,11 @@ class TestCustomPage(TestCase):
         self.assertFalse(falsy_second)
 
     def test_should_create_only_custom_type_pages(self):
-        page = create_page(CustomPage)
-
+        page = CustomPage.objects.create(name='Test name')
         self.assertEqual(page.type, Page.CUSTOM_TYPE)
 
     def test_get_absolute_url(self):
-        page = create_page(CustomPage, slug='')
-
+        page = CustomPage.objects.create(name='Test name', slug='')
         self.assertIn(page.slug, page.url)
 
 
@@ -169,8 +160,10 @@ class TestFlatPage(TestCase):
     def setUp(self):
 
         def create_flat_page(parent=None):
-            return create_page(
-                FlatPage, slug='page_of_{}'.format(getattr(parent, 'slug', 'ROOT')), parent=parent)
+            return FlatPage.objects.create(
+                slug='page_of_{}'.format(getattr(parent, 'slug', 'ROOT')),
+                parent=parent
+            )
 
         page = create_flat_page()
         child_page = create_flat_page(parent=page)
@@ -180,7 +173,7 @@ class TestFlatPage(TestCase):
         types = [FlatPage, CustomPage, ModelPage]
 
         for type in types:
-            create_page(type)
+            type.objects.create(name='Test name')
 
         custom_pages = FlatPage.objects.all()
         truthy, falsy_first, falsy_second = [
@@ -193,14 +186,12 @@ class TestFlatPage(TestCase):
         self.assertFalse(falsy_second)
 
     def test_should_create_only_flat_pages(self):
-        page = create_page(FlatPage)
-
+        page = FlatPage.objects.create(name='Test name')
         self.assertEqual(page.type, Page.FLAT_TYPE)
 
     def test_url(self):
         urls = [page.url for page in self.pages]
         slugs = [page.slug for page in self.pages]
-
         for url, slug in zip(urls, slugs):
             self.assertIn(slug, url)
 
@@ -209,7 +200,7 @@ class TestModelPage(TestCase):
 
     def setUp(self):
         self.default_parent = CustomPage.objects.create(slug='catalog')
-        self.product = create_test_entity_with_sync(name='Test entity')
+        self.product = create_instance(name='Test entity')
         self.page = self.product.page
 
     def test_get_absolute_url(self):
@@ -224,7 +215,7 @@ class TestSyncPageMixin(TestCase):
     def setUp(self):
         self.name = 'Test entity'
         self.default_parent = CustomPage.objects.create(slug='catalog')
-        self.entity = create_test_entity_with_sync(name=self.name)
+        self.entity = create_instance(name=self.name)
 
     def test_default_parent(self):
         self.assertEqual(self.entity.page.parent, self.default_parent)
@@ -236,7 +227,6 @@ class TestSyncPageMixin(TestCase):
     def test_delete_page_after_delete_entity(self):
         self.entity.delete()
         page = self.get_page(self.name)
-
         self.assertFalse(page)
 
     def test_update_page_after_update_entity(self):
@@ -244,7 +234,7 @@ class TestSyncPageMixin(TestCase):
             self.entity.parent = parent
             self.entity.save()
 
-        entity_parent = create_test_entity_with_sync(name='Unique name')
+        entity_parent = create_instance(name='Unique name')
         set_parent(entity_parent)
 
         self.assertEqual(entity_parent.page, self.entity.page.parent)
@@ -258,14 +248,14 @@ class TestPageMixin(TestCase):
     def setUp(self):
         self.name = 'Test entity'
         self.default_parent = CustomPage.objects.create(slug='catalog')
-        self.entity = create_test_entity_with_sync(name=self.name)
+        self.entity = create_instance(name=self.name)
 
     def test_update_page_after_update_entity(self):
         def set_parent(parent=None):
             self.entity.parent = parent
             self.entity.save()
 
-        entity_parent = create_test_entity_with_sync(name='Unique name')
+        entity_parent = create_instance(name='Unique name')
         set_parent(entity_parent)
 
         self.assertEqual(entity_parent.page, self.entity.page.parent)
