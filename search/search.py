@@ -31,29 +31,20 @@ def search(term: str, model_type: Union[models.Model, models.Manager, models.Que
     )
 
 
-# TODO - refactor code style
 def trigram_search(query: str, queryset, fields: List[str]):
     """
     Trigram similarity search. https://goo.gl/8QkFGj
     """
     query = query.strip()
-    init_field, *fields = fields
-
-    def get_trigram_similarity(field):
-        return TrigramSimilarity(field, query)
-
-    trigram_query = reduce(
-        add,
-        map(get_trigram_similarity, fields),
-        get_trigram_similarity(init_field)
-    )
+    trigram_expressions = (TrigramSimilarity(f, query) for f in fields)
+    trigram_query = reduce(add, trigram_expressions)
     return queryset.annotate(similarity=trigram_query).order_by('-similarity')
 
 
 class Search:
     def __init__(self, name, fields, qs, min_similarity=0.3, redirect_field=None):
         """
-        :param name: name of model to be searched for (required only for existing interface)
+        :param name: used as variable in templates. Example: "category"
         :param fields: list of query lookups
         :param qs: queryset of model to be searched for
         :param min_similarity: used to trigram similarity search
@@ -71,8 +62,9 @@ class Search:
 
         for field in fields:
             field_type = (
-                self.qs.model._meta.get_field(field.partition('__')[0])
-                    .get_internal_type()
+                self.qs.model._meta
+                .get_field(field.partition('__')[0])
+                .get_internal_type()
             )
             if field_type in ['CharField', 'TextField']:
                 # Trigram similarity supports only these two entity types
