@@ -17,7 +17,7 @@ services:
       - rf-postgres
     volumes:
       - ./../:$SRC_DIR  # code volume
-    command: python runtests.py
+    command: python manage.py test
 
   rf-postgres:
     image: postgres:9.5
