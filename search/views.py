@@ -68,7 +68,7 @@ class SearchView(CustomPageView):
         return render(request, template, context)
 
 
-class Autocomplete(View):
+class AutocompleteView(View):
 
     limit = 20
     search_entities = []  # query lookups
@@ -95,13 +95,18 @@ class Autocomplete(View):
     def get(self, request):
         term = request.GET.get('term')
 
+        # 404 - the most convenient error for bad get param
+        # http://bit.ly/refarm_conv_404_on_wrong_get_param
+        if not term:
+            raise Http404('Define "term" get parameter')
+
         search_limit = search_engine.Limit(self.limit)
         search_result = {
             entity.name: search_limit.limit_data(entity.search(term))
             for entity in self.search_entities
         }
 
-        if not search_result:
+        if not any(search_result.values()):
             return JsonResponse({})
 
         autocomplete_items = (
@@ -121,7 +126,7 @@ class Autocomplete(View):
         return JsonResponse(autocomplete_items, safe=False)
 
 
-class AdminAutocomplete(View):
+class AdminAutocompleteView(View):
 
     limit = 20
     search_entities = []
@@ -129,22 +134,20 @@ class AdminAutocomplete(View):
     def get(self, request):
         term, page_type = request.GET.get('term'), request.GET.get('pageType')
 
-        current_search = next(
+        search_expression = next(
             (item for item in self.search_entities if item.name == page_type),
             None
         )
-        if not current_search:
+        if not search_expression:
             return
-
-        current_model = next(
-            (item for item in self.search_entities if item.name == page_type),
-            None
-        )
 
         search_limit = search_engine.Limit(self.limit)
         search_result = {
-            current_model.name: search_limit.limit_data(current_model.search(term))
+            search_expression.name: search_limit.limit_data(search_expression.search(term))
         }
 
-        names = [result_item.name for result_item in search_result[current_model.name]]
+        names = [
+            result_item.name
+            for result_item in search_result[search_expression.name]
+        ]
         return JsonResponse(names, safe=False)
