@@ -19,7 +19,9 @@ class SearchView(CustomPageView):
     limit = 20
     template_path = 'search/{}.html'
     search_entities = []
-    redirect_search_entity = None
+
+    def get_redirect_search_entity(self):
+        pass
 
     def get(self, request, *args, **kwargs):
         term = request.GET.get('term')
@@ -31,8 +33,9 @@ class SearchView(CustomPageView):
 
         # if we have entity with id == int(term)
         # then redirect to this entity
-        if self.redirect_search_entity is not None:
-            search_entity = self.redirect_search_entity.search_by_redirect_field(term)
+        redirect_search_entity = self.get_redirect_search_entity()
+        if redirect_search_entity:
+            search_entity = redirect_search_entity.search_by_redirect_field(term)
             if search_entity:
                 return redirect(search_entity.url, permanent=True)
 
