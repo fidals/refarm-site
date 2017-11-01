@@ -75,17 +75,17 @@ class AutocompleteView(View):
 
     limit = 20
     search_entities = []  # query lookups
-    entity_fields = {}  # model fields that will be contained in the autocomplete item
 
     search_url = reverse_lazy(Page.CUSTOM_PAGES_URL_NAME, kwargs={'page': 'search'})
     see_all_label = 'See all results'
 
     @staticmethod
-    def prepare_fields(items, entity, context) -> list:
+    def prepare_fields(items, fields, context) -> list:
         def get_dict(item):
-            fields = {attr: getattr(item, attr) for attr in entity}
-            fields.update(context)
-            return fields
+            # pairs of {name: value}
+            field_pairs = {attr: getattr(item, attr) for attr in fields}
+            field_pairs.update(context)
+            return field_pairs
 
         return [get_dict(item) for item in items]
 
@@ -96,6 +96,17 @@ class AutocompleteView(View):
                  'type': 'see_all'}]
 
     def get(self, request):
+        def get_search_fields(search_name: str) -> List[str]:
+            """
+            Return search fields for Search instance with name `search_name`
+            :param search_name:
+            :return:
+            """
+            search = next(
+                s for s in self.search_entities if s.name == search_name
+            )
+            return search.template_fields
+
         term = request.GET.get('term')
 
         # 404 - the most convenient error for bad get param
@@ -115,12 +126,12 @@ class AutocompleteView(View):
         autocomplete_items = (
             self.prepare_fields(
                 search_result.get('category', []),
-                self.entity_fields['category'],
+                get_search_fields('category'),
                 {'type': 'category'}
             ) +
             self.prepare_fields(
                 search_result.get('product', []),
-                self.entity_fields['product'],
+                get_search_fields('product'),
                 {'type': 'product'}
             ) +
             self.see_all_link_as_list(request.GET.get('term'))

@@ -42,21 +42,28 @@ def trigram_search(query: str, queryset, fields: List[str]):
 
 
 class Search:
-    def __init__(self, name, fields, qs, min_similarity=0.3, redirect_field=None):
+    def __init__(
+        self, name, qs, fields,
+        template_fields=None,
+        min_similarity=0.3,
+        redirect_field=None
+    ):
         """
         :param name: used as variable in templates. Example: "category"
-        :param fields: list of query lookups
         :param qs: queryset of model to be searched for
+        :param fields: list of query lookups
+        :param template_fields: list fields for django templates
         :param min_similarity: used to trigram similarity search
         :param redirect_field: when client search for this field, the result is 
         redirected to custom page  
         """
         self.name = name
+        self.fields = fields
+        self.template_fields = template_fields
         self.qs = qs
         self.min_similarity = min_similarity
         self.redirect_field = redirect_field
 
-        self.fields = fields
         self.trigram_fields = []
         self.decimal_fields = []
 

@@ -8,12 +8,12 @@ class MockSearchView(search.SearchView):
         search_engine.Search(
             name='category',
             qs=MockCategory.objects.all(),
-            fields=['name', 'id']
+            fields=['name', 'id'],
         ),
         search_engine.Search(
             name='product',
             qs=MockProduct.objects.all(),
-            fields=['name', 'id']
+            fields=['name', 'id'],
         )
     ]
 
@@ -23,19 +23,16 @@ class MockAutocompleteView(search.AutocompleteView):
         search_engine.Search(
             name='category',
             qs=MockCategory.objects.all(),
-            fields=['name', 'id']
+            fields=['name', 'id'],
+            template_fields=['name', 'url'],
         ),
         search_engine.Search(
             name='product',
             qs=MockProduct.objects.all(),
-            fields=['name', 'id']
+            fields=['name', 'id'],
+            template_fields=['name', 'price', 'url'],
         )
     ]
-
-    entity_fields = {
-        'category': ['name', 'url'],
-        'product': ['name', 'price', 'url']
-    }
 
 
 class MockAdminAutocompleteView(search.AdminAutocompleteView):
@@ -43,16 +40,13 @@ class MockAdminAutocompleteView(search.AdminAutocompleteView):
         search_engine.Search(
             name='category',
             qs=MockCategory.objects.all(),
-            fields=['name', 'id']
+            fields=['name', 'id'],
+            template_fields=['name', 'url'],
         ),
         search_engine.Search(
             name='product',
             qs=MockProduct.objects.all(),
-            fields=['name', 'id']
+            fields=['name', 'id'],
+            template_fields=['name', 'price', 'url'],
         )
     ]
-
-    entity_fields = {
-        'category': ['name', 'url'],
-        'product': ['name', 'price', 'url']
-    }
