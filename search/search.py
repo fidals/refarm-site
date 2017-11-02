@@ -116,7 +116,7 @@ class Limit:
         self.limit = limit
         self.size = 0  # number of found elements
 
-    def limit_data(self, data: Iterable):
+    def limit_data(self, data: Iterable) -> list:
         data = data or []
         limit = self.limit - self.size
         if limit <= 0:

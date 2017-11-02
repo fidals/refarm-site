@@ -52,7 +52,7 @@ class SearchView(CustomPageView):
             for results_qs in search_result.values():
                 if results_qs:
                     return redirect(
-                        to=results_qs.first().url,
+                        to=results_qs[0].url,
                         permanent=True
                     )
 
