@@ -29,7 +29,7 @@ def create_image_model(model: models.Model, filename: str, slug: str):
     return image_model
 
 
-class ImageTests(TestCase):
+class TestImage(TestCase):
     """
     Assume this:
      - Page - model with few images. type(page.images) == QuerySet<Image>
@@ -44,7 +44,7 @@ class ImageTests(TestCase):
     image_model = None
 
     def setUp(self):
-        super(ImageTests, self).setUpClass()
+        super().setUp()
         self.page = CustomPage.objects.create(h1='Test h1', slug='')
         self.image_model = create_image_model(
             model=self.page,
@@ -53,9 +53,9 @@ class ImageTests(TestCase):
         )
 
     def tearDown(self):
-        super(ImageTests, self).tearDownClass()
         self.page.delete()
         self.image_model.delete()
+        super().tearDown()
 
     def test_model_has_one_main_image(self):
         """If model has any images, it should have at least one main image"""

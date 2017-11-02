@@ -6,13 +6,13 @@ from ecommerce import mailer
 from ecommerce.models import Order
 
 
-class MailerTests(TestCase):
+class TestMailer(TestCase):
     """Test cases for mailer module."""
 
     @classmethod
     def setUpClass(cls):
         """Set up testing Order instance."""
-        super(MailerTests, cls).setUpClass()
+        super(TestMailer, cls).setUpClass()
         cls.order = Order(
             name='John Doe',
             email='test@test.test',

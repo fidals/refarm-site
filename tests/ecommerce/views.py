@@ -1,18 +1,18 @@
 from ecommerce.views import AddToCart, RemoveFromCart, ChangeCount, FlushCart
-from tests.ecommerce.models import EcommerceTestProduct
+from tests.ecommerce.models import MockEcommerceProduct
 
 
-class TestAddToCart(AddToCart):
-    product_model = EcommerceTestProduct
+class MockAddToCart(AddToCart):
+    product_model = MockEcommerceProduct
 
 
-class TestRemoveFromCart(RemoveFromCart):
-    product_model = EcommerceTestProduct
+class MockRemoveFromCart(RemoveFromCart):
+    product_model = MockEcommerceProduct
 
 
-class TestFlushCart(FlushCart):
-    product_model = EcommerceTestProduct
+class MockFlushCart(FlushCart):
+    product_model = MockEcommerceProduct
 
 
-class TestChangeCount(ChangeCount):
-    product_model = EcommerceTestProduct
+class MockChangeCount(ChangeCount):
+    product_model = MockEcommerceProduct

@@ -3,7 +3,7 @@ from django.db import models
 from pages.models import CustomPage, PageMixin, SyncPageMixin
 
 
-class TestEntityWithSync(SyncPageMixin):
+class MockEntityWithSync(SyncPageMixin):
     name = models.CharField(max_length=100)
     parent = models.OneToOneField('self', on_delete=models.CASCADE, null=True, blank=True)
 
@@ -16,7 +16,7 @@ class TestEntityWithSync(SyncPageMixin):
         return '/so-mock-wow/'
 
 
-class TestEntity(PageMixin):
+class MockEntity(PageMixin):
     name = models.CharField(max_length=100)
     parent = models.OneToOneField('self', on_delete=models.CASCADE, null=True, blank=True)
     is_active = models.BooleanField(default=True)
@@ -35,7 +35,7 @@ class TestEntity(PageMixin):
         return self.slug
 
 
-class TestEntityWithRelations(models.Model):
+class MockEntityWithRelations(models.Model):
     name = models.CharField(max_length=100)
     is_active = models.BooleanField(default=True)
 

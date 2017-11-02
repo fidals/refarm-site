@@ -5,14 +5,14 @@ from random import randint
 from django.test import TestCase
 
 from ecommerce.cart import Cart
-from tests.ecommerce.models import EcommerceTestProduct, EcommerceTestCategory
+from tests.ecommerce.models import MockEcommerceProduct, MockEcommerceCategory
 
 
 def random_quantity(a=1, b=100):
     return randint(a, b)
 
 
-class CartTest(TestCase):
+class TestCart(TestCase):
     """Test suite for Cart."""
 
     @property
@@ -30,20 +30,20 @@ class CartTest(TestCase):
         """Set up testing models only once."""
         def generate_products(count):
             """Generate Count of products and save it to Products property."""
-            category = EcommerceTestCategory.objects.create(
+            category = MockEcommerceCategory.objects.create(
                 name='Category for cart tests',
             )
             category.page.slug = 'category-for-cart-tests'
             category.page.save()
             for i in range(1, count + 1):
-                product = EcommerceTestProduct.objects.create(
+                product = MockEcommerceProduct.objects.create(
                     name='Product {}'.format(i),
                     price=i * 10,
                     category=category
                 )
                 yield product
 
-        super(CartTest, cls).setUpClass()
+        super(TestCart, cls).setUpClass()
         cls.products = list(generate_products(5))
 
     def setUp(self):
