@@ -38,6 +38,7 @@ setup(
         'django-mptt==0.8.7',
         'dj-database-url==0.4.1',
         'sorl-thumbnail==12.4a1',
+        'Django-Select2==5.11.1',
         'unidecode',
         'psycopg2',
     ],
