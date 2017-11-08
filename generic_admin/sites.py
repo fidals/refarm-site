@@ -16,5 +16,6 @@ class SiteWithTableEditor(admin.AdminSite):
                 self.admin_view(self.table_editor_view.as_view(each_context=self.each_context)),
                 name='editor'
             ),
+            url(r'^select2/', include('django_select2.urls')),
             *original_urls
         ]
