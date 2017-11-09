@@ -2,6 +2,7 @@ class AdminCommonPlugins {
   constructor() {
     this.DOM = {
       searchFieldId: '#searchbar',
+      saveAndContinueButton: 'input[name="_continue"]',
     };
 
     this.config = {
@@ -17,6 +18,7 @@ class AdminCommonPlugins {
   init() {
     this.setupXHR();
     this.autoCompleteInit();
+    this.saveAndContinueShortcutInit();
   }
 
   setupXHR() {
@@ -50,4 +52,21 @@ class AdminCommonPlugins {
       },
     });
   }
+
+  /*
+    Setup shortcut for "Save and continue" button (Ctrl + Enter)
+  */
+  saveAndContinueShortcutInit() {
+    $(window).keydown(function(event) {
+      if(event.ctrlKey && event.keyCode == 13) {
+        event.preventDefault();
+        // Django Admin have two "Save and continue" buttons, at top and bottom of page
+        const element = $('input[name="_continue"]')[0];
+        if (element) {
+          element.click();
+        );
+      };
+    });
+  }
+
 }
