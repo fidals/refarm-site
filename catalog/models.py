@@ -1,30 +1,7 @@
-from functools import reduce
-from typing import Union
-
 from django.db import models
-from django.db.models import Q, F, When, Case, Value, BooleanField
-from django.contrib.postgres.search import TrigramSimilarity
 from django.core.urlresolvers import reverse
-from django.shortcuts import _get_queryset
 from django.utils.translation import ugettext_lazy as _
 from mptt import models as mptt_models, managers as mptt_managers
-
-
-def search(term: str, model_type: Union[models.Model, models.Manager, models.QuerySet],
-           lookups: list, ordering=None) -> models.QuerySet:
-    """Return search results based on a given model"""
-    query_set = _get_queryset(model_type)
-    query = reduce(lambda q, lookup: q | Q(**{lookup: term}), lookups, Q())
-
-    return (
-        query_set.filter(query, page__is_active=True)
-            .annotate(
-                is_name_start_by_term=Case(When(
-                name__istartswith=term, then=Value(True)), default=Value(False),
-                output_field=BooleanField())
-            )
-            .order_by(F('is_name_start_by_term').desc(), *ordering or ('name', ))
-    )
 
 
 class AdminTreeDisplayMixin(object):
@@ -34,28 +11,6 @@ class AdminTreeDisplayMixin(object):
         Returns string that used as title of entity in sidebar at admin panel
         """
         return '[{id}] {name}'.format(id=self.id, name=self.name)
-
-
-def trigram_search(queryset, query: str, fields: list):
-    """
-    Trigram similarity search. https://goo.gl/8QkFGj
-    """
-    query = query.strip()
-    init_field, *fields = fields
-
-    def get_trigram_similarity(field):
-        return TrigramSimilarity(field, query)
-
-    def get_trigram_query(x, y):
-        return x + get_trigram_similarity(y)
-
-    query = reduce(
-        get_trigram_query,
-        fields,
-        get_trigram_similarity(init_field),
-    )
-
-    return queryset.annotate(similarity=query).order_by('-similarity')
 
 
 class CategoryManager(mptt_managers.TreeManager):

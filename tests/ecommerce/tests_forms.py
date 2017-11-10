@@ -15,7 +15,7 @@ invalid_form_email = {
 no_phone = {'email': 'sss@sss.sss'}
 
 
-class FormsTest(TestCase):
+class TestForm(TestCase):
     """Test suite for forms in eCommerce app."""
 
     def test_empty_form(self):

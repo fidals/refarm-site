@@ -4,13 +4,13 @@ from catalog.models import AbstractProduct, AbstractCategory
 from pages.models import SyncPageMixin
 
 
-class EcommerceTestCategory(AbstractCategory, SyncPageMixin):
+class MockEcommerceCategory(AbstractCategory, SyncPageMixin):
     product_related_name = 'products'
 
 
-class EcommerceTestProduct(AbstractProduct, SyncPageMixin):
+class MockEcommerceProduct(AbstractProduct, SyncPageMixin):
     category = models.ForeignKey(
-        EcommerceTestCategory, on_delete=models.CASCADE,
+        MockEcommerceCategory, on_delete=models.CASCADE,
         null=True, related_name='products',
         db_index=True
     )

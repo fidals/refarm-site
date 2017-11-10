@@ -8,7 +8,7 @@ from django.test import TestCase
 from django.http import HttpResponse
 
 from generic_admin import views
-from tests.models import TestEntityWithRelations, RelatedEntity, AnotherRelatedEntity
+from tests.models import MockEntityWithRelations, RelatedEntity, AnotherRelatedEntity
 
 
 def related_entity_name_strategy(**kwargs):
@@ -16,7 +16,7 @@ def related_entity_name_strategy(**kwargs):
 
 
 class GenericTableEditor:
-    model = TestEntityWithRelations
+    model = MockEntityWithRelations
     relation_field_names = ['related_entity', 'another_related_entity']
     excluded_model_fields = ['id', 'is_active']
     excluded_related_model_fields = {
@@ -43,10 +43,10 @@ class TableEditorAPI(GenericTableEditor, views.TableEditorAPI):
     }
 
 
-class TestsTableEditorFieldsControl(TestCase):
+class TestTableEditorFieldsControl(TestCase):
     @classmethod
     def setUpClass(cls):
-        super(TestsTableEditorFieldsControl, cls).setUpClass()
+        super(TestTableEditorFieldsControl, cls).setUpClass()
         cls.model = TableEditorAPI.model
         cls.field_controller = TableEditorAPI.field_controller
         cls.relation_field_names = TableEditorAPI.relation_field_names
@@ -75,7 +75,6 @@ class TestsTableEditorFieldsControl(TestCase):
             for field in fields
         ))
 
-    # TODO: Fails
     def test_get_related_model_fields(self):
         related_entity, another_related_entity = list(
             self.field_controller.get_related_model_fields()
@@ -120,10 +119,10 @@ class TestsTableEditorFieldsControl(TestCase):
         self.assertIs(first_truthy, second_truthy, True)
 
 
-class TestsTableEditorApi(TestCase):
+class TestTableEditorApi(TestCase):
     @classmethod
     def setUpClass(cls):
-        super(TestsTableEditorApi, cls).setUpClass()
+        super(TestTableEditorApi, cls).setUpClass()
 
         cls.username = 'admin'
         cls.email = 'admin@admin.com'
@@ -134,7 +133,7 @@ class TestsTableEditorApi(TestCase):
         for i in range(cls.entities_count):
             name = 'test entity #{}'.format(i)
             is_active = bool(i % 2)
-            TestEntityWithRelations.objects.create(
+            MockEntityWithRelations.objects.create(
                 name=name,
                 is_active=is_active,
                 related_entity=RelatedEntity.objects.create(
@@ -151,8 +150,8 @@ class TestsTableEditorApi(TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        super(TestsTableEditorApi, cls).tearDownClass()
-        TestEntityWithRelations.objects.all().delete()
+        super(TestTableEditorApi, cls).tearDownClass()
+        MockEntityWithRelations.objects.all().delete()
         RelatedEntity.objects.all().delete()
         AnotherRelatedEntity.objects.all().delete()
 
@@ -170,7 +169,7 @@ class TestsTableEditorApi(TestCase):
         self.assertTrue(isinstance(response, HttpResponse))
 
     def test_put(self):
-        entity = TestEntityWithRelations.objects.all().order_by('id').first()
+        entity = MockEntityWithRelations.objects.all().order_by('id').first()
 
         new_name = 'Newly come up name'
         new_is_active = not entity.another_related_entity.is_active
@@ -186,7 +185,7 @@ class TestsTableEditorApi(TestCase):
 
         self.assertEqual(response.status_code, 200)
 
-        updated_entity = TestEntityWithRelations.objects.get(id=entity.id)
+        updated_entity = MockEntityWithRelations.objects.get(id=entity.id)
 
         self.assertNotEqual(entity.name, updated_entity.name)
         self.assertNotEqual(
@@ -201,7 +200,7 @@ class TestsTableEditorApi(TestCase):
         )
 
     def test_delete(self):
-        entity_id = TestEntityWithRelations.objects.all().order_by('id').first().id
+        entity_id = MockEntityWithRelations.objects.all().order_by('id').first().id
 
         response = self.client.delete(
             reverse(self.urlconf_name),
@@ -211,4 +210,4 @@ class TestsTableEditorApi(TestCase):
         )
 
         self.assertEqual(response.status_code, 200)
-        self.assertFalse(TestEntityWithRelations.objects.filter(id=entity_id))
+        self.assertFalse(MockEntityWithRelations.objects.filter(id=entity_id))

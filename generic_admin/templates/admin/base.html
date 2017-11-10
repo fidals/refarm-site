@@ -17,7 +17,9 @@
   {% if LANGUAGE_BIDI %}
     <link href="{% block stylesheet_rtl %}{% static 'admin/css/rtl.css' %}{% endblock %}" rel="stylesheet">
   {% endif %}
-  {% block extrahead %}{% endblock %}
+  {% block extrahead %}
+    <script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
+  {% endblock %}
   {% block blockbots %}<meta name="robots" content="none, noarchive"/>{% endblock %}
 </head>
 {% load i18n %}

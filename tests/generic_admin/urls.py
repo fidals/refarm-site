@@ -1,6 +1,6 @@
-from django.conf.urls import url, include
+from django.conf.urls import url
 
-from tests.generic_admin.tests_views import TableEditorAPI
+from tests.generic_admin.test_views import TableEditorAPI
 
 
 urlpatterns = [

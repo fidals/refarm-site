@@ -1,14 +1,16 @@
 import os
 import tests
 
+import dj_database_url
+
 DIRNAME = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 DEBUG = True
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-    }
+    'default': dj_database_url.config(
+        env='DATABASE_URL',
+    )
 }
 
 ROOT_URLCONF = 'tests.urls'
@@ -72,20 +74,12 @@ INSTALLED_APPS = (
     'catalog',
     'ecommerce',
     'pages',
+    'search',
     'generic_admin',
     'tests',
 )
 
-test_models = {
-    'catalog': 'TestCategory',
-    'product': 'TestProduct',
-    'catalog_with_default_page': 'TestCategoryWithDefaultPage',
-}
-
 SEARCH_SEE_ALL_LABEL = 'See all results'
-
-ENTITY_MODEL = 'tests.TestEntity'
-ENTITY_MODEL_WITH_SYNC = 'tests.TestEntityWithSync'
 
 # <--- transitive depends on pages app
 SITE_ID = 1
@@ -94,11 +88,9 @@ SITE_DOMAIN_NAME = 'www.shopelectro.ru'
 
 # Settings for eCommerce app.
 CART_ID = 'cart'
-FAKE_ORDER_NUMBER = 777
-PRODUCT_MODEL = 'tests.TestProduct'
+FAKE_ORDER_NUMBER = 777  # for seo magic
 
 EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'
 SHOP_EMAIL = 'test@test.test'
 EMAIL_RECIPIENT = 'test@test.test'
 EMAIL_SENDER = 'test@test.test'
-

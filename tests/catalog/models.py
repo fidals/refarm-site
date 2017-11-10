@@ -6,14 +6,14 @@ from catalog.models import AbstractCategory, AbstractProduct
 from pages.models import SyncPageMixin, CustomPage
 
 
-class TestCategory(AbstractCategory, SyncPageMixin):
+class MockCategory(AbstractCategory, SyncPageMixin):
     product_related_name = 'products'
 
     def get_absolute_url(self):
         return reverse('catalog:category', args=(self.page.slug,))
 
 
-class TestCategoryWithDefaultPage(AbstractCategory, SyncPageMixin):
+class MockCategoryWithDefaultPage(AbstractCategory, SyncPageMixin):
     product_related_name = 'products'
 
     @classmethod
@@ -25,9 +25,9 @@ class TestCategoryWithDefaultPage(AbstractCategory, SyncPageMixin):
         return reverse('catalog:category', args=(self.page.slug, ))
 
 
-class TestProduct(AbstractProduct, SyncPageMixin):
+class MockProduct(AbstractProduct, SyncPageMixin):
     category = models.ForeignKey(
-        TestCategory, on_delete=models.CASCADE,
+        MockCategory, on_delete=models.CASCADE,
         default=None, related_name='products',
         db_index=True
     )

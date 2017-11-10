@@ -26,6 +26,7 @@ class Order(models.Model):
     @property
     def fake_order_number(self):
         """Fake order number for SEO magic, so we look cool"""
+        # noinspection PyUnresolvedReferences
         return self.id + settings.FAKE_ORDER_NUMBER
 
     @property
