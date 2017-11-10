@@ -39,6 +39,7 @@ setup(
         'dj-database-url==0.4.1',
         'sorl-thumbnail==12.4a1',
         'Django-Select2==5.11.1',
+        'Sphinx',
         'unidecode',
         'psycopg2',
     ],
