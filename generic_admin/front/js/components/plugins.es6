@@ -57,7 +57,7 @@ class AdminCommonPlugins {
     Setup shortcut for "Save and continue" button (Ctrl + Enter)
   */
   saveAndContinueShortcutInit() {
-    $(window).keydown(function(event) {
+    $(window).keydown((event) => {
       if(event.ctrlKey && event.keyCode == 13) {
         event.preventDefault();
         // Django Admin have two "Save and continue" buttons, at top and bottom of page
