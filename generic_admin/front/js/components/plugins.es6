@@ -64,7 +64,7 @@ class AdminCommonPlugins {
         const element = $('input[name="_continue"]')[0];
         if (element) {
           element.click();
-        );
+        };
       };
     });
   }
