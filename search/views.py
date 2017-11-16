@@ -102,10 +102,10 @@ class AutocompleteView(View):
             :param search_name:
             :return:
             """
-            search = next(
-                s for s in self.search_entities if s.name == search_name
-            )
-            return search.template_fields
+            for search in self.search_entities:
+                if search.name == search_name:
+                    return search.template_fields
+            return []
 
         term = request.GET.get('term')
 
@@ -123,6 +123,8 @@ class AutocompleteView(View):
         if not any(search_result.values()):
             return JsonResponse({})
 
+        # @todo #85 - refactor autocomplete view
+        #  common view class should know nothing about search entities
         autocomplete_items = (
             self.prepare_fields(
                 search_result.get('category', []),

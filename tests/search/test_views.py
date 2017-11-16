@@ -63,7 +63,7 @@ class TestSearchView(AbstractTestSearchView):
         """Search page based on wrong term should contain no results"""
         term = 'fenich_is_god_of_business'
         response = self.get_search_results(term)
-        self.assertNotContains(response, 'class="search-results-item"')
+        self.assertNotContains(response, 'class="search-result-item"')
         self.assertContains(response, 'Nothing was found on your request')
 
     @expectedFailure
