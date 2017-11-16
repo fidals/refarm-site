@@ -2,16 +2,16 @@
 
 <div class="container">
   {% for category_item in category %}
-    <div class="search-results-item">
+    <div class="search-result-item">
       <a href="{{ category_item.get_absolute_url }}">{{ category_item.name }}</a>
-      <p class="search-results-item-type"> Category </p>
+      <p class="search-result-item-type"> Category </p>
     </div>
   {% endfor %}
 
   {% for product_item in product %}
-    <div class="search-results-item">
+    <div class="search-result-item">
       <a href="{{ product_item.get_absolute_url }}">{{ product_item.name }}</a>
-      <p class="search-results-item-type"> Product </p>
+      <p class="search-result-item-type"> Product </p>
     </div>
   {% endfor %}
 </div>
