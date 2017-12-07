@@ -1,17 +1,12 @@
+{% load pages_extras %}
+
 <h1>Search results</h1>
 
 <div class="container">
-  {% for category_item in category %}
+  {% for item in items %}
     <div class="search-result-item">
-      <a href="{{ category_item.get_absolute_url }}">{{ category_item.name }}</a>
-      <p class="search-result-item-type"> Category </p>
-    </div>
-  {% endfor %}
-
-  {% for product_item in product %}
-    <div class="search-result-item">
-      <a href="{{ product_item.get_absolute_url }}">{{ product_item.name }}</a>
-      <p class="search-result-item-type"> Product </p>
+      <a href="{{ item.url }}">{{ item.name }}</a>
+      <p class="search-result-item-type">{{ item|verbose_type }}</p>
     </div>
   {% endfor %}
 </div>

@@ -107,3 +107,13 @@ def custom_url(*args):
 @register.simple_tag
 def full_url(url_name, *args):
     return settings.BASE_URL + reverse(url_name, args=args)
+
+
+@register.filter
+def hasattr_(obj, arg):
+    return hasattr(obj, arg)
+
+
+@register.filter
+def verbose_type(object):
+    return object._meta.verbose_name.title()
