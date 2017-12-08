@@ -1,3 +1,4 @@
+from itertools import chain
 from typing import List, Tuple
 
 from django.core.urlresolvers import reverse_lazy
@@ -23,6 +24,19 @@ class SearchView(CustomPageView):
     def get_redirect_search_entity(self):
         pass
 
+    def get_context_data(self, term: str, **kwargs) -> dict:
+        search_limit = search_engine.Limit(self.limit)
+        search_result = list(chain.from_iterable(
+            search_limit.limit_data(entity.search(term))
+            for entity in self.search_entities
+        ))
+
+        return dict(
+            **super().get_context_data(**kwargs),
+            items=search_result,
+            term=term,
+        )
+
     def get(self, request, *args, **kwargs):
         term = request.GET.get('term')
 
@@ -39,35 +53,25 @@ class SearchView(CustomPageView):
             if search_entity:
                 return redirect(search_entity.url, permanent=True)
 
+        self.object = self.get_object()
+        context = self.get_context_data(term=term)
+        search_result = context['items']
         search_limit = search_engine.Limit(self.limit)
-        search_result = {
-            entity.name: search_limit.limit_data(entity.search(term))
-            for entity in self.search_entities
-        }
-
 
         # if there is only one autocompleted entity
         # then redirect to this entity
         if search_limit.size == 1:
-            for results_qs in search_result.values():
-                if results_qs:
+            for model in search_result:
+                if model:
                     return redirect(
-                        to=results_qs[0].url,
+                        to=model.url,
                         permanent=True
                     )
 
-        has_result = any(search_result.values())
-        self.object = self.get_object()
+        has_result = bool(search_result)
         template = self.template_path.format(
             'results' if has_result else 'no_results'
         )
-
-        context = self.get_context_data(object=self.object)
-        context.update({
-            **search_result,
-            'term': term
-        })
-
         return render(request, template, context)
 
 
