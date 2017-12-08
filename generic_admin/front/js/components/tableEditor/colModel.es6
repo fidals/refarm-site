@@ -22,7 +22,7 @@ class TableEditorColModel {
       },
       {
         name: 'category_name',
-        label: 'Категория: название',
+        label: 'Раздел: название',
         editable: true,
         editoptions: {
           dataInit: (elem) => {
