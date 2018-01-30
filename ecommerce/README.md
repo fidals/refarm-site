@@ -90,21 +90,19 @@ Ecommerce – python-модуль приложения Refarm-site.
 
 *Возьмём товар - блок питания: https://www.shopelectro.ru/catalog/products/2805/. Закажем 26 шт. Видим в корзине это: 1111 руб х 26 шт. = 28886 руб. Очистим корзину. Закажем 27 шт. Видим в корзине это: 767 руб х 27 шт. = 20717 руб. Получается, мы можем купить 27 одних и тех же блоков дешевле, чем 26.*
 
-
-
-
-
 # Код
 
 Универсальные сущности лежат в refarm-site/ecommerce. Чтобы их использовать, мы наследуемся от них в своём проекте и расширяем их.
 
 *Примеры*
 
-1. В SE частично переопределяем базовую модель корзины - используем пересчёт цены в зависимости от объёма закупки: https://github.com/fidals/shopelectro/blob/master/shopelectro/cart.py.
-2. В SE в базовую модель заказа добавляем несколько полей:
-https://github.com/fidals/shopelectro/blob/master/shopelectro/models.py#L114.
-3. В SE переопределяем шаблон письма рассылки:
-https://github.com/fidals/shopelectro/blob/master/templates/ecommerce/order/email.html.
+*1. В SE частично переопределяем базовую модель корзины - используем пересчёт цены в зависимости от объёма закупки: https://github.com/fidals/shopelectro/blob/master/shopelectro/cart.py.*
+
+*2. В SE в базовую модель заказа добавляем несколько полей:
+https://github.com/fidals/shopelectro/blob/master/shopelectro/models.py#L114.*
+
+*3. В SE переопределяем шаблон письма рассылки:
+https://github.com/fidals/shopelectro/blob/master/templates/ecommerce/order/email.html.*
 
 Вьюшки:
 * [стандартные для моделей заказа и корзины](https://github.com/fidals/refarm-site/blob/master/ecommerce/views.py);
