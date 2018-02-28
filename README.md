@@ -1,3 +1,6 @@
+[![PDD status](http://www.0pdd.com/svg?name=fidals/refarm-site)](http://www.0pdd.com/p?name=fidals/refarm-site)
+
+
 # Refarm
 *bunch of ecommerce django apps* 
 
