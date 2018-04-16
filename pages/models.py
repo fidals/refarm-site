@@ -239,21 +239,21 @@ class CustomPageManager(mptt_models.TreeManager):
         return super(CustomPageManager, self).get_queryset().filter(type=Page.CUSTOM_TYPE)
 
     def get_active(self):
-        return super(CustomPageManager, self).get_queryset().filter(is_active=True)
+        return self.get_queryset().filter(is_active=True)
 
 class FlatPageManager(mptt_models.TreeManager):
     def get_queryset(self):
         return super(FlatPageManager, self).get_queryset().filter(type=Page.FLAT_TYPE)
 
     def get_active(self):
-        return super(FlatPageManager, self).get_queryset().filter(is_active=True)
+        return self.get_queryset().filter(is_active=True)
 
 class ModelPageManager(mptt_models.TreeManager):
     def get_queryset(self):
         return super(ModelPageManager, self).get_queryset().filter(type=Page.MODEL_TYPE)
 
     def get_active(self):
-        return super(ModelPageManager, self).get_queryset().filter(is_active=True)
+        return self.get_queryset().filter(is_active=True)
 
 # ------- Proxies ----------
 class CustomPage(Page):

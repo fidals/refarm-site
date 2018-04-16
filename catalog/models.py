@@ -27,7 +27,7 @@ class CategoryManager(mptt_managers.TreeManager):
         }
 
     def get_active(self):
-        return self.filter(page__is_active=True)
+        return self.get_queryset().filter(page__is_active=True)
 
 
 class AbstractCategory(mptt_models.MPTTModel, AdminTreeDisplayMixin):
@@ -88,7 +88,7 @@ class ProductManager(models.Manager):
         return self.get_queryset().get_by_category(category, ordering)
 
     def get_active(self):
-        return self.filter(page__is_active=True)
+        return self.get_queryset().filter(page__is_active=True)
 
 class AbstractProduct(models.Model, AdminTreeDisplayMixin):
     """
