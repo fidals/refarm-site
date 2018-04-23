@@ -26,6 +26,9 @@ class CategoryManager(mptt_managers.TreeManager):
             if root_category.is_ancestor_of(product.category)
         }
 
+    def get_active(self):
+        return self.filter(page__is_active=True)
+
 
 class AbstractCategory(mptt_models.MPTTModel, AdminTreeDisplayMixin):
 
@@ -84,6 +87,8 @@ class ProductManager(models.Manager):
     def get_by_category(self, category: models.Model, ordering: [str]=None) -> models.QuerySet:
         return self.get_queryset().get_by_category(category, ordering)
 
+    def get_active(self):
+        return self.filter(page__is_active=True)
 
 class AbstractProduct(models.Model, AdminTreeDisplayMixin):
     """
