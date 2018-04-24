@@ -67,7 +67,7 @@ class TestMailer(TestCase):
             url='fidals.ru'
         )
         sent_mail = mail.outbox[0]
-        recipients = [settings.SHOP_EMAIL]
+        recipients = settings.EMAIL_RECIPIENTS.split(',')
 
         self.assertListEqual(recipients, sent_mail.recipients())
         self.assertEqual(sent_mail.subject, subject)
