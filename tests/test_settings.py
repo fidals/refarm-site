@@ -91,5 +91,5 @@ CART_ID = 'cart'
 FAKE_ORDER_NUMBER = 777  # for seo magic
 
 EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'
-EMAIL_RECIPIENTS = 'test@test.test'
+EMAIL_RECIPIENTS = ['test@test.test']
 EMAIL_SENDER = 'test@test.test'

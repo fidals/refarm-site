@@ -45,8 +45,7 @@ class TestMailer(TestCase):
             order=self.order,
         )
         sent_mail = mail.outbox[0]
-        recipients = [self.order.email]
-        recipients.extend(settings.EMAIL_RECIPIENTS.split(','))
+        recipients = [self.order.email, *settings.EMAIL_RECIPIENTS]
         self.assertListEqual(recipients, sent_mail.recipients())
         mailer.send_order(
             subject='Testing email 1',
@@ -54,7 +53,7 @@ class TestMailer(TestCase):
             to_customer=False
         )
         sent_mail = mail.outbox[1]
-        recipients = settings.EMAIL_RECIPIENTS.split(',')
+        recipients = settings.EMAIL_RECIPIENTS
         self.assertListEqual(recipients, sent_mail.recipients())
 
     def test_order_call(self):
@@ -67,7 +66,7 @@ class TestMailer(TestCase):
             url='fidals.ru'
         )
         sent_mail = mail.outbox[0]
-        recipients = settings.EMAIL_RECIPIENTS.split(',')
+        recipients = settings.EMAIL_RECIPIENTS
 
         self.assertListEqual(recipients, sent_mail.recipients())
         self.assertEqual(sent_mail.subject, subject)

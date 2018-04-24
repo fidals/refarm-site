@@ -42,7 +42,7 @@ def send_order(
     if to_customer:
         recipients.append(order.email)
     if to_shop:
-        recipients.extend(settings.EMAIL_RECIPIENTS.split(','))
+        recipients.extend(settings.EMAIL_RECIPIENTS)
 
     send(
         subject=subject.format(order),
@@ -62,7 +62,7 @@ def send_backcall(*, template='ecommerce/order/backcall_email.html', subject, **
         subject=subject,
         message=message,
         from_email=settings.EMAIL_SENDER,
-        recipient_list=settings.EMAIL_RECIPIENTS.split(','),
+        recipient_list=settings.EMAIL_RECIPIENTS,
         html_message=message
     )
 
