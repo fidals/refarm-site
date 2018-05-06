@@ -58,6 +58,12 @@ class PageTemplate(models.Model):
         return template.render(context)
 
 
+class PageManager(mptt_models.TreeManager):
+
+    def get_active(self):
+        return self.get_queryset().filter(is_active=True)
+
+
 class Page(mptt_models.MPTTModel, ImageMixin):
     # pages with same templates (ex. news, about)
     FLAT_TYPE = 'flat'
@@ -72,6 +78,8 @@ class Page(mptt_models.MPTTModel, ImageMixin):
 
     # Use for reversing custom pages
     CUSTOM_PAGES_URL_NAME = 'custom_page'
+
+    objects = PageManager()
 
     class Meta:
         unique_together = ('type', 'slug', 'related_model_name')
@@ -234,26 +242,23 @@ class Page(mptt_models.MPTTModel, ImageMixin):
 
 
 # ------- Managers -------
-class CustomPageManager(mptt_models.TreeManager):
+class CustomPageManager(PageManager):
+
     def get_queryset(self):
         return super(CustomPageManager, self).get_queryset().filter(type=Page.CUSTOM_TYPE)
 
-    def get_active(self):
-        return self.get_queryset().filter(is_active=True)
 
-class FlatPageManager(mptt_models.TreeManager):
+class FlatPageManager(PageManager):
+
     def get_queryset(self):
         return super(FlatPageManager, self).get_queryset().filter(type=Page.FLAT_TYPE)
 
-    def get_active(self):
-        return self.get_queryset().filter(is_active=True)
 
-class ModelPageManager(mptt_models.TreeManager):
+class ModelPageManager(PageManager):
+
     def get_queryset(self):
         return super(ModelPageManager, self).get_queryset().filter(type=Page.MODEL_TYPE)
 
-    def get_active(self):
-        return self.get_queryset().filter(is_active=True)
 
 # ------- Proxies ----------
 class CustomPage(Page):
