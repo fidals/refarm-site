@@ -20,7 +20,7 @@ before_install:
 
 script:
   - cd docker/
-  - docker-compose run --rm rf-python
+  - docker-compose run --rm python
 
 after_failure:
   - docker-compose logs

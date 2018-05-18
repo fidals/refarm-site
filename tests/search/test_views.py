@@ -5,7 +5,7 @@ from django.test import TestCase, override_settings
 from django.urls import reverse
 from unittest import expectedFailure
 
-from pages.models import CustomPage, Page
+from pages.models import CustomPage
 
 from tests.catalog.models import MockCategory, MockProduct
 
@@ -21,14 +21,14 @@ class AbstractTestSearchView(TestCase):
 
     def setUp(self):
         """Instantiate two test objects: test_category and test_product"""
-        self.search = CustomPage.objects.get(slug='search')
         self.test_products = MockProduct.objects.all()
+        self.search_page = CustomPage.objects.get(slug='search')
 
 
 class TestSearchView(AbstractTestSearchView):
 
     def get_search_results(self, term: str):
-        url = f'{self.search.url}?term={term}'
+        url = f'{self.search_page.url}?term={term}'
         # `follow=True` is required for 301 urls
         return self.client.get(url, follow=True)
 

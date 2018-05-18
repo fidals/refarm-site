@@ -14,6 +14,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         self.prepare_db()
         with self.save_to('search.json'):
+            self.create_custom_pages()
             self.create_for_search()
 
     def prepare_db(self):
@@ -26,13 +27,15 @@ class Command(BaseCommand):
         yield
         call_command(
             'dumpdata',
-            '--indent', '2',
             'pages', 'tests', 'mptt',
             output=f'tests/fixtures/{name}'
         )
 
-    def create_for_search(self):
+    def create_custom_pages(self):
         CustomPage.objects.create(slug='search')
+        CustomPage.objects.create(slug='catalog')
+
+    def create_for_search(self):
         test_category_first = catalog_models.MockCategory.objects.create(
             name='Batteries',
         )
