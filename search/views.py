@@ -159,7 +159,7 @@ class AdminAutocompleteView(View):
             None
         )
         if not search_expression:
-            return
+            return JsonResponse({}, safe=False)
 
         search_limit = search_engine.Limit(self.limit)
         search_result = {

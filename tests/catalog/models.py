@@ -19,7 +19,7 @@ class MockCategoryWithDefaultPage(AbstractCategory, SyncPageMixin):
     @classmethod
     def get_default_parent(cls):
         """You can override this method, if need a default parent"""
-        return CustomPage.objects.get(slug='catalog')
+        return CustomPage.objects.get_or_create(slug='catalog')
 
     def get_absolute_url(self):
         return reverse('catalog:category', args=(self.page.slug, ))
