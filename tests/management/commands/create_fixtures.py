@@ -1,13 +1,10 @@
 """Create serialized data for tests and store this data in a json file."""
 import abc
-import os
 import typing
-from contextlib import contextmanager
 
 from django.core.management import call_command
 from django.core.management.base import BaseCommand
 
-from pages.models import CustomPage
 from tests.catalog import models as catalog_models
 
 
