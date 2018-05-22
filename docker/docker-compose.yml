@@ -2,29 +2,25 @@ version: '2'
 
 services:
 
-  rf-python:
+  python:
     build:
       context: ..
       dockerfile: docker/Dockerfile.python
     image: fidals/rf:test
-    container_name: rf-python
     working_dir: $SRC_DIR
     environment:
-      - DATABASE_URL=postgres://$DB_USER:$DB_PASS@rf-postgres/$DB_NAME
+      - DATABASE_URL=postgres://$DB_USER:$DB_PASS@db/$DB_NAME
     depends_on:
-      - rf-postgres
+      - db
     links:
-      - rf-postgres
+      - db
     volumes:
       - ./../:$SRC_DIR  # code volume
     command: python manage.py test
 
-  rf-postgres:
+  db:
     image: postgres:9.5
     restart: always
-    container_name: rf-postgres
     environment:
       POSTGRES_DB: $DB_NAME
       POSTGRES_PASSWORD: $DB_PASS
-    volumes:
-      - /var/lib/postgresql/data:/var/lib/postgresql/data

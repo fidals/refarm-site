@@ -7,3 +7,4 @@ doc/build/
 docker/.env
 .idea/
 tests/media/
+.vscode/

@@ -90,6 +90,7 @@ class ProductManager(models.Manager):
     def get_active(self):
         return self.get_queryset().filter(page__is_active=True)
 
+
 class AbstractProduct(models.Model, AdminTreeDisplayMixin):
     """
     Product model.

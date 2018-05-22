@@ -90,6 +90,11 @@ SITE_DOMAIN_NAME = 'www.shopelectro.ru'
 CART_ID = 'cart'
 FAKE_ORDER_NUMBER = 777  # for seo magic
 
+CUSTOM_PAGES = {
+    'search': {'slug': 'search', 'h1': 'Search page'},
+    'catalog': {'slug': 'catalog', 'h1': 'Catalog page'},
+}
+
 EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'
 EMAIL_RECIPIENTS = ['test@test.test']
 EMAIL_SENDER = 'test@test.test'
