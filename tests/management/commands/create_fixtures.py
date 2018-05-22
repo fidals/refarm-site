@@ -1,5 +1,7 @@
 """Create serialized data for tests and store this data in a json file."""
+import abc
 import os
+import typing
 from contextlib import contextmanager
 
 from django.core.management import call_command
@@ -9,41 +11,90 @@ from pages.models import CustomPage
 from tests.catalog import models as catalog_models
 
 
+class GeneratedFixture(metaclass=abc.ABCMeta):
+
+    @abc.abstractmethod
+    def generate(self):
+        """Generate fixture for tests."""
+
+
+class GeneratedFixtures(GeneratedFixture):
+
+    def __init__(self, *fixtures: typing.List[GeneratedFixture]):
+        self.fixtures = fixtures
+
+    def generate(self):
+        for fixture in self.fixtures:
+            fixture.generate()
+
+
+class GeneratedToFile(GeneratedFixture):
+
+    def __init__(
+        self,
+        fixture: GeneratedFixture,
+        file_name: str,
+        apps: typing.List[str],
+    ):
+        self.apps = apps
+        self.fixture = fixture
+        self.file_name = file_name
+
+    def generate(self):
+        call_command('flush', '--noinput')
+        self.fixture.generate()
+        call_command(
+            'dumpdata',
+            *self.apps,
+            output=f'tests/fixtures/{self.file_name}'
+        )
+
+
+class GeneratedCatalog(GeneratedFixture):
+
+    def __init__(
+        self,
+        categories_data: typing.List[dict],
+        products_data: typing.List[dict],
+    ):
+        self.categories_data = categories_data
+        self.products_data = products_data
+
+    def generate(self):
+        for category_data in self.categories_data:
+            category = catalog_models.MockCategory.objects.create(**category_data)
+            for product_data in self.products_data:
+                catalog_models.MockProduct.objects.create(
+                    category=category, **product_data,
+                )
+
+
+class GeneratedPages(GeneratedFixture):
+
+    def generate(self):
+        call_command('custom_pages')
+
+
 class Command(BaseCommand):
 
     def handle(self, *args, **options):
-        self.prepare_db()
-        with self.save_to('search.json'):
-            self.create_custom_pages()
-            self.create_for_search()
-
-    def prepare_db(self):
         call_command('migrate')
 
-    @contextmanager
-    def save_to(self, name: str):
-        """Save .json dump to fixtures."""
-        call_command('flush', '--noinput')
-        yield
-        call_command(
-            'dumpdata',
-            'pages', 'tests', 'mptt',
-            output=f'tests/fixtures/{name}'
-        )
+        categories_data = [{'name': 'Batteries'}]
+        products_data = [
+            {'name': f'{product_name} for {name}'}
+            for product_name in ['Battery', 'USB']
+            for name in ['Alice', 'Bob']
+        ]
 
-    def create_custom_pages(self):
-        CustomPage.objects.create(slug='search')
-        CustomPage.objects.create(slug='catalog')
-
-    def create_for_search(self):
-        test_category_first = catalog_models.MockCategory.objects.create(
-            name='Batteries',
-        )
-
-        for product in ['Battery', 'USB']:
-            for name in ['Alice', 'Bob']:
-                catalog_models.MockProduct.objects.create(
-                    name=f'{product} for {name}',
-                    category=test_category_first,
-                )
-
+        GeneratedToFile(
+            fixture=GeneratedFixtures(
+                GeneratedCatalog(
+                    categories_data=categories_data,
+                    products_data=products_data,
+                ),
+                GeneratedPages(),
+            ),
+            apps=['pages', 'tests', 'mptt'],
+            file_name='search.json',
+        ).generate()
