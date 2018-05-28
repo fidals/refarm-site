@@ -42,7 +42,7 @@ class YaEcommerceTracker(EcommerceTracker):
     Prepare a data of user's actions for yandex ecommerce analitics.
 
     Yandex requires the synchronization of data after any successful action,
-    so it should be used after changing a state.
+    so it should be used after changing a state of cart and purchase.
 
     docs: https://yandex.ru/support/metrika/data/e-commerce.html
     """
