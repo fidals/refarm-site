@@ -66,7 +66,8 @@ class Cart:
     def save(self):
         """Actualize cart in session and trigger 'modified' event on it."""
         self._session[settings.CART_ID] = self._cart
-        self._session.modified = True  # Tells Django that session must be saved
+        # Tells Django that session must be saved
+        self._session.modified = True
 
     def update_product_prices(self, new_positions):
         """Update product price in cart."""
@@ -90,7 +91,6 @@ class Cart:
 
     def add(self, product: Model, quantity=1):
         """Add a Product to the Cart or update its quantity if it's already in it."""
-
         required_fields = ['id', 'name', 'price']
         for field in required_fields:
             assert hasattr(product, field), 'Product has not required field {}'.format(field)

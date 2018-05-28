@@ -16,6 +16,8 @@ from ecommerce import mailer
 from ecommerce.cart import Cart
 from ecommerce.forms import OrderForm
 from ecommerce.models import Order
+from ecommerce.session import ShoppingSession
+from ecommerce.trackers import Trackers
 
 
 def save_order_to_session(session, order: Order):
@@ -42,11 +44,9 @@ class OrderPage(CustomPageView):
 
     def get_context_data(self, request, **kwargs):
         post = getattr(request, 'POST', None)
-
         form = self.order_form(post) if post else self.order_form()
         cart = self.cart(request.session)
-
-        context = super(OrderPage, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
 
         return {
             **context,
@@ -64,11 +64,11 @@ class OrderPage(CustomPageView):
             """Save order to DB and to session."""
             order_ = form_.save()
             order_.set_positions(cart_)
-            cart_.clear()
             save_order_to_session(request.session, order_)
             return order_
 
-        self.object = self.get_object()  # Define this attr, for get_context_data method
+        # Define this attr, for get_context_data method
+        self.object = self.get_object()
         context = self.get_context_data(request=request)
 
         cart, form = context['cart'], context['form']
@@ -93,44 +93,56 @@ class OrderPage(CustomPageView):
 class OrderSuccess(CustomPageView):
     template_name = 'ecommerce/order/success.html'
     order = Order
+    cart = Cart
 
     def get_order_id(self):
         return self.request.session.get('order_id', None)
 
-    def get(self, request, *args, **kwargs):
-        if not self.get_order_id():
-            raise Http404()
+    def get_shopping_session(self):
+        return ShoppingSession(
+            self.cart(self.request.session),
+            Trackers([]),
+        )
 
-        return super(OrderSuccess, self).get(request, *args, **kwargs)
-
-    def get_context_data(self, **kwargs):
-        order_id = self.get_order_id()
-        context = super(OrderSuccess, self).get_context_data(**kwargs)
-
+    def get_context_data(self, request, **kwargs):
+        order = get_object_or_404(self.order, id=self.get_order_id())
+        shopping_session = self.get_shopping_session()
+        shopping_session.purchase(order)
+        trackers_data = shopping_session.get_tracked_data()
         return {
-            **context,
-            'order': get_object_or_404(self.order, id=order_id)
+            **super().get_context_data(**kwargs),
+            **trackers_data,
+            'order': order,
         }
 
 
 class CartModifier(View):
+
     header_template = 'ecommerce/header_cart.html'
     table_template = 'ecommerce/order/table_form.html'
     product_key = 'product'
     order_form = OrderForm
-    product_model = None  # Necessary define at client-side
+    # Necessary define at client-side
+    product_model = None
     cart = Cart
 
-    def json_response(self, request):
-        cart = self.cart(request.session)
-        header = render_to_string(self.header_template, request=request)
+    def get_shopping_session(self):
+        return ShoppingSession(
+            self.cart(self.request.session),
+            Trackers([]),
+        )
 
+    def json_response(self, request, shopping_session):
+        cart = shopping_session.cart
+        header = render_to_string(self.header_template, request=request)
         table = render_to_string(
             self.table_template,
             {'form': self.order_form()},
-            request=request
+            request=request,
         )
+        trackers_data = shopping_session.get_tracked_data()
         return JsonResponse({
+            **trackers_data,
             'header': header,
             'table': table,
             'total_price': cart.total_price,
@@ -139,43 +151,44 @@ class CartModifier(View):
 
 
 class AddToCart(CartModifier):
+
     def post(self, request):
-        cart = self.cart(request.session)
+        shopping_session = self.get_shopping_session()
         product = get_object_or_404(
             self.product_model,
             id=request.POST.get(self.product_key)
         )
-        cart.add(product, int(request.POST.get('quantity')))
-
-        return self.json_response(request)
+        shopping_session.add(product, int(request.POST.get('quantity')))
+        return self.json_response(request, shopping_session)
 
 
 class RemoveFromCart(CartModifier):
+
     def post(self, request):
-        cart = self.cart(request.session)
+        shopping_session = self.get_shopping_session()
         product = get_object_or_404(
             self.product_model,
             id=request.POST.get(self.product_key)
         )
-        cart.remove(product)
-
-        return self.json_response(request)
+        shopping_session.remove(product)
+        return self.json_response(request, shopping_session)
 
 
 class FlushCart(CartModifier):
-    def post(self, request):
-        self.cart(request.session).clear()
 
-        return self.json_response(request)
+    def post(self, request):
+        shopping_session = self.get_shopping_session()
+        shopping_session.clear()
+        return self.json_response(request, shopping_session)
 
 
 class ChangeCount(CartModifier):
+
     def post(self, request):
-        cart = self.cart(request.session)
+        shopping_session = self.get_shopping_session()
         product_id, quantity = get_keys_from_post(
             request, self.product_key, 'quantity'
         )
         product = get_object_or_404(self.product_model, id=product_id)
-        cart.set_product_quantity(product, int(quantity))
-
-        return self.json_response(request)
+        shopping_session.set_product_quantity(product, int(quantity))
+        return self.json_response(request, shopping_session)
