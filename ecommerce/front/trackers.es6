@@ -1,3 +1,5 @@
+// @todo #292 Integrate trackers to STB and SE
+
 class Tracker {
   constructor(transport) {
     this.transport = transport;
@@ -13,20 +15,20 @@ class YATracker extends Tracker {
    * docs: https://yandex.ru/support/metrika/data/e-commerce.html
   **/
   constructor(transport, currencyCode) {
-    this.transport = transport;
+    super(transport);
     this.currencyCode = currencyCode;
   }
   detail(productsData) {
-    this.transport.track({detail: {products: productsData}});
+    this.track({detail: {products: productsData}});
   }
   add(productsData) {
-    this.transport.track({add: {products: productsData}});
+    this.track({add: {products: productsData}});
   }
   remove(productsData) {
-    this.transport.track({remove: {products: productsData}});
+    this.track({remove: {products: productsData}});
   }
   purchase(productsData, actionData) {
-    this.transport.track({purchase: {products: productsData, actionField: actionData}});
+    this.track({purchase: {products: productsData, actionField: actionData}});
   }
   track(data) {
     this.transport.push({
@@ -44,14 +46,14 @@ class GATracker extends Tracker {
    * docs: https://developers.google.com/analytics/devguides/collection/analyticsjs/ecommerce?hl=en
   **/
   constructor(transport, name) {
-    this.transport = transport;
+    super(transport);
     this.name = name;
   }
   purchase(txData, productsData) {
-    this.transport('addTransaction', txData);
+    this.track('addTransaction', txData);
     for (let data of productsData)
-      this.transport('addItem', data);
-    this.transport('send');
+      this.track('addItem', data);
+    this.track('send');
   }
   track(actionName, data) {
     this.transport(`${this.name}:${actionName}`, data);
