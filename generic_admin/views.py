@@ -132,7 +132,8 @@ class TableEditorGet:
     def get(self, request, *args, **kwargs):
         products = list(self.get_queryset().values())
         for product in products:
-            product['fullname'] = product['name'] + ' ' + product['mark']
+            if product['mark']:
+                product['fullname'] = product['name'] + ' ' + product['mark']
         return JsonResponse(products, safe=False)
 
 
