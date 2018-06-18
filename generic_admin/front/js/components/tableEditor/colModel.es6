@@ -181,7 +181,7 @@ class TableEditorColModel {
 
   mergeColModels(customColModel) {
     return this.defaultColModels
-      .filter(col => customColModel.every(customCol => customCol !== col.name))
+      .filter(col => customColModel.every(customCol => customCol.name !== col.name))
       .concat(customColModel);
   }
 

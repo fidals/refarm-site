@@ -130,8 +130,10 @@ class TableEditorGet:
         )
 
     def get(self, request, *args, **kwargs):
-        products = self.get_queryset().values()
-        return JsonResponse(list(products), safe=False)
+        products = list(self.get_queryset().values())
+        for product in products:
+            product['fullname'] = product['name'] + ' ' + product['mark']
+        return JsonResponse(products, safe=False)
 
 
 class TableEditorPut:
@@ -290,7 +292,11 @@ class TableEditor(ABSTableEditor):
             self.field_controller.get_model_fields()
         ), key=get_second_el)
 
-        filter_data = chain(prepared_model_fields, prepared_related_model_fields)
+        custom_fields = [
+            ['fullname', 'Название, марка']
+        ]
+
+        filter_data = chain(custom_fields, prepared_model_fields, prepared_related_model_fields)
 
         return [
             {'id': 'filter-{}'.format(id_attr),
