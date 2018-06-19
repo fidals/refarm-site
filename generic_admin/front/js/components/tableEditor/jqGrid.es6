@@ -6,7 +6,6 @@ class TableEditor {
 
     this.filterFields = [
       'name',
-      'mark',
       'category_name',
       'price',
     ];
