@@ -5,8 +5,8 @@ class TableEditor {
     this.dialogs = dialogs || new TableEditorDialogs();
 
     this.filterFields = [
-      'fullname',
       'name',
+      'mark',
       'category_name',
       'price',
     ];
