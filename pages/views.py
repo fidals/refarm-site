@@ -100,10 +100,11 @@ class SitemapPage(SingleObjectMixin, ListView):
 
 class RobotsView(View):
 
-    # `filter`` prevents query evaluation
+    # `filter` prevents query evaluation
     objects = CustomPage.objects.filter(slug='robots')
     template = 'robots.txt'
-    is_db = False
+    in_db = False
+    content_type = 'text/plain'
 
     def get(self, request, *args, **kwargs):
         context = {
@@ -111,12 +112,15 @@ class RobotsView(View):
             # WE don't use request.scheme because of nginx proxy server and https on production
             'url': settings.BASE_URL,
         }
-        content_type = 'text/plain'
-        if self.is_db:
+        if self.in_db:
             response = HttpResponse(
                 render_str(self.objects.get().content, context),
-                content_type=content_type,
+                content_type=self.content_type,
             )
         else:
-            response = render_to_response(self.template, context, content_type=content_type)
+            response = render_to_response(
+                self.template,
+                context,
+                content_type=self.content_type
+            )
         return response
