@@ -17,6 +17,7 @@ ROOT_URLCONF = 'tests.urls'
 
 SECRET_KEY = 'fake-key'
 
+BASE_URL = 'top-url-for-ecommerce.com'
 BASE_DIR = os.path.dirname(tests.__file__)
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
@@ -91,8 +92,10 @@ CART_ID = 'cart'
 FAKE_ORDER_NUMBER = 777  # for seo magic
 
 CUSTOM_PAGES = {
+    'index': {'slug': '', 'h1': 'Index page'},
     'search': {'slug': 'search', 'h1': 'Search page'},
     'catalog': {'slug': 'catalog', 'h1': 'Catalog page'},
+    'robots': {'slug': 'robots', 'content': 'Robots content with {{ url }}'},
 }
 
 EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'

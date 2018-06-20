@@ -1,12 +1,16 @@
-from django.test import TestCase
+from django.conf import settings
+from django.test import TestCase, override_settings
+from django.urls import reverse
 
 from pages.models import FlatPage, CustomPage
+from pages.utils import save_custom_pages
 
 
 class PageTests(TestCase):
     def setUp(self):
         super().setUp()
-        self.index = CustomPage.objects.create(slug='', name='Index')
+        save_custom_pages()
+        self.index = CustomPage.objects.get(slug='')
         # -- set up section navi --
         self.section_navi = FlatPage.objects.create(
             name='Navigation on web portal',
@@ -112,3 +116,15 @@ class PageTests(TestCase):
         response = self.client.get(page.get_absolute_url())
         for crumb in crumbs_to_test:
             self.assertContains(response, crumb)
+
+    def test_db_robots(self):
+        robots = CustomPage.objects.get(slug='robots')
+        response = self.client.get(robots.get_absolute_url())
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, settings.BASE_URL)
+
+    @override_settings(DEBUG=True)
+    def test_template_robots(self):
+        response = self.client.get(reverse('robots-template'))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'User-agent')

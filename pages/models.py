@@ -5,13 +5,15 @@ from unidecode import unidecode
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.db import models, transaction
-from django.template import Template, Context
+from django.template import Template
 from django.template.defaultfilters import slugify
 from django.template.exceptions import TemplateSyntaxError
 from django.utils.translation import ugettext_lazy as _
 
 from mptt import models as mptt_models
 from images.models import ImageMixin
+
+from pages.utils import render_str
 
 
 def validate_template(value):
@@ -53,9 +55,7 @@ class PageTemplate(models.Model):
         return self.name
 
     def render(self, field, context):
-        template = Template(field)
-        context = Context(context)
-        return template.render(context)
+        return render_str(field, context)
 
 
 class PageManager(mptt_models.TreeManager):

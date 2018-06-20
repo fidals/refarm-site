@@ -1,12 +1,13 @@
 import math
 
 from django.conf import settings
-from django.http import HttpResponsePermanentRedirect, Http404
+from django.http import HttpResponse, HttpResponsePermanentRedirect, Http404
 from django.shortcuts import render, get_object_or_404, render_to_response
-from django.views.generic import DetailView, ListView
+from django.views.generic import DetailView, ListView, View
 from django.views.generic.detail import SingleObjectMixin
 
 from pages.models import CustomPage, FlatPage, Page
+from pages.utils import render_str
 
 
 class CustomPageView(DetailView):
@@ -97,11 +98,24 @@ class SitemapPage(SingleObjectMixin, ListView):
         }
 
 
-def robots(request):
-    return render_to_response(
-        'robots.txt', {
+class RobotsView(View):
+
+    template = 'robots.txt'
+    objects = CustomPage.objects.filter(slug='robots')
+    is_db = False
+
+    def get(self, request, *args, **kwargs):
+        context = {
             'debug': settings.DEBUG,
             # WE don't use request.scheme because of nginx proxy server and https on production
-            'url': settings.BASE_URL
-        }, content_type='text/plain')
-
+            'url': settings.BASE_URL,
+        }
+        content_type = 'text/plain'
+        if self.is_db:
+            response = HttpResponse(
+                render_str(self.objects.get().content, context),
+                content_type=content_type,
+            )
+        else:
+            response = render_to_response(self.template, context, content_type=content_type)
+        return response
