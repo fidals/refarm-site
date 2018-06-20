@@ -118,6 +118,7 @@ class PageTests(TestCase):
             self.assertContains(response, crumb)
 
     def test_db_robots(self):
+        """Robots db-route render its page content."""
         robots = CustomPage.objects.get(slug='robots')
         response = self.client.get(robots.get_absolute_url())
         self.assertEqual(response.status_code, 200)
@@ -125,6 +126,7 @@ class PageTests(TestCase):
 
     @override_settings(DEBUG=True)
     def test_template_robots(self):
+        """Robots template-route render its template."""
         response = self.client.get(reverse('robots-template'))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'User-agent')

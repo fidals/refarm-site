@@ -100,8 +100,9 @@ class SitemapPage(SingleObjectMixin, ListView):
 
 class RobotsView(View):
 
-    template = 'robots.txt'
+    # `filter`` prevents query evaluation
     objects = CustomPage.objects.filter(slug='robots')
+    template = 'robots.txt'
     is_db = False
 
     def get(self, request, *args, **kwargs):
