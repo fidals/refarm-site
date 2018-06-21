@@ -1,7 +1,10 @@
 from django.conf import settings
 from django.contrib.redirects.models import Site
+from django.template import Template, Context
 
-from pages.models import CustomPage
+
+def render_str(text, data):
+    return Template(text).render(Context(data))
 
 
 def save_custom_pages():
@@ -13,6 +16,8 @@ def save_custom_pages():
     >>> save_custom_pages()
     >>> custom_page = CustomPage.objects.get(slug='order')
     """
+    # helps to avoid recursive import
+    from pages.models import CustomPage
     for fields in settings.CUSTOM_PAGES.values():
         page_in_db = CustomPage.objects.filter(slug=fields['slug']).exists()
         if not page_in_db:
