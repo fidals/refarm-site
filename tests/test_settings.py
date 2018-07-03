@@ -59,6 +59,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'refarm_redirects.middleware.RedirectAllMiddleware',
 )
 
 # @todo #140:60m Use `refarm-site's` packages with it's prefix.

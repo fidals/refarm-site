@@ -6,7 +6,7 @@ from django.contrib.redirects.middleware \
 from django.contrib.sites.shortcuts import get_current_site
 
 
-class RedirectFallbackMiddleware(DjangoRedirectFallbackMiddleware):
+class RedirectAllMiddleware(DjangoRedirectFallbackMiddleware):
     # reloaded this method
     # just to drop `response.status_code` status check
     # in base class
