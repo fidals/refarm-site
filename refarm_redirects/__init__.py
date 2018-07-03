@@ -1,1 +1,1 @@
-default_app_config = 'pages.apps.RedirectsConfig'
+default_app_config = 'refarm_redirects.apps.RedirectsConfig'
