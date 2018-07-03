@@ -59,7 +59,12 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'refarm_redirects.middleware.RedirectAllMiddleware',
 )
+
+# @todo #140:60m Use `refarm-site's` packages with it's prefix.
+#  For example do `INSTALLED_APPS = ['refarm-site.pages', ...]`
+#  instead of just `['pages']`.
 
 INSTALLED_APPS = (
     'django.contrib.auth',
@@ -76,6 +81,7 @@ INSTALLED_APPS = (
     'ecommerce',
     'pages',
     'search',
+    'refarm_redirects',
     'generic_admin',
     'tests',
 )
