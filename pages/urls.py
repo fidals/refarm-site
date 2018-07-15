@@ -7,7 +7,6 @@ from pages.models import Page
 
 app_name = 'pages'
 
-# @todo #343:30m Use custom_page_url for every custom page route.
 custom_page_url = partial(url, name=Page.CUSTOM_PAGES_URL_NAME)
 
 urlpatterns = [

@@ -2,7 +2,7 @@ from django.conf import settings
 from django.test import TestCase, override_settings
 from django.urls import reverse
 
-from pages.models import FlatPage, CustomPage
+from pages.models import Page, FlatPage, CustomPage
 from pages.utils import save_custom_pages
 
 
@@ -123,6 +123,16 @@ class PageTests(TestCase):
         response = self.client.get(robots.get_absolute_url())
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, settings.BASE_URL)
+
+    def test_db_robots_404(self):
+        """Robots db-route without an related object in db return 404."""
+        self.assertEqual(
+            self.client.get(reverse(
+                Page.CUSTOM_PAGES_URL_NAME,
+                args=('robots-404',))
+            ).status_code,
+            404,
+        )
 
     @override_settings(DEBUG=True)
     def test_template_robots(self):
