@@ -125,7 +125,7 @@ class PageTests(TestCase):
         self.assertContains(response, settings.BASE_URL)
 
     def test_db_robots_404(self):
-        """Robots db-route without an related object in db return 404."""
+        """Robots db-route without an related object in db returns 404."""
         self.assertEqual(
             self.client.get(reverse(
                 Page.CUSTOM_PAGES_URL_NAME,
