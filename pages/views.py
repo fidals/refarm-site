@@ -98,29 +98,23 @@ class SitemapPage(SingleObjectMixin, ListView):
         }
 
 
-class RobotsView(View):
+class RobotsView(CustomPageView):
 
-    # `filter` prevents query evaluation
-    objects = CustomPage.objects.filter(slug='robots')
-    template = 'robots.txt'
+    template_name = 'robots.txt'
     in_db = False
-    content_type = 'text/plain'
 
     def get(self, request, *args, **kwargs):
-        context = {
+        context = self.get_context_data()
+        if self.in_db:
+            response = HttpResponse(render_str(self.get_object().content, context))
+        else:
+            response = self.render_to_response(context)
+        return response
+
+    def get_context_data(self, **kwargs):
+        return {
             'debug': settings.DEBUG,
             # WE don't use request.scheme because of nginx proxy server and https on production
             'url': settings.BASE_URL,
+            **kwargs,
         }
-        if self.in_db:
-            response = HttpResponse(
-                render_str(self.objects.get().content, context),
-                content_type=self.content_type,
-            )
-        else:
-            response = render_to_response(
-                self.template,
-                context,
-                content_type=self.content_type
-            )
-        return response
