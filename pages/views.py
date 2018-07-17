@@ -98,18 +98,17 @@ class SitemapPage(SingleObjectMixin, ListView):
         }
 
 
-class RobotsView(CustomPageView):
+class RobotsView(View, SingleObjectMixin):
 
-    template_name = 'robots.txt'
-    in_db = False
+    model = CustomPage
+    slug_url_kwarg = 'page'
+    context_object_name = 'page'
 
     def get(self, request, *args, **kwargs):
-        context = self.get_context_data()
-        if self.in_db:
-            response = HttpResponse(render_str(self.get_object().content, context))
-        else:
-            response = self.render_to_response(context)
-        return response
+        return HttpResponse(render_str(
+            self.get_object().content,
+            self.get_context_data(),
+        ))
 
     def get_context_data(self, **kwargs):
         return {

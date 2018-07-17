@@ -133,10 +133,3 @@ class PageTests(TestCase):
             ).status_code,
             404,
         )
-
-    @override_settings(DEBUG=True)
-    def test_template_robots(self):
-        """Robots template-route render its template."""
-        response = self.client.get(reverse('robots-template'))
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'User-agent')
