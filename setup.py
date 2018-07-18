@@ -40,6 +40,6 @@ setup(
         'Django-Select2==5.11.1',
         'unidecode',
         'psycopg2',
-        'Pillow==5.1.0',
+        'Pillow==5.2.0',
     ],
 )

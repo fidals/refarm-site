@@ -49,7 +49,7 @@ class GATracker extends Tracker {
     super(transport);
     this.name = name;
   }
-  purchase(txData, productsData) {
+  purchase(productsData, txData) {
     this.track('addTransaction', txData);
     for (let data of productsData)
       this.track('addItem', data);
