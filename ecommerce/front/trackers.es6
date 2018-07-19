@@ -32,10 +32,7 @@ class YATracker extends Tracker {
   }
   track(data) {
     this.transport.push({
-      ecommerce: {
-        currencyCode: this.currencyCode,
-        ...data,
-      },
+      ecommerce: Object.assign({currencyCode: this.currencyCode}, data),
     });
   }
 }
