@@ -2,6 +2,7 @@ import unittest
 
 from django.contrib.redirects.models import Redirect
 from django.contrib.sites.models import Site
+from django.db.utils import IntegrityError
 from django.test import TestCase
 
 
@@ -39,14 +40,11 @@ class Redirects(TestCase):
         It should meet db constraint while adding.
         """
         # hardcoded fixtures will be fixed with task in test ahead.
-        url_from, url_to = 2 * ['/catalog/categories/category-0/tags/6-v/']
+        url_from = url_to = '/catalog/categories/category-0/tags/6-v/'
         # should raise exception, but not. Pdd task ahead will fix it.
-        Redirect.objects.create(
-            site=Site.objects.first(),
-            old_path=url_from,
-            new_path=url_to
-        )
-
-        # `url_from` should redirect to `url_to`
-        response = self.client.get(url_from)
-        self.assertEqual(response.status_code, 200)
+        with self.assertRaises(IntegrityError):
+            Redirect.objects.create(
+                site=Site.objects.first(),
+                old_path=url_from,
+                new_path=url_to
+            )
