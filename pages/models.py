@@ -86,7 +86,7 @@ class Page(mptt_models.MPTTModel, ImageMixin):
         verbose_name = _('Page')
         verbose_name_plural = _('Pages')
 
-    name = models.CharField(max_length=255, default='', db_index=True, verbose_name=_('name'))
+    name = models.TextField(default='', db_index=True, verbose_name=_('name'))
     type = models.CharField(default=FLAT_TYPE, max_length=100, editable=False, db_index=True)
     # Name for reversing at related model
     related_model_name = models.CharField(blank=True, max_length=255, editable=False)
@@ -122,7 +122,7 @@ class Page(mptt_models.MPTTModel, ImageMixin):
         verbose_name=_('menu title'),
     )
 
-    h1 = models.CharField(blank=True, max_length=255)
+    h1 = models.TextField(blank=True)
     keywords = models.CharField(blank=True, max_length=255, verbose_name=_('keywords'))
     description = models.TextField(blank=True, verbose_name=_('description'))
     seo_text = models.TextField(blank=True, verbose_name=_('seo text'))
