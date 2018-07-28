@@ -39,7 +39,7 @@ setup(
         'sorl-thumbnail==12.4a1',
         'Django-Select2==5.11.1',
         'unidecode',
-        'psycopg2',
+        'psycopg2-binary==2.7.4',
         'Pillow==5.2.0',
     ],
 )
