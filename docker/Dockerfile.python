@@ -3,4 +3,5 @@ FROM python:slim
 WORKDIR /usr/app/src/
 
 COPY . .
+RUN pip install --upgrade pip
 RUN pip install -e .
