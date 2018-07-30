@@ -1,6 +1,7 @@
-FROM python:slim
+FROM python:3.6.6-slim-jessie
 
 WORKDIR /usr/app/src/
 
 COPY . .
+RUN pip install --upgrade pip
 RUN pip install -e .
