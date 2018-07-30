@@ -20,6 +20,7 @@ before_install:
 
 script:
   - cd docker/
+  - docker-compose build --no-cache python
   - docker-compose run --rm python
 
 after_failure:
