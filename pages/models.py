@@ -177,7 +177,6 @@ class Page(mptt_models.MPTTModel, ImageMixin):
         if self.is_flat:
             return reverse('pages:flat_page', args=self.get_ancestors_fields('slug'))
 
-        # TODO http://bit.ly/refarm-tail-enable-logging
         return '/'
 
     def save(self, *args, **kwargs):

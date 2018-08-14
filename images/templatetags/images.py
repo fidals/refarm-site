@@ -22,7 +22,6 @@ def placeholder_image_url():
     try:
         return storage.url(settings.PLACEHOLDER_IMAGE)
     except FileNotFoundError as e:
-        # TODO - some warn output: http://bit.ly/refarm-tail-enable-logging
         raise e
     except AttributeError as e:
         raise e
