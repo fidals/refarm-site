@@ -103,6 +103,15 @@ class ProductManager(models.Manager):
         return self.get_queryset().filter(page__is_active=True)
 
 
+class ProductActiveManager(ProductManager):
+    def get_queryset(self):
+        return (
+            super(ProductActiveManager, self)
+            .get_queryset()
+            .filter(page__is_active=True)
+        )
+
+
 class AbstractProduct(models.Model, AdminTreeDisplayMixin):
     """
     Product model.
@@ -116,6 +125,7 @@ class AbstractProduct(models.Model, AdminTreeDisplayMixin):
         verbose_name_plural = _('Products')
 
     objects = ProductManager()
+    actives = ProductActiveManager()
     name = models.CharField(max_length=255, db_index=True, verbose_name=_('name'))
     price = models.FloatField(
         blank=True,
