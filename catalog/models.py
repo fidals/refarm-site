@@ -77,6 +77,14 @@ class ProductQuerySet(models.QuerySet):
 
         return self.filter(category__in=categories).order_by(*ordering)
 
+    def get_category_descendants(self, category, ordering):
+        """Return products with prefetch pages and images."""
+        return (
+            self.prefetch_related('page__images')
+            .select_related('page')
+            .get_by_category(category, ordering=ordering)
+        )
+
 
 class ProductManager(models.Manager):
     """Get all products of given category by Category's id or instance."""
@@ -86,6 +94,10 @@ class ProductManager(models.Manager):
 
     def get_by_category(self, category: models.Model, ordering: [str]=None) -> models.QuerySet:
         return self.get_queryset().get_by_category(category, ordering)
+
+    def get_category_descendants(self, category: models.Model, ordering: [str]=None) -> models.QuerySet:
+        """Return products with prefetch pages and images."""
+        return self.get_queryset().get_category_descendants(category, ordering)
 
     def get_active(self):
         return self.get_queryset().filter(page__is_active=True)
