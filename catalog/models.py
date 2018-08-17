@@ -77,7 +77,7 @@ class ProductQuerySet(models.QuerySet):
 
         return self.filter(category__in=categories).order_by(*ordering)
 
-    def get_category_descendants(self, category, ordering):
+    def get_category_descendants(self, category: models.Model, ordering: [str]=None):
         """Return products with prefetch pages and images."""
         return (
             self.prefetch_related('page__images')
