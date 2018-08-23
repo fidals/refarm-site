@@ -219,7 +219,6 @@ class TestProduct(TestCase):
             is_popular=False,
         )
 
-
     def test_popular_products(self):
         """Should be one popular product."""
         popular = MockProduct.objects.filter(is_popular=True)

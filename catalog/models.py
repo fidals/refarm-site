@@ -2,7 +2,7 @@ import random
 import string
 from itertools import chain, groupby
 from operator import attrgetter
-from typing import List, Tuple
+from typing import Dict, List, Tuple
 from uuid import uuid4
 
 from django.conf import settings
@@ -200,26 +200,36 @@ class TagGroup(models.Model):
 
 class TagQuerySet(models.QuerySet):
 
-    SLUG_HASH_SIZE = 5
-
-    def get_group_tags_pairs(self) -> List[Tuple[TagGroup, List['Tag']]]:
+    def filter_by_products(self, products: List[AbstractProduct]):
         ordering = settings.TAGS_ORDER
         distinct = [order.lstrip('-') for order in ordering]
 
-        tags = (
+        return (
             self
-            .all()
-            .prefetch_related('group')
+            .filter(products__in=products)
             .order_by(*ordering)
             .distinct(*distinct, 'id')
         )
 
-        group_tags_pair = [
+    def get_group_tags_pairs(self) -> List[Tuple[TagGroup, List['Tag']]]:
+        grouped_tags = groupby(self.prefetch_related('group'), key=attrgetter('group'))
+        return [
             (group, list(tags_))
-            for group, tags_ in groupby(tags, key=attrgetter('group'))
+            for group, tags_ in grouped_tags
         ]
 
-        return group_tags_pair
+    def get_brands(self, products: List[AbstractProduct]) -> Dict[AbstractProduct, 'Tag']:
+        brand_tags = (
+            self.filter(group__name=settings.BRAND_TAG_GROUP_NAME)
+            .prefetch_related('products')
+            .select_related('group')
+        )
+
+        return {
+            product: brand
+            for brand in brand_tags for product in products
+            if product in brand.products.all()
+        }
 
 
 class TagManager(models.Manager.from_queryset(TagQuerySet)):
@@ -232,6 +242,13 @@ class TagManager(models.Manager.from_queryset(TagQuerySet)):
 
     def get_group_tags_pairs(self):
         return self.get_queryset().get_group_tags_pairs()
+
+    def filter_by_products(self, products):
+        return self.get_queryset().filter_by_products(products)
+
+    def get_brands(self, products):
+        """Get a batch of products' brands."""
+        return self.get_queryset().get_brands(products)
 
 
 class Tag(models.Model):
