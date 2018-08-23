@@ -1,7 +1,25 @@
+import random
+import string
+from itertools import chain, groupby
+from operator import attrgetter
+from typing import List, Tuple
+from uuid import uuid4
+
+from django.conf import settings
+from django.utils.text import slugify
+from unidecode import unidecode
+
 from django.db import models
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext_lazy as _
 from mptt import models as mptt_models, managers as mptt_managers
+
+
+def randomize_slug(slug: str) -> str:
+    slug_hash = ''.join(
+        random.choices(string.ascii_lowercase, k=settings.SLUG_HASH_SIZE)
+    )
+    return f'{slug}_{slug_hash}'
 
 
 class AdminTreeDisplayMixin(object):
@@ -160,3 +178,130 @@ class AbstractProduct(models.Model, AdminTreeDisplayMixin):
 
     def get_root_category(self):
         return self.category.get_root()
+
+
+# it's called not as `AbstractTagGroup`, because inner `Meta.abstract = True`
+# is not arch design, but about ORM hack.
+class TagGroup(models.Model):
+
+    class Meta:
+        abstract = True
+
+    uuid = models.UUIDField(default=uuid4, editable=False)  # Ignore CPDBear
+    name = models.CharField(
+        max_length=100, db_index=True, verbose_name=_('name'))
+    position = models.PositiveSmallIntegerField(
+        default=0, blank=True, db_index=True, verbose_name=_('position'),
+    )
+
+    def __str__(self):
+        return self.name
+
+
+class TagQuerySet(models.QuerySet):
+
+    SLUG_HASH_SIZE = 5
+
+    def get_group_tags_pairs(self) -> List[Tuple[TagGroup, List['Tag']]]:
+        ordering = settings.TAGS_ORDER
+        distinct = [order.lstrip('-') for order in ordering]
+
+        tags = (
+            self
+            .all()
+            .prefetch_related('group')
+            .order_by(*ordering)
+            .distinct(*distinct, 'id')
+        )
+
+        group_tags_pair = [
+            (group, list(tags_))
+            for group, tags_ in groupby(tags, key=attrgetter('group'))
+        ]
+
+        return group_tags_pair
+
+
+class TagManager(models.Manager.from_queryset(TagQuerySet)):
+
+    def get_queryset(self):
+        return (
+            super().get_queryset()
+            .order_by(*settings.TAGS_ORDER)
+        )
+
+    def get_group_tags_pairs(self):
+        return self.get_queryset().get_group_tags_pairs()
+
+
+class Tag(models.Model):
+
+    class Meta:
+        abstract = True
+        unique_together = ('name', 'group')
+
+    objects = TagManager()
+
+    uuid = models.UUIDField(default=uuid4, editable=False)
+    name = models.CharField(
+        max_length=100, db_index=True, verbose_name=_('name'))
+    position = models.PositiveSmallIntegerField(
+        default=0, blank=True, db_index=True, verbose_name=_('position'),
+    )
+
+    slug = models.SlugField(default='')
+
+    def __str__(self):
+        return self.name
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            # same slugify code used in PageMixin object
+            self.slug = slugify(
+                unidecode(self.name.replace('.', '-').replace('+', '-'))
+            )
+        doubled_tag_qs = self.__class__.objects.filter(slug=self.slug)
+        if doubled_tag_qs:
+            self.slug = randomize_slug(self.slug)
+        super(Tag, self).save(*args, **kwargs)
+
+    @staticmethod
+    def parse_url_tags(tags: str) -> list:
+        groups = tags.split(settings.TAGS_URL_DELIMITER)
+        return set(chain.from_iterable(
+            group.split(settings.TAG_GROUPS_URL_DELIMITER) for group in groups
+        ))
+
+
+def serialize_tags(
+    tags: TagQuerySet,
+    field_name: str,
+    type_delimiter: str,
+    group_delimiter: str,
+) -> str:
+    group_tags_map = tags.get_group_tags_pairs()
+
+    _, tags_by_group = zip(*group_tags_map)
+
+    return group_delimiter.join(
+        type_delimiter.join(getattr(tag, field_name) for tag in tags_list)
+        for tags_list in tags_by_group
+    )
+
+
+def serialize_tags_to_url(tags: TagQuerySet) -> str:
+    return serialize_tags(
+        tags=tags,
+        field_name='slug',
+        type_delimiter=settings.TAGS_URL_DELIMITER,
+        group_delimiter=settings.TAG_GROUPS_URL_DELIMITER
+    )
+
+
+def serialize_tags_to_title(tags: TagQuerySet) -> str:
+    return serialize_tags(
+        tags=tags,
+        field_name='name',
+        type_delimiter=settings.TAGS_TITLE_DELIMITER,
+        group_delimiter=settings.TAG_GROUPS_TITLE_DELIMITER
+    )
