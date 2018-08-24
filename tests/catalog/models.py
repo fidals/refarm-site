@@ -43,11 +43,11 @@ class MockProduct(AbstractProduct, SyncPageMixin):
         return 'no-image-right-now'
 
 
-class TagTest(TestCase):
+class TagModel(TestCase):
 
     # @todo #162:60m Create fixtures for tags.
     #  Copy from SE all tags fixtures creation logic.
-    #  Resurrect tags test.
+    #  Then move `shopelectro.tests.tests_models.TagModel` to this class.
 
     @unittest.skip
     def test_double_named_tag_saving(self):

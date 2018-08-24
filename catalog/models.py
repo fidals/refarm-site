@@ -266,7 +266,7 @@ class Tag(models.Model):
         default=0, blank=True, db_index=True, verbose_name=_('position'),
     )
 
-    slug = models.SlugField(default='')
+    slug = models.SlugField(default='', unique=True)
 
     def __str__(self):
         return self.name
@@ -277,8 +277,8 @@ class Tag(models.Model):
             self.slug = slugify(
                 unidecode(self.name.replace('.', '-').replace('+', '-'))
             )
-        doubled_tag_qs = self.__class__.objects.filter(slug=self.slug)
-        if doubled_tag_qs:
+        tag_is_doubled = self.__class__.objects.filter(slug=self.slug).exists()
+        if tag_is_doubled:
             self.slug = randomize_slug(self.slug)
         super(Tag, self).save(*args, **kwargs)
 
@@ -289,6 +289,8 @@ class Tag(models.Model):
             group.split(settings.TAG_GROUPS_URL_DELIMITER) for group in groups
         ))
 
+
+# @todo #162:15m Move serialize_tags TagQuerySet's method
 
 def serialize_tags(
     tags: TagQuerySet,
