@@ -219,7 +219,6 @@ class TestProduct(TestCase):
             is_popular=False,
         )
 
-
     def test_popular_products(self):
         """Should be one popular product."""
         popular = MockProduct.objects.filter(is_popular=True)
@@ -240,3 +239,10 @@ class TestProduct(TestCase):
         products_offset = MockProduct.objects.all().get_offset(1, 3)
 
         self.assertEqual(len(products_offset), 2)
+
+
+class TagModel(TestCase):
+
+    # @todo #162:60m Create fixtures for refarm tests.
+    #  Then move TagModel tests from SE to refarm.
+    pass
