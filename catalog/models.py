@@ -2,7 +2,7 @@ import random
 import string
 from itertools import chain, groupby
 from operator import attrgetter
-from typing import Dict, List, Tuple
+from typing import Dict, Iterable, List, Tuple
 from uuid import uuid4
 
 from django.conf import settings
@@ -103,12 +103,18 @@ class ProductQuerySet(models.QuerySet):
             .get_by_category(category, ordering=ordering)
         )
 
+    def filter_by_categories(self, categories: Iterable[AbstractCategory]):
+        """Filter products by given categories """
+        return (
+            self.select_related('page')
+            .select_related('category')
+            .prefetch_related('page__images')
+            .filter(category__in=categories, price__gt=0)
+        )
 
-class ProductManager(models.Manager):
+
+class ProductManager(models.Manager.from_queryset(ProductQuerySet)):
     """Get all products of given category by Category's id or instance."""
-
-    def get_queryset(self):
-        return ProductQuerySet(self.model, using=self._db)
 
     def get_by_category(self, category: models.Model, ordering: [str]=None) -> models.QuerySet:
         return self.get_queryset().get_by_category(category, ordering)
@@ -117,6 +123,7 @@ class ProductManager(models.Manager):
         """Return products with prefetch pages and images."""
         return self.get_queryset().get_category_descendants(category, ordering)
 
+    # TODO - rm it
     def get_active(self):
         return self.get_queryset().filter(page__is_active=True)
 
