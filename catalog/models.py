@@ -290,7 +290,7 @@ class Tag(models.Model):
         ))
 
 
-# @todo #162:15m Move serialize_tags TagQuerySet's method
+# @todo #162:15m Move serialize_tags to TagQuerySet's method
 
 def serialize_tags(
     tags: TagQuerySet,
