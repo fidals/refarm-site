@@ -123,7 +123,8 @@ class ProductManager(models.Manager.from_queryset(ProductQuerySet)):
         """Return products with prefetch pages and images."""
         return self.get_queryset().get_category_descendants(category, ordering)
 
-    # TODO - rm it
+    # @todo #164:15m Rm ProductManager.get_active() method
+    #  Use ProductActiveManager instead
     def get_active(self):
         return self.get_queryset().filter(page__is_active=True)
 
