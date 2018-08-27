@@ -104,7 +104,7 @@ class ProductQuerySet(models.QuerySet):
         )
 
     def filter_by_categories(self, categories: Iterable[AbstractCategory]):
-        """Filter products by given categories """
+        """Filter products by given categories."""
         return (
             self.select_related('page')
             .select_related('category')
