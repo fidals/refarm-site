@@ -191,6 +191,7 @@ class AbstractProduct(models.Model, AdminTreeDisplayMixin):
         return (
             self.__class__.actives
             .filter(category=self.category)
+            .exclude(id=self.id)
             .prefetch_related('category')
             .select_related('page')[:offset]
         )
