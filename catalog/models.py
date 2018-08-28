@@ -187,6 +187,15 @@ class AbstractProduct(models.Model, AdminTreeDisplayMixin):
     def get_root_category(self):
         return self.category.get_root()
 
+    def get_siblings(self, offset):
+        return (
+            self.__class__.actives
+            .filter(category=self.category)
+            .exclude(id=self.id)
+            .prefetch_related('category')
+            .select_related('page')[:offset]
+        )
+
 
 # it's called not as `AbstractTagGroup`, because inner `Meta.abstract = True`
 # is not arch design, but about ORM hack.
