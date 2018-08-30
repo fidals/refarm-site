@@ -243,6 +243,30 @@ class TestProduct(TestCase):
 
 class TagModel(TestCase):
 
-    # @todo #162:60m Create fixtures for refarm tests.
-    #  Then move TagModel tests from SE to refarm.
-    pass
+    @unittest.skip
+    def test_double_named_tag_saving(self):
+        """Two tags with the same name should have unique slugs."""
+        def save_doubled_tag(tag_from_):
+            group_to = catalog_models.MockTagGroup.objects.exclude(id=tag_from_.group.id).first()
+            tag_to_ = catalog_models.MockTag(
+                group=group_to, name=tag_from_.name, position=tag_from_.position
+            )
+            # required to create `tag.products` field
+            tag_to_.save()
+            tag_to_.products.set(tag_from.products.all())
+            tag_to_.save()
+            return tag_to_
+        tag_from = catalog_models.MockTag.objects.first()
+        tag_to = save_doubled_tag(tag_from)
+        self.assertNotEqual(tag_from.slug, tag_to.slug)
+
+    def test_tag_doubled_save_slug_postfix(self):
+        """Tag should preserve it's slug value after several saves."""
+        group = catalog_models.MockTagGroup.objects.create(name='Напряжение вход')
+        tag = catalog_models.MockTag.objects.create(
+            name='12 В',
+            group=group
+        )
+        self.assertEqual(tag.slug, '12-v')
+        tag.save()
+        self.assertEqual(tag.slug, '12-v')

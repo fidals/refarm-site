@@ -115,3 +115,6 @@ TAGS_TITLE_DELIMITER = ' или '
 TAG_GROUPS_TITLE_DELIMITER = ' и '
 
 TAGS_ORDER = ['group__position', 'group__name', 'position', 'name']
+
+# random string to append to doubled slugs
+SLUG_HASH_SIZE = 5
