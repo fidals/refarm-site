@@ -1,9 +1,11 @@
 """Defines tests for models in Catalog app."""
+import unittest
+
 from django.test import TestCase
 
 from pages.models import CustomPage
 
-from tests.catalog.models import MockCategory, MockProduct, MockCategoryWithDefaultPage
+from tests.catalog import models as catalog_models
 
 
 class TestCategoryTree(TestCase):
@@ -16,28 +18,28 @@ class TestCategoryTree(TestCase):
         Two products: popular and unpopular (both from Child category)
         """
 
-        self.test_root_category = MockCategory.objects.get_or_create(
+        self.test_root_category = catalog_models.MockCategory.objects.get_or_create(
             name='Test root'
         )[0]
 
-        self.test_child_of_root_category = MockCategory.objects.get_or_create(
+        self.test_child_of_root_category = catalog_models.MockCategory.objects.get_or_create(
             name='Test child',
             parent=self.test_root_category
         )[0]
 
-        self.test_child_of_ancestor_category = MockCategory.objects.get_or_create(
+        self.test_child_of_ancestor_category = catalog_models.MockCategory.objects.get_or_create(
             name='Test descendants',
             parent=self.test_child_of_root_category
         )[0]
 
-        self.test_unpopular_product = MockProduct.objects.get_or_create(
+        self.test_unpopular_product = catalog_models.MockProduct.objects.get_or_create(
             name='Unpopular',
             price=10,
             category=self.test_child_of_root_category,
             in_stock=10
         )[0]
 
-        self.test_popular_product = MockProduct.objects.get_or_create(
+        self.test_popular_product = catalog_models.MockProduct.objects.get_or_create(
             name='Popular',
             price=20,
             category=self.test_child_of_ancestor_category,
@@ -48,14 +50,14 @@ class TestCategoryTree(TestCase):
     def test_root_categories(self):
         """There should be only one root category."""
 
-        roots = MockCategory.objects.root_nodes()
+        roots = catalog_models.MockCategory.objects.root_nodes()
         self.assertEqual(len(roots), 1)
         self.assertEqual(roots[0].name, self.test_root_category.name)
 
     def test_children_of_root(self):
         """Should be one direct child of root category."""
 
-        roots = MockCategory.objects.root_nodes()[0]
+        roots = catalog_models.MockCategory.objects.root_nodes()[0]
         children = roots.get_children()
         self.assertEqual(len(children), 1)
         self.assertEqual(children[0].name, self.test_child_of_root_category.name)
@@ -63,7 +65,7 @@ class TestCategoryTree(TestCase):
     def test_root_has_no_products(self):
         """Root category shouldn't have any products."""
 
-        roots = MockCategory.objects.root_nodes()[0]
+        roots = catalog_models.MockCategory.objects.root_nodes()[0]
         products = roots.products.all()
         self.assertFalse(products.exists())
 
@@ -74,7 +76,7 @@ class CategoryToPageRelationTests(TestCase):
     def setUpClass(cls):
         super().setUpClass()
         cls.category_tree_page, _ = CustomPage.objects.get_or_create(slug='catalog')
-        cls.root_category = MockCategoryWithDefaultPage.objects.create(
+        cls.root_category = catalog_models.MockCategoryWithDefaultPage.objects.create(
             name='All batteries',
         )
         cls.root_category.page.slug = 'all'
@@ -82,7 +84,7 @@ class CategoryToPageRelationTests(TestCase):
         cls.page_type = cls.root_category.related_model_name
 
     def __create_category(self, slug, page=None):
-        category = MockCategoryWithDefaultPage.objects.create(
+        category = catalog_models.MockCategoryWithDefaultPage.objects.create(
             name='Battery {}'.format(slug),
             page=page,
             parent=self.root_category
@@ -108,7 +110,7 @@ class CategoryToPageRelationTests(TestCase):
         MockCategoryWithDefaultPage.page.parent == category_tree_page
         """
         slug = 'fifth'
-        category = MockCategoryWithDefaultPage.objects.create(
+        category = catalog_models.MockCategoryWithDefaultPage.objects.create(
             name='Battery {}'.format(slug), parent=None)
         category.page.slug = slug
         category.page.save()
@@ -139,7 +141,7 @@ class TestProductToPageRelation(TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.root_category = MockCategory.objects.create(
+        cls.root_category = catalog_models.MockCategory.objects.create(
             name='All batteries',
         )
         cls.root_category.page.slug = 'all'
@@ -148,7 +150,7 @@ class TestProductToPageRelation(TestCase):
 
     @classmethod
     def create_product(self, slug, page=None):
-        return MockProduct.objects.create(
+        return catalog_models.MockProduct.objects.create(
             name=slug,
             page=page,
             category=self.root_category,
@@ -195,40 +197,40 @@ class TestProduct(TestCase):
     def setUpClass(cls):
         super().setUpClass()
         cls.category_id = 1
-        cls.category = MockCategory.objects.create(name='some category', id=cls.category_id)
+        cls.category = catalog_models.MockCategory.objects.create(name='some category', id=cls.category_id)
 
-        cls.test_popular_product = MockProduct.objects.create(
+        cls.test_popular_product = catalog_models.MockProduct.objects.create(
             name="Popular",
             price=20,
             category=cls.category,
             in_stock=10,
             is_popular=True,
         )
-        MockProduct.objects.create(
+        catalog_models.MockProduct.objects.create(
             name="unpopular #1",
             price=20,
             category=cls.category,
             in_stock=10,
             is_popular=False,
         )
-        MockProduct.objects.create(
+        catalog_models.MockProduct.objects.create(
             name="unpopular #2",
             price=20,
-            category=MockCategory.objects.create(name='another category', id=777),
+            category=catalog_models.MockCategory.objects.create(name='another category', id=777),
             in_stock=10,
             is_popular=False,
         )
 
     def test_popular_products(self):
         """Should be one popular product."""
-        popular = MockProduct.objects.filter(is_popular=True)
+        popular = catalog_models.MockProduct.objects.filter(is_popular=True)
 
         self.assertEqual(len(popular), 1)
         self.assertEqual(popular[0].name, self.test_popular_product.name)
 
     def test_get_product_by_category(self):
         """We can get products related to category by category_id or Category instance"""
-        products_by_instance = MockProduct.objects.get_by_category(self.category)
+        products_by_instance = catalog_models.MockProduct.objects.get_by_category(self.category)
 
         self.assertEqual(products_by_instance.count(), 2)
 
@@ -236,13 +238,41 @@ class TestProduct(TestCase):
             self.assertEqual(products_by_instance.category, self.category)
 
     def test_get_offset(self):
-        products_offset = MockProduct.objects.all().get_offset(1, 3)
+        products_offset = catalog_models.MockProduct.objects.all().get_offset(1, 3)
 
         self.assertEqual(len(products_offset), 2)
 
 
-class TagModel(TestCase):
+class Tag(TestCase):
 
-    # @todo #162:60m Create fixtures for refarm tests.
-    #  Then move TagModel tests from SE to refarm.
-    pass
+    # @todo #162:60m Create fixtures for tags.
+    #  Copy from SE all tags fixtures creation logic.
+    #  Then move `shopelectro.tests.tests_models.TagModel` to this class.
+
+    @unittest.skip
+    def test_double_named_tag_saving(self):
+        """Two tags with the same name should have unique slugs."""
+        def save_doubled_tag(tag_from_):
+            group_to = catalog_models.MockTagGroup.objects.exclude(id=tag_from_.group.id).first()
+            tag_to_ = catalog_models.MockTag(
+                group=group_to, name=tag_from_.name, position=tag_from_.position
+            )
+            # required to create `tag.products` field
+            tag_to_.save()
+            tag_to_.products.set(tag_from.products.all())
+            tag_to_.save()
+            return tag_to_
+        tag_from = catalog_models.MockTag.objects.first()
+        tag_to = save_doubled_tag(tag_from)
+        self.assertNotEqual(tag_from.slug, tag_to.slug)
+
+    def test_tag_doubled_save_slug_postfix(self):
+        """Tag should preserve it's slug value after several saves."""
+        group = catalog_models.MockTagGroup.objects.create(name='Напряжение вход')
+        tag = catalog_models.MockTag.objects.create(
+            name='12 В',
+            group=group
+        )
+        self.assertEqual(tag.slug, '12-v')
+        tag.save()
+        self.assertEqual(tag.slug, '12-v')

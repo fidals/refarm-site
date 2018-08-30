@@ -1,22 +1,18 @@
-import unittest
-
 from django.db import models
 from django.core.urlresolvers import reverse
-from django.test import TestCase
 
-from catalog.models import AbstractCategory, AbstractProduct, Tag, TagGroup
-
+from catalog import models as catalog_models
 from pages.models import SyncPageMixin, CustomPage
 
 
-class MockCategory(AbstractCategory, SyncPageMixin):
+class MockCategory(catalog_models.AbstractCategory, SyncPageMixin):
     product_related_name = 'products'
 
     def get_absolute_url(self):
         return reverse('catalog:category', args=(self.page.slug,))
 
 
-class MockCategoryWithDefaultPage(AbstractCategory, SyncPageMixin):
+class MockCategoryWithDefaultPage(catalog_models.AbstractCategory, SyncPageMixin):
     product_related_name = 'products'
 
     @classmethod
@@ -28,7 +24,7 @@ class MockCategoryWithDefaultPage(AbstractCategory, SyncPageMixin):
         return reverse('catalog:category', args=(self.page.slug, ))
 
 
-class MockProduct(AbstractProduct, SyncPageMixin):
+class MockProduct(catalog_models.AbstractProduct, SyncPageMixin):
     category = models.ForeignKey(
         MockCategory, on_delete=models.CASCADE,
         default=None, related_name='products',
@@ -43,25 +39,11 @@ class MockProduct(AbstractProduct, SyncPageMixin):
         return 'no-image-right-now'
 
 
-class TagModel(TestCase):
+class MockTagGroup(catalog_models.TagGroup):
+    pass
 
-    # @todo #162:60m Create fixtures for tags.
-    #  Copy from SE all tags fixtures creation logic.
-    #  Then move `shopelectro.tests.tests_models.TagModel` to this class.
 
-    @unittest.skip
-    def test_double_named_tag_saving(self):
-        """Two tags with the same name should have unique slugs."""
-        def save_doubled_tag(tag_from_):
-            group_to = TagGroup.objects.exclude(id=tag_from_.group.id).first()
-            tag_to_ = Tag(
-                group=group_to, name=tag_from_.name, position=tag_from_.position
-            )
-            # required to create `tag.products` field
-            tag_to_.save()
-            tag_to_.products.set(tag_from.products.all())
-            tag_to_.save()
-            return tag_to_
-        tag_from = Tag.objects.first()
-        tag_to = save_doubled_tag(tag_from)
-        self.assertNotEqual(tag_from.slug, tag_to.slug)
+class MockTag(catalog_models.Tag):
+    group = models.ForeignKey(
+        MockTagGroup, on_delete=models.CASCADE, null=True, related_name='tags',
+    )

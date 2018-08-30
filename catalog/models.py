@@ -294,7 +294,12 @@ class Tag(models.Model):
             self.slug = slugify(
                 unidecode(self.name.replace('.', '-').replace('+', '-'))
             )
-        tag_is_doubled = self.__class__.objects.filter(slug=self.slug).exists()
+        tag_is_doubled = (
+            self.__class__.objects
+            .filter(slug=self.slug)
+            .exclude(group=self.group)
+            .exists()
+        )
         if tag_is_doubled:
             self.slug = randomize_slug(self.slug)
         super(Tag, self).save(*args, **kwargs)
@@ -315,6 +320,9 @@ def serialize_tags(
     type_delimiter: str,
     group_delimiter: str,
 ) -> str:
+    if not tags:
+        return ''
+
     group_tags_map = tags.get_group_tags_pairs()
 
     _, tags_by_group = zip(*group_tags_map)
