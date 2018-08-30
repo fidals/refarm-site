@@ -315,6 +315,9 @@ def serialize_tags(
     type_delimiter: str,
     group_delimiter: str,
 ) -> str:
+    if not tags:
+        return ''
+
     group_tags_map = tags.get_group_tags_pairs()
 
     _, tags_by_group = zip(*group_tags_map)
