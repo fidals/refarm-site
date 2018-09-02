@@ -1,3 +1,4 @@
+from django import http
 from django.conf import settings
 from django.core import paginator
 
@@ -25,7 +26,7 @@ class NeighborPage:
         self.number = number
 
     def url(self, base_url):
-        return base_url if number == 1 else f'{base_url}?page={number}'
+        return base_url if self.number == 1 else f'{base_url}?page={self.number}'
 
 
 class NeighborPages:
