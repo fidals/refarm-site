@@ -93,5 +93,5 @@ class Command(BaseCommand):
                 GeneratedPages(),
             ),
             apps=['pages', 'tests', 'mptt'],
-            file_name='search.json',
+            file_name='catalog.json',
         ).generate()

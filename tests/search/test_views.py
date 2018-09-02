@@ -17,7 +17,7 @@ def json_as_dict(response: HttpResponse) -> dict:
 @override_settings(ROOT_URLCONF='tests.urls')
 class AbstractTestSearchView(TestCase):
 
-    fixtures = ['search.json']
+    fixtures = ['catalog.json']
 
     def setUp(self):
         """Instantiate two test objects: test_category and test_product"""
