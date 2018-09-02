@@ -118,3 +118,5 @@ TAGS_ORDER = ['group__position', 'group__name', 'position', 'name']
 
 # random string to append to doubled slugs
 SLUG_HASH_SIZE = 5
+
+PAGINATION_NEIGHBORS = 2

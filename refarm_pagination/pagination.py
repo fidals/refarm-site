@@ -3,16 +3,9 @@ from django.conf import settings
 from django.core import paginator
 
 
-class Page(paginator.Page):
-
-    def showed_number(self):
-        return (self.number - 1) * self.paginator.per_page + len(self)
-
-
-
 class Paginator(paginator.Paginator):
 
-    def page(self, number) -> Page:
+    def page(self, number) -> paginator.Page:
         """Raise Http404 instead of InvalidPage."""
         try:
             return super().page(number)

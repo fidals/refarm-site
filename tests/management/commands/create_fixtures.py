@@ -80,8 +80,8 @@ class Command(BaseCommand):
         categories_data = [{'name': 'Batteries'}]
         products_data = [
             {'name': f'{product_name} for {name}'}
-            for product_name in ['Battery', 'USB']
-            for name in ['Alice', 'Bob']
+            for product_name in ['Battery', 'USB', 'Charger', 'Accumulator']
+            for name in ['Alice', 'Bob', 'Eve', 'Dave']
         ]
 
         GeneratedToFile(
