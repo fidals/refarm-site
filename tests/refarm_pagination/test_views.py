@@ -15,8 +15,8 @@ class PaginationContext(TestCase):
     def context(self, **kwargs):
         return views.PaginationContext(**{
             'url': '',
-            'number': 3,
-            'per_page': 3,
+            'number': 1,
+            'per_page': 1,
             'objects': MockProduct.objects.all(),
             **kwargs
         }).context()
@@ -25,13 +25,14 @@ class PaginationContext(TestCase):
     def mock_neighbor_pairs(self, url, number):
         with \
             mock.patch('refarm_pagination.pagination.NeighborPage') as mocked_page,\
-            mock.patch('refarm_pagination.pagination.NeighborPages') as mocked_pages:
+            mock.patch('refarm_pagination.views.NeighborPages') as mocked_pages:
 
+            mocked_page.url = lambda _: url
+            mocked_page.number = number
+
+            get_neighbors = lambda: [mocked_page] * (settings.PAGINATION_NEIGHBORS // 2)
             pages = mocked_pages.return_value
-            mocked_page.return_value.url = lambda _: url
-            mocked_page.return_value.number = number
-
-            pages.next_neighbors = pages.prev_neighbors = lambda: [mocked_page] * 2
+            pages.next_neighbors = pages.prev_neighbors = get_neighbors
 
             yield mocked_page, mocked_pages
 

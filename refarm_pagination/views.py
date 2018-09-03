@@ -18,13 +18,13 @@ class PaginationContext:
             for prev in neighbords.prev_neighbors()
         ]
         next_pairs = [
-            (prev.number, prev.url(self.url))
-            for prev in neighbords.next_neighbors()
+            (next.number, next.url(self.url))
+            for next in neighbords.next_neighbors()
         ]
 
         return {
             'page': page,
-            'prev_pairs':prev_pairs,
-            'next_pairs':next_pairs,
+            'prev_pairs': prev_pairs,
+            'next_pairs': next_pairs,
             'showed_number': showed_number,
         }
