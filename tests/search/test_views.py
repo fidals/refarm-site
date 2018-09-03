@@ -52,7 +52,7 @@ class TestSearchView(AbstractTestSearchView):
          Search results with leading term in result text
          should go before other results
         """
-        first, second = self.test_products.filter(name__icontains='Battery')
+        first, second = self.test_products.filter(name__icontains='Battery')[:2]
         response = self.get_search_results(first.name)
         first_position = str(response.content).find(first.name)
         second_position = str(response.content).find(second.name)
