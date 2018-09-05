@@ -8,3 +8,4 @@ docker/.env
 .idea/
 tests/media/
 .vscode/
+report.xml

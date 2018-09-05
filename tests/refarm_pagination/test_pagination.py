@@ -1,3 +1,1 @@
-"""
-@todo fidals/shopelectro#556 Create unit tests for pagination classes.
-"""
+# @todo #556:30m Create unit tests for pagination classes.
