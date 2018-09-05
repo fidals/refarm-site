@@ -23,10 +23,8 @@ class PaginationContext(TestCase):
 
     @contextmanager
     def mock_neighbor_pairs(self, url, number):
-        with \
-            mock.patch('refarm_pagination.pagination.NeighborPage') as mocked_page,\
-            mock.patch('refarm_pagination.views.NeighborPages') as mocked_pages:
-
+        with mock.patch('refarm_pagination.views.NeighborPages') as mocked_pages:
+            mocked_page = mock.Mock()
             mocked_page.url = lambda _: url
             mocked_page.number = number
 
@@ -56,10 +54,10 @@ class PaginationContext(TestCase):
                     context[key_name][index]
                 )
 
-    def test_showed_number(self):
+    def test_showed_count(self):
         per_page = number = 3
 
         self.assertEquals(
-            self.context(per_page=per_page, number=number)['showed_number'],
+            self.context(per_page=per_page, number=number)['showed_count'],
             number * per_page,
         )
