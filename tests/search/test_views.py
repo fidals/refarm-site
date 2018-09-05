@@ -17,7 +17,7 @@ def json_as_dict(response: HttpResponse) -> dict:
 @override_settings(ROOT_URLCONF='tests.urls')
 class AbstractTestSearchView(TestCase):
 
-    fixtures = ['search.json']
+    fixtures = ['catalog.json']
 
     def setUp(self):
         """Instantiate two test objects: test_category and test_product"""
@@ -52,7 +52,7 @@ class TestSearchView(AbstractTestSearchView):
          Search results with leading term in result text
          should go before other results
         """
-        first, second = self.test_products.filter(name__icontains='Battery')
+        first, second = self.test_products.filter(name__icontains='Battery')[:2]
         response = self.get_search_results(first.name)
         first_position = str(response.content).find(first.name)
         second_position = str(response.content).find(second.name)
