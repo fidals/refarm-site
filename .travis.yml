@@ -10,7 +10,6 @@ python:
 env:
   global:
     - DOCKER_COMPOSE_VERSION=1.11.2
-    - DJANGO=1.10
 
 before_install:
   - sudo rm /usr/local/bin/docker-compose
@@ -18,9 +17,13 @@ before_install:
   - chmod +x docker-compose
   - sudo mv docker-compose /usr/local/bin
 
-script:
-  - cd docker/
-  - docker-compose run --rm python
+
+jobs:
+  include:
+    - stage: "Tests"
+      script: cd docker/ && docker-compose run --rm python
+    - stage: "Lints"
+      script: cd docker/ && docker-compose run --rm pdd
 
 after_failure:
   - docker-compose logs

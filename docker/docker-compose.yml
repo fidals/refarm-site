@@ -24,3 +24,12 @@ services:
     environment:
       POSTGRES_DB: $DB_NAME
       POSTGRES_PASSWORD: $DB_PASS
+
+  pdd:
+    image: fidals/pdd-ci
+    working_dir: $SRC_DIR
+    volumes:
+      - ./../:$SRC_DIR
+    entrypoint:
+      - pdd
+      - --exclude=**/vendors/*

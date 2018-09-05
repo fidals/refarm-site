@@ -1,5 +1,3 @@
-// @todo #292 Integrate trackers to STB and SE
-
 class Tracker {
   constructor(transport) {
     this.transport = transport;
