@@ -9,6 +9,7 @@ logger = get_task_logger(__name__)
 
 
 @shared_task(
+    # https://goo.gl/yAhUjJ
     # a task will be acknowledged after the task has been executed,
     # not just before (the default behavior) to reach reliability
     acks_late=True,
