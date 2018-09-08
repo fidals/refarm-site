@@ -112,6 +112,9 @@ class ProductQuerySet(models.QuerySet):
             .filter(category__in=categories, price__gt=0)
         )
 
+    def active(self):
+        return self.filter(page__is_active=True)
+
 
 class ProductManager(models.Manager.from_queryset(ProductQuerySet)):
     """Get all products of given category by Category's id or instance."""
@@ -126,7 +129,7 @@ class ProductManager(models.Manager.from_queryset(ProductQuerySet)):
     # @todo #164:15m Rm ProductManager.get_active() method
     #  Use ProductActiveManager instead
     def get_active(self):
-        return self.get_queryset().filter(page__is_active=True)
+        return self.get_queryset().active()
 
 
 class ProductActiveManager(ProductManager):
@@ -134,7 +137,7 @@ class ProductActiveManager(ProductManager):
         return (
             super(ProductActiveManager, self)
             .get_queryset()
-            .filter(page__is_active=True)
+            .active()
         )
 
 
@@ -217,7 +220,7 @@ class TagGroup(models.Model):
 
 class TagQuerySet(models.QuerySet):
 
-    def filter_by_products(self, products: List[AbstractProduct]):
+    def filter_by_products(self, products: Iterable[AbstractProduct]):
         ordering = settings.TAGS_ORDER
         distinct = [order.lstrip('-') for order in ordering]
 
@@ -247,6 +250,45 @@ class TagQuerySet(models.QuerySet):
             for brand in brand_tags for product in products
             if product in brand.products.all()
         }
+
+    def as_string(  # Ignore PyDocStyleBear
+        self,
+        field_name: str,
+        type_delimiter: str,
+        group_delimiter: str,
+    ) -> str:
+        """
+        :param field_name: Only field's value is used to represent tag as string.
+        :param type_delimiter:
+        :param group_delimiter:
+        :return:
+        """
+        if not self:
+            return ''
+
+        group_tags_map = self.get_group_tags_pairs()
+
+        _, tags_by_group = zip(*group_tags_map)
+
+        return group_delimiter.join(
+            type_delimiter.join(getattr(tag, field_name) for tag in tags_list)
+            for tags_list in tags_by_group
+        )
+
+    def as_title(self) -> str:
+        return self.as_string(
+            field_name='name',
+            type_delimiter=settings.TAGS_TITLE_DELIMITER,
+            group_delimiter=settings.TAG_GROUPS_TITLE_DELIMITER
+        )
+
+    def as_url(self) -> str:
+        return self.as_string(
+            field_name='slug',
+            type_delimiter=settings.TAGS_URL_DELIMITER,
+            group_delimiter=settings.TAG_GROUPS_URL_DELIMITER
+        )
+
 
 
 class TagManager(models.Manager.from_queryset(TagQuerySet)):
@@ -304,6 +346,8 @@ class Tag(models.Model):
             self.slug = randomize_slug(self.slug)
         super(Tag, self).save(*args, **kwargs)
 
+    # @todo #168:15m Move `Tags.parse_url_tags` Tags context.
+    #  Depends on se#567
     @staticmethod
     def parse_url_tags(tags: str) -> list:
         groups = tags.split(settings.TAGS_URL_DELIMITER)
