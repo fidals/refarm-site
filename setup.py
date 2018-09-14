@@ -27,7 +27,7 @@ setup(
         'Operating System :: OS Independent',
         'Programming Language :: Python',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
         'Topic :: Internet :: WWW/HTTP',
         'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
     ],
@@ -39,7 +39,7 @@ setup(
         'sorl-thumbnail==12.4a1',
         'Django-Select2==5.11.1',
         'unidecode',
-        'psycopg2-binary==2.7.4',
+        'psycopg2-binary==2.7.5',
         'Pillow==5.2.0',
     ],
 )

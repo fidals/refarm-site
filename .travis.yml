@@ -6,7 +6,8 @@ services:
 language: python
 
 python:
-  - "3.6"
+  # travis supports only 3.7-dev
+  - "3.7-dev"
 env:
   global:
     - DOCKER_COMPOSE_VERSION=1.11.2
