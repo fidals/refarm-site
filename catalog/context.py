@@ -85,6 +85,12 @@ class PaginatorLinks:
 def prepare_tile_products(
     products: ProductQuerySet, product_pages: QuerySet, tags: TagQuerySet=None
 ):
+    """
+    This method works on STB, but not on SE.
+
+    This problem will gone when task below will be fixed.
+    """
+
     # @todo #550:60m Move prepare_tile_products func to context
     #  Now it's separated function with huge of inconsistent queryset deps.
     assert isinstance(products, ProductQuerySet)
@@ -432,7 +438,10 @@ class PaginationCategory(AbstractProductsListContext):
         context = self.super.get_context_data()
         self.check_pagination_args()
 
-        # TODO - return bask this check
+        # @todo #187:30m Return back empty products list 404 check.
+        #  Now we have problem with stb tests.
+        #  Now stb tests don't aware of it.
+
         # if not self.products:
         #     raise http.Http404('Page without products does not exist.')
 
