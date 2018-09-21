@@ -104,7 +104,7 @@ class Page(mptt.models.MPTTModel, ImageMixin):
         verbose_name=_('parent'),
     )
 
-    slug = models.SlugField(max_length=400, blank=True, db_index=True, verbose_name=_('slug'))
+    slug = models.SlugField(max_length=1500, blank=True, db_index=True, verbose_name=_('slug'))
     is_active = models.BooleanField(
         default=True,
         blank=True,
@@ -121,12 +121,12 @@ class Page(mptt.models.MPTTModel, ImageMixin):
     )
 
     menu_title = models.CharField(
-        max_length=255, blank=True,
+        max_length=1000, blank=True,
         help_text=_('This field will be shown in the breadcrumbs, menu items and etc.'),
         verbose_name=_('menu title'),
     )
 
-    h1 = models.TextField(blank=True)
+    h1 = models.CharField(max_length=1000, blank=True)
     keywords = models.CharField(blank=True, max_length=255, verbose_name=_('keywords'))
     description = models.TextField(blank=True, verbose_name=_('description'))
     seo_text = models.TextField(blank=True, verbose_name=_('seo text'))
@@ -302,7 +302,9 @@ class ModelPage(Page):
 
     @staticmethod
     def create_model_page_managers(model: models.Model):
-        """Create managers for dividing ModelPage entities"""
+        """Create managers for dividing ModelPage entities
+        :rtype:
+        """
         assert isinstance(model, type(models.Model)), 'arg should be ModelBase type'
 
         class ModelPageManager(mptt.models.TreeManager):

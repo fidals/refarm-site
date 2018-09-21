@@ -63,7 +63,7 @@ class AbstractCategory(mptt.models.MPTTModel, AdminTreeDisplayMixin):
         verbose_name = _('Category')
         verbose_name_plural = _('Categories')
 
-    name = models.CharField(max_length=255, db_index=True, verbose_name=_('name'))
+    name = models.CharField(max_length=1000, db_index=True, verbose_name=_('name'))
     parent = mptt.models.TreeForeignKey(
         'self',
         on_delete=models.CASCADE,
