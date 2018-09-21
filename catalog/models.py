@@ -288,6 +288,37 @@ class TagQuerySet(models.QuerySet):
             group_delimiter=settings.TAG_GROUPS_URL_DELIMITER
         )
 
+    def serialize_tags(
+        self,
+        field_name: str,
+        type_delimiter: str,
+        group_delimiter: str,
+    ) -> str:
+        if not self:
+            return ''
+
+        group_tags_map = self.get_group_tags_pairs()
+
+        _, tags_by_group = zip(*group_tags_map)
+
+        return group_delimiter.join(
+            type_delimiter.join(getattr(tag, field_name) for tag in tags_list)
+            for tags_list in tags_by_group
+        )
+
+    def serialize_tags_to_url(self) -> str:
+        return self.serialize_tags(
+            field_name='slug',
+            type_delimiter=settings.TAGS_URL_DELIMITER,
+            group_delimiter=settings.TAG_GROUPS_URL_DELIMITER
+        )
+
+    def serialize_tags_to_title(self) -> str:
+        return self.serialize_tags(
+            field_name='name',
+            type_delimiter=settings.TAGS_TITLE_DELIMITER,
+            group_delimiter=settings.TAG_GROUPS_TITLE_DELIMITER
+        )
 
 
 class TagManager(models.Manager.from_queryset(TagQuerySet)):
@@ -353,42 +384,3 @@ class Tag(models.Model):
         return set(chain.from_iterable(
             group.split(settings.TAG_GROUPS_URL_DELIMITER) for group in groups
         ))
-
-
-# @todo #162:15m Move serialize_tags to TagQuerySet's method
-
-def serialize_tags(
-    tags: TagQuerySet,
-    field_name: str,
-    type_delimiter: str,
-    group_delimiter: str,
-) -> str:
-    if not tags:
-        return ''
-
-    group_tags_map = tags.get_group_tags_pairs()
-
-    _, tags_by_group = zip(*group_tags_map)
-
-    return group_delimiter.join(
-        type_delimiter.join(getattr(tag, field_name) for tag in tags_list)
-        for tags_list in tags_by_group
-    )
-
-
-def serialize_tags_to_url(tags: TagQuerySet) -> str:
-    return serialize_tags(
-        tags=tags,
-        field_name='slug',
-        type_delimiter=settings.TAGS_URL_DELIMITER,
-        group_delimiter=settings.TAG_GROUPS_URL_DELIMITER
-    )
-
-
-def serialize_tags_to_title(tags: TagQuerySet) -> str:
-    return serialize_tags(
-        tags=tags,
-        field_name='name',
-        type_delimiter=settings.TAGS_TITLE_DELIMITER,
-        group_delimiter=settings.TAG_GROUPS_TITLE_DELIMITER
-    )
