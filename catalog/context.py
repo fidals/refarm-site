@@ -19,7 +19,6 @@ Code example to create tagged category:
 
 import typing
 from abc import ABC, abstractmethod
-from collections import defaultdict
 from functools import lru_cache, partial
 
 from django import http
@@ -95,7 +94,7 @@ def prepare_tile_products(
     #  Now it's separated function with huge of inconsistent queryset deps.
     assert isinstance(products, ProductQuerySet)
 
-    images = defaultdict()
+    images = {}
     if product_pages:
         images = Image.objects.get_main_images_by_pages(
             # TODO - customize `prepare_tile_products` for every site
@@ -103,7 +102,7 @@ def prepare_tile_products(
         )
 
     return [
-        (product, images.get(product.page))
+        (product, images.get(product.page, None))
         for product in products
     ]
 
@@ -438,9 +437,8 @@ class PaginationCategory(AbstractProductsListContext):
         context = self.super.get_context_data()
         self.check_pagination_args()
 
-        # @todo #187:30m Return back empty products list 404 check.
-        #  Now we have problem with stb tests.
-        #  Now stb tests don't aware of it.
+        # @todo #187:30m Uncomment the if_404 check for empty products list.
+        #  To do it fix stb tests to cover this case.
 
         # if not self.products:
         #     raise http.Http404('Page without products does not exist.')
