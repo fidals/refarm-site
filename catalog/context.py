@@ -258,7 +258,7 @@ class TaggedCategory(AbstractProductsListContext):
         # That's how we'll prevent assertion.
         # But we'll throw away inheritance in se#567.
         assert isinstance(tags, QuerySet), 'tags is required arg'
-        self.tags_ = tags
+        self.all_tags = tags
 
     def get_sorting_index(self):
         return int(self.url_kwargs.get('sorting', 0))
@@ -267,15 +267,14 @@ class TaggedCategory(AbstractProductsListContext):
         sorting_option = SortingOption(index=self.get_sorting_index())
         return [sorting_option.field]
 
-    # @todo #550:15m Move `TaggedCategory.get_tags` to property.
-    #  As in `products` property case.
-    def get_tags(self) -> typing.Optional[TagQuerySet]:
+    @property
+    def tags(self) -> typing.Optional[TagQuerySet]:
         request_tags = self.url_kwargs.get('tags')
         if not request_tags:
             return None
 
         slugs = Tag.parse_url_tags(request_tags)
-        tags = self.tags_.filter(slug__in=slugs)
+        tags = self.all_tags.filter(slug__in=slugs)
         if not tags:
             raise http.Http404('No such tag.')
         return tags
@@ -284,7 +283,7 @@ class TaggedCategory(AbstractProductsListContext):
     def products(self):
         products = self.super.products
 
-        tags = self.get_tags()
+        tags = self.tags
         if tags:
             products = (
                 products
@@ -300,9 +299,9 @@ class TaggedCategory(AbstractProductsListContext):
 
     def get_context_data(self):
         context = self.super.get_context_data()
-        tags = self.get_tags()
+        tags = self.tags
         group_tags_pairs = (
-            self.tags_
+            self.all_tags
             .filter_by_products(self.products)
             .get_group_tags_pairs()
         )
@@ -314,7 +313,7 @@ class TaggedCategory(AbstractProductsListContext):
                 self.products,
                 self.product_pages,
                 # requires all tags, not only selected
-                self.tags_
+                self.all_tags
             ),
             # Category's canonical link is `category.page.get_absolute_url`.
             # So, this link always contains no tags.
