@@ -302,9 +302,7 @@ class ModelPage(Page):
 
     @staticmethod
     def create_model_page_managers(model: models.Model):
-        """Create managers for dividing ModelPage entities
-        :rtype:
-        """
+        """Create managers for dividing ModelPage entities"""
         assert isinstance(model, type(models.Model)), 'arg should be ModelBase type'
 
         class ModelPageManager(mptt.models.TreeManager):
