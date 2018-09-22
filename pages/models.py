@@ -63,10 +63,7 @@ class PageQuerySet(mptt.querysets.TreeQuerySet):
         return self.filter(is_active=True)
 
 
-class PageManager(
-    models.Manager
-    .from_queryset(mptt.querysets.TreeQuerySet)
-):
+class PageManager(models.Manager.from_queryset(PageQuerySet)):
     pass
 
 
@@ -75,8 +72,7 @@ class PageActiveManager(PageManager):
         return (
             super()
             .get_queryset()
-            # .active()
-            .filter(is_active=True)
+            .active()
         )
 
 
