@@ -19,7 +19,6 @@ Code example to create tagged category:
 
 import typing
 from abc import ABC, abstractmethod
-from collections import defaultdict
 from functools import lru_cache, partial
 
 from django import http
@@ -85,22 +84,25 @@ class PaginatorLinks:
 def prepare_tile_products(
     products: ProductQuerySet, product_pages: QuerySet, tags: TagQuerySet=None
 ):
+    """
+    This method works on STB, but not on SE.
+
+    This problem will gone when task below will be fixed.
+    """
+
     # @todo #550:60m Move prepare_tile_products func to context
     #  Now it's separated function with huge of inconsistent queryset deps.
     assert isinstance(products, ProductQuerySet)
 
-    images = Image.objects.get_main_images_by_pages(
-        product_pages.filter(shopelectro_product__in=products)
-    )
-
-    brands = (
-        tags
-        .filter_by_products(products)
-        .get_brands(products)
-    ) if tags else defaultdict(lambda: None)
+    images = {}
+    if product_pages:
+        images = Image.objects.get_main_images_by_pages(
+            # TODO - customize `prepare_tile_products` for every site
+            product_pages.filter(stroyprombeton_product__in=products)
+        )
 
     return [
-        (product, images.get(product.page), brands.get(product))
+        (product, images.get(product.page, None))
         for product in products
     ]
 
@@ -156,25 +158,25 @@ class AbstractPageContext(AbstractContext, ABC):
     def __init__(  # Ignore PyDocStyleBear
         self,
         url_kwargs: typing.Dict[str, str]=None,
-        request: http.HttpRequest=None
+        request: http.HttpRequest=None,
+        page: ModelPage=None
     ):
         """
         :param url_kwargs: Came from `urls` module.
         :param request: Came from `urls` module
         """
 
-        if url_kwargs:
-            assert 'slug' in url_kwargs
+        self.page_ = page
         super().__init__(url_kwargs, request)
-
-    @property
-    def slug(self) -> str:
-        return self.url_kwargs['slug']
 
     @property
     @lru_cache(maxsize=1)
     def page(self):
-        return ModelPage.objects.get(slug=self.slug)
+        return (
+            self.page_
+            if self.page_ is not None
+            else self.super.page
+        )
 
 
 class AbstractProductsListContext(AbstractPageContext, ABC):
@@ -185,6 +187,7 @@ class AbstractProductsListContext(AbstractPageContext, ABC):
         self,
         url_kwargs: typing.Dict[str, str]=None,
         request: http.HttpRequest=None,
+        page: ModelPage=None,
         products: ProductQuerySet=None,
         product_pages: QuerySet=None,
     ):
@@ -199,13 +202,17 @@ class AbstractProductsListContext(AbstractPageContext, ABC):
 
     @property
     def product_pages(self) -> QuerySet:
-        return self.product_pages_ or self.super.product_pages
+        return (
+            self.product_pages_
+            if self.product_pages_ is not None
+            else self.super.product_pages
+        )
 
     @property
     def products(self) -> ProductQuerySet:
         if self.super:
             return self.super.products
-        elif self.products_:
+        elif isinstance(self.products_, ProductQuerySet):
             return self.products_
         else:
             raise NotImplementedError('Set products queryset')
@@ -250,11 +257,15 @@ class TaggedCategory(AbstractProductsListContext):
         # it's not good. Arg should not be default.
         # That's how we'll prevent assertion.
         # But we'll throw away inheritance in se#567.
-        assert tags, 'tags is required arg'
+        assert isinstance(tags, QuerySet), 'tags is required arg'
         self.tags_ = tags
 
     def get_sorting_index(self):
         return int(self.url_kwargs.get('sorting', 0))
+
+    def get_undirected_sorting_options(self) -> typing.List[str]:
+        sorting_option = SortingOption(index=self.get_sorting_index())
+        return [sorting_option.field]
 
     # @todo #550:15m Move `TaggedCategory.get_tags` to property.
     #  As in `products` property case.
@@ -272,7 +283,7 @@ class TaggedCategory(AbstractProductsListContext):
     @property
     def products(self):
         products = self.super.products
-        sorting_option = SortingOption(index=self.get_sorting_index())
+
         tags = self.get_tags()
         if tags:
             products = (
@@ -282,8 +293,8 @@ class TaggedCategory(AbstractProductsListContext):
                 # that related with products by many-to-many relation.
                 # @todo #550:60m Try to rm sorting staff from context.TaggedCategory.
                 #  Or explain again why it's impossible. Now it's not clear from comment.
-                .distinct(sorting_option.field)
-                .order_by(sorting_option.field)
+                .distinct(*self.get_undirected_sorting_options())
+                .order_by(*self.get_undirected_sorting_options())
             )
         return products
 
@@ -354,11 +365,14 @@ class SortingCategory(AbstractProductsListContext):
     def get_sorting_index(self):
         return int(self.url_kwargs.get('sorting', 0))
 
-    @property
-    def products(self) -> ProductQuerySet:
+    def get_sorting_options(self) -> typing.List[str]:
         sorting_index = int(self.url_kwargs.get('sorting', 0))
         sorting_option = SortingOption(index=sorting_index)
-        return self.super.products.order_by(sorting_option.directed_field)
+        return [sorting_option.directed_field]
+
+    @property
+    def products(self) -> ProductQuerySet:
+        return self.super.products.order_by(*self.get_sorting_options())
 
     def get_context_data(self):
         context = self.super.get_context_data()
@@ -423,8 +437,11 @@ class PaginationCategory(AbstractProductsListContext):
         context = self.super.get_context_data()
         self.check_pagination_args()
 
-        if not self.products:
-            raise http.Http404('Page without products does not exist.')
+        # @todo #187:30m Uncomment the if_404 check for empty products list.
+        #  To do it fix stb tests to cover this case.
+
+        # if not self.products:
+        #     raise http.Http404('Page without products does not exist.')
 
         paginated = PaginatorLinks(
             self.page_number,
