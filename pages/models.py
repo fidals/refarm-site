@@ -67,15 +67,6 @@ class PageManager(models.Manager.from_queryset(PageQuerySet)):
     pass
 
 
-class PageActiveManager(PageManager):
-    def get_queryset(self):
-        return (
-            super()
-            .get_queryset()
-            .active()
-        )
-
-
 class Page(mptt.models.MPTTModel, ImageMixin):
     # pages with same templates (ex. news, about)
     FLAT_TYPE = 'flat'
@@ -92,7 +83,6 @@ class Page(mptt.models.MPTTModel, ImageMixin):
     CUSTOM_PAGES_URL_NAME = 'custom_page'
 
     objects = PageManager()
-    actives = PageActiveManager()
 
     class Meta:
         unique_together = ('type', 'slug', 'related_model_name')

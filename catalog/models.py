@@ -50,25 +50,15 @@ class CategoryManager(models.Manager.from_queryset(CategoryQuerySet)):
         }
 
 
-class CategoryActiveManager(CategoryManager):
-    def get_queryset(self):
-        return (
-            super()
-            .get_queryset()
-            .active()
-        )
-
-
 class AbstractCategory(mptt.models.MPTTModel, AdminTreeDisplayMixin):
+
+    objects = CategoryManager()
 
     class Meta:
         abstract = True
         unique_together = ('name', 'parent')
         verbose_name = _('Category')
         verbose_name_plural = _('Categories')
-
-    objects = CategoryManager()
-    actives = CategoryActiveManager()
 
     name = models.CharField(max_length=255, db_index=True, verbose_name=_('name'))
     parent = mptt.models.TreeForeignKey(
@@ -132,21 +122,16 @@ class ProductQuerySet(models.QuerySet):
 class ProductManager(models.Manager.from_queryset(ProductQuerySet)):
     """Get all products of given category by Category's id or instance."""
 
-    def get_by_category(self, category: models.Model, ordering: [str]=None) -> models.QuerySet:
+    def get_by_category(
+        self, category: models.Model, ordering: [str]=None
+    ) -> models.QuerySet:
         return self.get_queryset().get_by_category(category, ordering)
 
-    def get_category_descendants(self, category: models.Model, ordering: [str]=None) -> models.QuerySet:
+    def get_category_descendants(
+        self, category: models.Model, ordering: [str]=None
+    ) -> models.QuerySet:
         """Return products with prefetch pages and images."""
         return self.get_queryset().get_category_descendants(category, ordering)
-
-
-class ProductActiveManager(ProductManager):
-    def get_queryset(self):
-        return (
-            super()
-            .get_queryset()
-            .active()
-        )
 
 
 class AbstractProduct(models.Model, AdminTreeDisplayMixin):
@@ -155,14 +140,14 @@ class AbstractProduct(models.Model, AdminTreeDisplayMixin):
     Defines basic functionality and primitives for Product in typical e-shop.
     Has n:1 relation with Category.
     """
+    objects = ProductManager()
+
     class Meta:
         abstract = True
         ordering = ['name']
         verbose_name = _('Product')
         verbose_name_plural = _('Products')
 
-    objects = ProductManager()
-    actives = ProductActiveManager()
     name = models.CharField(max_length=255, db_index=True, verbose_name=_('name'))
     price = models.FloatField(
         blank=True,
