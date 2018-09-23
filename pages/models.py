@@ -92,7 +92,7 @@ class Page(mptt.models.MPTTModel, ImageMixin):
     CUSTOM_PAGES_URL_NAME = 'custom_page'
 
     objects = PageManager()
-    actives = PageManager()
+    actives = PageActiveManager()
 
     class Meta:
         unique_together = ('type', 'slug', 'related_model_name')
