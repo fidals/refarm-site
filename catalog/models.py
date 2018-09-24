@@ -49,6 +49,9 @@ class CategoryManager(models.Manager.from_queryset(CategoryQuerySet)):
             if root_category.is_ancestor_of(product.category)
         }
 
+    def active(self):
+        return self.get_queryset().active()
+
 
 class AbstractCategory(mptt.models.MPTTModel, AdminTreeDisplayMixin):
 
@@ -132,6 +135,9 @@ class ProductManager(models.Manager.from_queryset(ProductQuerySet)):
     ) -> models.QuerySet:
         """Return products with prefetch pages and images."""
         return self.get_queryset().get_category_descendants(category, ordering)
+
+    def active(self):
+        return self.get_queryset().active()
 
 
 class AbstractProduct(models.Model, AdminTreeDisplayMixin):

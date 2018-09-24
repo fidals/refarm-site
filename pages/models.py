@@ -64,7 +64,8 @@ class PageQuerySet(mptt.querysets.TreeQuerySet):
 
 
 class PageManager(models.Manager.from_queryset(PageQuerySet)):
-    pass
+    def active(self):
+        return self.get_queryset().active()
 
 
 class Page(mptt.models.MPTTModel, ImageMixin):
