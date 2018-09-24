@@ -191,7 +191,8 @@ class AbstractProduct(models.Model, AdminTreeDisplayMixin):
 
     def get_siblings(self, offset):
         return (
-            self.__class__.actives
+            self.__class__.objects
+            .active()
             .filter(category=self.category)
             .exclude(id=self.id)
             .prefetch_related('category')
