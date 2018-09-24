@@ -9,10 +9,10 @@ from django.conf import settings
 from django.utils.text import slugify
 from unidecode import unidecode
 
+import mptt
 from django.db import models
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext_lazy as _
-from mptt import models as mptt_models, managers as mptt_managers
 
 
 def randomize_slug(slug: str) -> str:
@@ -31,7 +31,12 @@ class AdminTreeDisplayMixin(object):
         return '[{id}] {name}'.format(id=self.id, name=self.name)
 
 
-class CategoryManager(mptt_managers.TreeManager):
+class CategoryQuerySet(mptt.querysets.TreeQuerySet):
+    def active(self):
+        return self.filter(page__is_active=True)
+
+
+class CategoryManager(models.Manager.from_queryset(CategoryQuerySet)):
     def get_root_categories_by_products(self, products: models.QuerySet) -> dict:
         root_categories = self.root_nodes()
 
@@ -44,11 +49,13 @@ class CategoryManager(mptt_managers.TreeManager):
             if root_category.is_ancestor_of(product.category)
         }
 
-    def get_active(self):
-        return self.get_queryset().filter(page__is_active=True)
+    def active(self):
+        return self.get_queryset().active()
 
 
-class AbstractCategory(mptt_models.MPTTModel, AdminTreeDisplayMixin):
+class AbstractCategory(mptt.models.MPTTModel, AdminTreeDisplayMixin):
+
+    objects = CategoryManager()
 
     class Meta:
         abstract = True
@@ -56,9 +63,8 @@ class AbstractCategory(mptt_models.MPTTModel, AdminTreeDisplayMixin):
         verbose_name = _('Category')
         verbose_name_plural = _('Categories')
 
-    objects = CategoryManager()
     name = models.CharField(max_length=255, db_index=True, verbose_name=_('name'))
-    parent = mptt_models.TreeForeignKey(
+    parent = mptt.models.TreeForeignKey(
         'self',
         on_delete=models.CASCADE,
         null=True,
@@ -119,26 +125,19 @@ class ProductQuerySet(models.QuerySet):
 class ProductManager(models.Manager.from_queryset(ProductQuerySet)):
     """Get all products of given category by Category's id or instance."""
 
-    def get_by_category(self, category: models.Model, ordering: [str]=None) -> models.QuerySet:
+    def get_by_category(
+        self, category: models.Model, ordering: [str]=None
+    ) -> models.QuerySet:
         return self.get_queryset().get_by_category(category, ordering)
 
-    def get_category_descendants(self, category: models.Model, ordering: [str]=None) -> models.QuerySet:
+    def get_category_descendants(
+        self, category: models.Model, ordering: [str]=None
+    ) -> models.QuerySet:
         """Return products with prefetch pages and images."""
         return self.get_queryset().get_category_descendants(category, ordering)
 
-    # @todo #164:15m Rm ProductManager.get_active() method
-    #  Use ProductActiveManager instead
-    def get_active(self):
+    def active(self):
         return self.get_queryset().active()
-
-
-class ProductActiveManager(ProductManager):
-    def get_queryset(self):
-        return (
-            super(ProductActiveManager, self)
-            .get_queryset()
-            .active()
-        )
 
 
 class AbstractProduct(models.Model, AdminTreeDisplayMixin):
@@ -147,14 +146,14 @@ class AbstractProduct(models.Model, AdminTreeDisplayMixin):
     Defines basic functionality and primitives for Product in typical e-shop.
     Has n:1 relation with Category.
     """
+    objects = ProductManager()
+
     class Meta:
         abstract = True
         ordering = ['name']
         verbose_name = _('Product')
         verbose_name_plural = _('Products')
 
-    objects = ProductManager()
-    actives = ProductActiveManager()
     name = models.CharField(max_length=255, db_index=True, verbose_name=_('name'))
     price = models.FloatField(
         blank=True,

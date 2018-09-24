@@ -10,7 +10,7 @@ from django.template.defaultfilters import slugify
 from django.template.exceptions import TemplateSyntaxError
 from django.utils.translation import ugettext_lazy as _
 
-from mptt import models as mptt_models
+import mptt
 from images.models import ImageMixin
 
 from pages.utils import render_str
@@ -58,13 +58,17 @@ class PageTemplate(models.Model):
         return render_str(field, context)
 
 
-class PageManager(mptt_models.TreeManager):
+class PageQuerySet(mptt.querysets.TreeQuerySet):
+    def active(self):
+        return self.filter(is_active=True)
 
-    def get_active(self):
-        return self.get_queryset().filter(is_active=True)
+
+class PageManager(models.Manager.from_queryset(PageQuerySet)):
+    def active(self):
+        return self.get_queryset().active()
 
 
-class Page(mptt_models.MPTTModel, ImageMixin):
+class Page(mptt.models.MPTTModel, ImageMixin):
     # pages with same templates (ex. news, about)
     FLAT_TYPE = 'flat'
     # pages with unique templates (ex. index, order)
@@ -91,7 +95,7 @@ class Page(mptt_models.MPTTModel, ImageMixin):
     # Name for reversing at related model
     related_model_name = models.CharField(blank=True, max_length=255, editable=False)
 
-    parent = mptt_models.TreeForeignKey(
+    parent = mptt.models.TreeForeignKey(
         'self',
         on_delete=models.CASCADE,
         related_name='children',
@@ -301,7 +305,7 @@ class ModelPage(Page):
         """Create managers for dividing ModelPage entities"""
         assert isinstance(model, type(models.Model)), 'arg should be ModelBase type'
 
-        class ModelPageManager(mptt_models.TreeManager):
+        class ModelPageManager(mptt.models.TreeManager):
             def get_queryset(self):
                 return super(ModelPageManager, self).get_queryset().filter(
                     related_model_name=model._meta.db_table)
