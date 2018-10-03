@@ -32,7 +32,7 @@ setup(
         'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
     ],
     install_requires=[
-        'celery==4.1.1',
+        'celery==4.2.1',
         'Django==1.10',
         'django-mptt==0.8.7',
         'dj-database-url==0.4.1',
