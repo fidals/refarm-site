@@ -19,6 +19,7 @@ Code example to create tagged category:
 
 import typing
 from abc import ABC, abstractmethod
+from collections import defaultdict
 from functools import lru_cache, partial
 
 from django import http
@@ -84,25 +85,22 @@ class PaginatorLinks:
 def prepare_tile_products(
     products: ProductQuerySet, product_pages: QuerySet, tags: TagQuerySet=None
 ):
-    """
-    This method works on STB, but not on SE.
-
-    This problem will gone when task below will be fixed.
-    """
-
     # @todo #550:60m Move prepare_tile_products func to context
     #  Now it's separated function with huge of inconsistent queryset deps.
     assert isinstance(products, ProductQuerySet)
 
-    images = {}
-    if product_pages:
-        images = Image.objects.get_main_images_by_pages(
-            # TODO - customize `prepare_tile_products` for every site
-            product_pages.filter(stroyprombeton_product__in=products)
-        )
+    images = Image.objects.get_main_images_by_pages(
+        product_pages.filter(shopelectro_product__in=products)
+    )
+
+    brands = (
+        tags
+        .filter_by_products(products)
+        .get_brands(products)
+    ) if tags else defaultdict(lambda: None)
 
     return [
-        (product, images.get(product.page, None))
+        (product, brands.get(product))
         for product in products
     ]
 
@@ -218,10 +216,43 @@ class AbstractProductsListContext(AbstractPageContext, ABC):
             raise NotImplementedError('Set products queryset')
 
 
+# @todo
+class ProductImages(AbstractProductsListContext):
+
+    @property
+    def images(self):
+        assert isinstance(self.products, ProductQuerySet)
+
+        images = {}
+        if self.product_pages:
+            images = Image.objects.get_main_images_by_pages(
+                # TODO - customize `prepare_tile_products` for every site
+                self.product_pages.filter(stroyprombeton_product__in=self.products)
+            )
+
+        return [
+            (product.id, images.get(product.page))
+            for product in self.products
+        ]
+
+    def get_context_data(self):
+        return {
+            'product_images': self.images,
+            **super().get_context_data(),
+        }
+
+
+class ProductBrand:
+    pass
+
+
 class Category(AbstractProductsListContext):
     @property
     def products(self) -> ProductQuerySet:
-        return super().products.active().get_category_descendants(
+        # code like this breaks isolation,
+        # it'll be fixed at #183
+        products = self.products_ or super().products
+        return products.active().get_category_descendants(
             self.page.model
         )
 
