@@ -1,12 +1,14 @@
 import typing
 
+from django.db.models import QuerySet
+
 from catalog.context.context import ModelContext
-from catalog.models import AbstractCategory, Tag
+from catalog.models import AbstractCategory
 
 
 class Products(ModelContext):
 
-    def __init__(self, qs):
+    def __init__(self, qs: QuerySet):
         self._qs = qs
 
     def qs(self):
@@ -34,10 +36,7 @@ class OrderedProducts(Products):
         self._order_by_fields = order_by_fields
 
     def qs(self):
-        qs = self._context.qs()
-        # preserv old order_by params to avoid conflict with `distinct` option
-        order_fields = uniq(self._order_by_fields + qs.query.order_by)
-        return self._context.qs().order_by(order_field)
+        return self._context.qs().order_by(self._order_by_fields)
 
 
 class ProductsByCategory(Products):
@@ -52,15 +51,9 @@ class ProductsByCategory(Products):
 
 class ProductsByTags(Products):
 
-    def __init__(
-        self,
-        context: Products,
-        tags: Tag,
-        distinct_fields=None: typing.List['str']
-    ):
+    def __init__(self, context: Products, tags: QuerySet):
         self._context = context
         self._tags = tags
-        self._distinct_fields = distinct_fields or ['id']
 
     def qs(self):
         qs = self._context.qs()

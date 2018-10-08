@@ -1,5 +1,5 @@
 from catalog.context.context import ModelContext
-from catalog.models import AbstractProduct, Tag
+from catalog.models import Tag
 
 
 class Tags(ModelContext):

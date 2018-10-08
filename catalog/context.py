@@ -289,7 +289,7 @@ class TaggedCategory(AbstractProductsListContext):
                 products
                 .filter(tags__in=tags)
                 # See the catalog.context.products.ProductsByTags
-                # for detail about `distinct` and `order_by` here
+                # for detail about `distinct` and `order_by` above
                 .distinct(*self.get_undirected_sorting_options())
                 .order_by(*self.get_undirected_sorting_options())
             )

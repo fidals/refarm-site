@@ -7,13 +7,19 @@ from django.db.models import QuerySet
 class Context(abc.ABC):
 
     @abc.abstractmethod
-    def context(self) -> Dict[str, typing.Any]:
+    def context(self) -> typing.Dict[str, typing.Any]:
         ...
 
 
-class ModelContext(abc.ABC, Context):
+class ModelContext(abc.ABC):
 
     @abc.abstractmethod
     def qs(self) -> QuerySet:
         ...
 
+    @abc.abstractmethod
+    def context(self) -> typing.Dict[str, typing.Any]:
+        ...
+
+
+Context.register(ModelContext)
