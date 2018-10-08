@@ -95,6 +95,7 @@ class ProductQuerySet(models.QuerySet):
     def get_offset(self, start, step):
         return self[start:start + step]
 
+    # @todo #183:60m Try to remove `ordering` arg from ProductQuerySet.get_by_category
     def get_by_category(self, category: models.Model, ordering: [str]=None) -> models.QuerySet:
         ordering = ordering or ['name']
         categories = category.get_descendants(True)
