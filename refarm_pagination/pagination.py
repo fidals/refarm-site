@@ -18,6 +18,9 @@ class NeighborPage:
     def __init__(self, number):
         self.number = number
 
+    def __repr__(self):
+        return f'<NeighborPage number={self.number}>'
+
     def url(self, base_url):
         return base_url if self.number == 1 else f'{base_url}?page={self.number}'
 
@@ -30,6 +33,15 @@ class NeighborPages:
         self._index = page.number - 1
         self._neighbor_bounds = settings.PAGINATION_NEIGHBORS // 2
         self._neighbor_range = list(self.page.paginator.page_range)
+
+    def __repr__(self):
+        return (
+            '<NeighborPages'
+            f' page={self.page}'
+            f' prev={self.prev_neighbors()}'
+            f' next={self.next_neighbors()}'
+            f'>'
+        )
 
     def _neighbors(self, numbers):
         neighbors = []
