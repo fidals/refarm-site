@@ -185,6 +185,7 @@ class AbstractProductsListContext(AbstractPageContext, ABC):
         self,
         url_kwargs: typing.Dict[str, str]=None,
         request: http.HttpRequest=None,
+        # parent class requires it
         page: ModelPage=None,
         products: ProductQuerySet=None,
         product_pages: QuerySet=None,
@@ -194,7 +195,8 @@ class AbstractProductsListContext(AbstractPageContext, ABC):
         :param request: Came from `urls` module.
         :param products: Every project provides products from DB.
         """
-        super().__init__(url_kwargs, request)
+        super().__init__(url_kwargs, request, page)
+        assert(isinstance(products, ProductQuerySet) or products is None)
         self.products_ = products
         self.product_pages_ = product_pages
 
@@ -238,7 +240,7 @@ class ProductImages(AbstractProductsListContext):
     def get_context_data(self):
         return {
             'product_images': self.images,
-            **super().get_context_data(),
+            **self.super.get_context_data(),
         }
 
 
@@ -275,7 +277,9 @@ class TaggedCategory(AbstractProductsListContext):
         self,
         url_kwargs: typing.Dict[str, str]=None,
         request: http.HttpRequest=None,
+        page: ModelPage=None,
         products: ProductQuerySet=None,
+        product_pages: QuerySet=None,
         tags: TagQuerySet=None
     ):
         """
@@ -284,7 +288,7 @@ class TaggedCategory(AbstractProductsListContext):
         :param products: Every project provides products from DB.
         :param tags: Every project provides tags from DB.
         """
-        super().__init__(url_kwargs, request, products)
+        super().__init__(url_kwargs, request, page, products, product_pages)
         # it's not good. Arg should not be default.
         # That's how we'll prevent assertion.
         # But we'll throw away inheritance in se#567.
