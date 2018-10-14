@@ -80,18 +80,13 @@ class PaginatorLinks:
         return {number: self._url(number) for number in numbers}
 
 
-# @todo #550:30m Split to ProductImagesContext and ProductBrandContext
+# @todo #182:30m Move prepare_tile_products to ProductBrandContext.
+#  ProductImages is already forked.
 @lru_cache(maxsize=64)
 def prepare_tile_products(
     products: ProductQuerySet, product_pages: QuerySet, tags: TagQuerySet=None
 ):
-    # @todo #550:60m Move prepare_tile_products func to context
-    #  Now it's separated function with huge of inconsistent queryset deps.
     assert isinstance(products, ProductQuerySet)
-
-    images = Image.objects.get_main_images_by_pages(
-        product_pages.filter(shopelectro_product__in=products)
-    )
 
     brands = (
         tags
@@ -218,7 +213,6 @@ class AbstractProductsListContext(AbstractPageContext, ABC):
             raise NotImplementedError('Set products queryset')
 
 
-# @todo
 class ProductImages(AbstractProductsListContext):
 
     @property
@@ -228,8 +222,9 @@ class ProductImages(AbstractProductsListContext):
         images = {}
         if self.product_pages:
             images = Image.objects.get_main_images_by_pages(
-                # TODO - customize `prepare_tile_products` for every site
-                self.product_pages.filter(stroyprombeton_product__in=self.products)
+                # @todo #182:30m Customize `prepare_tile_products` for every site
+                #  Inherit this class at every site.
+                self.product_pages.filter(shopelectro_product__in=self.products)
             )
 
         return [
