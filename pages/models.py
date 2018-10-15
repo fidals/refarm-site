@@ -28,12 +28,12 @@ def validate_template(value):
 
 class PageTemplate(models.Model):
 
-    name = models.CharField(blank=False, max_length=255, unique=True)
+    name = models.CharField(blank=False, max_length=1000, unique=True)
     h1 = models.CharField(
-        blank=True, max_length=255, validators=[validate_template],
+        blank=True, max_length=1000, validators=[validate_template],
     )
     keywords = models.CharField(
-        blank=True, max_length=255, verbose_name=_('keywords'),
+        blank=True, max_length=1000, verbose_name=_('keywords'),
         validators=[validate_template],
     )
     description = models.TextField(
