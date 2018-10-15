@@ -244,6 +244,11 @@ class ProductBrand:
 
 
 class Category(AbstractProductsListContext):
+
+    # this list is synced with templates.
+    # See templates/catalog/category_navigation.html at SE project for example.
+    PRODUCT_LIST_VIEW_TYPES = ['tile', 'list']
+
     @property
     def products(self) -> ProductQuerySet:
         # code like this breaks isolation,
@@ -255,9 +260,8 @@ class Category(AbstractProductsListContext):
 
     def get_context_data(self):
         """Add sorting options and view_types in context."""
-        # @todo #550:15m Take `view_type` value from dataclass.
-        #  Depends on updating to python3.7
         view_type = self.request.session.get('view_type', 'tile')
+        assert view_type in self.PRODUCT_LIST_VIEW_TYPES
 
         return {
             'products_data': prepare_tile_products(self.products, self.product_pages),
