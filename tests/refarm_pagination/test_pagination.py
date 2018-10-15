@@ -8,7 +8,7 @@ from refarm_pagination import pagination
 
 class Paginator(TestCase):
 
-    def test_page_404error(self):
+    def test_page_404_error(self):
         with self.assertRaises(Http404):
             pagination.Paginator([], 1).page(2)
 
@@ -29,8 +29,8 @@ class NeighborPage(TestCase):
             pagination.NeighborPage(1).url(base_url),
         )
 
-    def test_rest_page_urls(self):
-        """Any page gives url with `page` query string param exept the first page."""
+    def test_second_page_url(self):
+        """Any page gives url with `page` query string param except the first page."""
         page_number = 2
         base_url = 'url'
         self.assertEqual(
@@ -41,25 +41,27 @@ class NeighborPage(TestCase):
 
 class NeighborPages(TestCase):
 
-    def neighbors(self, object_count, per_page, page_number):
+    def neighbors(self, objects_count, per_page, page_number):
         return pagination.NeighborPages(
-            pagination.Paginator(
-                list(range(object_count)),
+            page=pagination.Paginator(
+                list(range(objects_count)),
                 per_page,
             ).page(page_number),
         )
 
-    def test_neighbors(self):
+    def test_neighbors_content(self):
         """The current page is not in the list of neighbors."""
         page_number = 3
-        neighbors = self.neighbors(object_count=10, per_page=2, page_number=page_number)
+        neighbors = self.neighbors(objects_count=10, per_page=2, page_number=page_number)
 
-        for neighbor in neighbors.prev_neighbors() + neighbors.next_neighbors():
-            self.assertNotEqual(neighbor.number, page_number)
+        self.assertNotIn(page_number, [
+            neighbor.number
+            for neighbor in neighbors.prev_neighbors() + neighbors.next_neighbors()
+        ])
 
-    def test_neighbor_count(self):
+    def test_neighbors_count(self):
         page_number = 3
-        neighbors = self.neighbors(object_count=10, per_page=2, page_number=page_number)
+        neighbors = self.neighbors(objects_count=10, per_page=2, page_number=page_number)
 
         self.assertEqual(
             settings.PAGINATION_NEIGHBORS,

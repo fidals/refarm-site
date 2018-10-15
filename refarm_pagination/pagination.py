@@ -40,7 +40,7 @@ class NeighborPages:
             f' page={self.page}'
             f' prev={self.prev_neighbors()}'
             f' next={self.next_neighbors()}'
-            f'>'
+            '>'
         )
 
     def _neighbors(self, numbers):
