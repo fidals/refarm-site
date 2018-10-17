@@ -19,6 +19,7 @@ Code example to create tagged category:
 
 import typing
 from abc import ABC, abstractmethod
+from collections import defaultdict
 from functools import lru_cache, partial
 
 from django import http
@@ -79,30 +80,22 @@ class PaginatorLinks:
         return {number: self._url(number) for number in numbers}
 
 
-# @todo #550:30m Split to ProductImagesContext and ProductBrandContext
+# @todo #182:30m Move prepare_tile_products to ProductBrandContext.
+#  ProductImages is already forked.
 @lru_cache(maxsize=64)
 def prepare_tile_products(
     products: ProductQuerySet, product_pages: QuerySet, tags: TagQuerySet=None
 ):
-    """
-    This method works on STB, but not on SE.
-
-    This problem will gone when task below will be fixed.
-    """
-
-    # @todo #550:60m Move prepare_tile_products func to context
-    #  Now it's separated function with huge of inconsistent queryset deps.
     assert isinstance(products, ProductQuerySet)
 
-    images = {}
-    if product_pages:
-        images = Image.objects.get_main_images_by_pages(
-            # TODO - customize `prepare_tile_products` for every site
-            product_pages.filter(stroyprombeton_product__in=products)
-        )
+    brands = (
+        tags
+        .filter_by_products(products)
+        .get_brands(products)
+    ) if tags else defaultdict(lambda: None)
 
     return [
-        (product, images.get(product.page, None))
+        (product, brands.get(product))
         for product in products
     ]
 
@@ -187,6 +180,7 @@ class AbstractProductsListContext(AbstractPageContext, ABC):
         self,
         url_kwargs: typing.Dict[str, str]=None,
         request: http.HttpRequest=None,
+        # parent class requires it
         page: ModelPage=None,
         products: ProductQuerySet=None,
         product_pages: QuerySet=None,
@@ -196,7 +190,8 @@ class AbstractProductsListContext(AbstractPageContext, ABC):
         :param request: Came from `urls` module.
         :param products: Every project provides products from DB.
         """
-        super().__init__(url_kwargs, request)
+        super().__init__(url_kwargs, request, page)
+        assert(isinstance(products, ProductQuerySet) or products is None)
         self.products_ = products
         self.product_pages_ = product_pages
 
@@ -218,18 +213,55 @@ class AbstractProductsListContext(AbstractPageContext, ABC):
             raise NotImplementedError('Set products queryset')
 
 
+class ProductImages(AbstractProductsListContext):
+
+    @property
+    def images(self):
+        assert isinstance(self.products, ProductQuerySet)
+
+        images = {}
+        if self.product_pages:
+            images = Image.objects.get_main_images_by_pages(
+                # @todo #182:30m Customize `prepare_tile_products` for every site
+                #  Inherit this class at every site.
+                self.product_pages.filter(shopelectro_product__in=self.products)
+            )
+
+        return [
+            (product.id, images.get(product.page))
+            for product in self.products
+        ]
+
+    def get_context_data(self):
+        return {
+            'product_images': self.images,
+            **self.super.get_context_data(),
+        }
+
+
+class ProductBrand:
+    pass
+
+
 class Category(AbstractProductsListContext):
+
+    # this list is synced with templates.
+    # See templates/catalog/category_navigation.html at SE project for example.
+    PRODUCT_LIST_VIEW_TYPES = ['tile', 'list']
+
     @property
     def products(self) -> ProductQuerySet:
-        return super().products.active().get_category_descendants(
+        # code like this breaks isolation,
+        # it'll be fixed at #183
+        products = self.products_ or super().products
+        return products.active().get_category_descendants(
             self.page.model
         )
 
     def get_context_data(self):
         """Add sorting options and view_types in context."""
-        # @todo #550:15m Take `view_type` value from dataclass.
-        #  Depends on updating to python3.7
         view_type = self.request.session.get('view_type', 'tile')
+        assert view_type in self.PRODUCT_LIST_VIEW_TYPES
 
         return {
             'products_data': prepare_tile_products(self.products, self.product_pages),
@@ -244,7 +276,9 @@ class TaggedCategory(AbstractProductsListContext):
         self,
         url_kwargs: typing.Dict[str, str]=None,
         request: http.HttpRequest=None,
+        page: ModelPage=None,
         products: ProductQuerySet=None,
+        product_pages: QuerySet=None,
         tags: TagQuerySet=None
     ):
         """
@@ -253,7 +287,7 @@ class TaggedCategory(AbstractProductsListContext):
         :param products: Every project provides products from DB.
         :param tags: Every project provides tags from DB.
         """
-        super().__init__(url_kwargs, request, products)
+        super().__init__(url_kwargs, request, page, products, product_pages)
         # it's not good. Arg should not be default.
         # That's how we'll prevent assertion.
         # But we'll throw away inheritance in se#567.

@@ -28,12 +28,12 @@ def validate_template(value):
 
 class PageTemplate(models.Model):
 
-    name = models.CharField(blank=False, max_length=255, unique=True)
+    name = models.CharField(blank=False, max_length=1000, unique=True)
     h1 = models.CharField(
-        blank=True, max_length=255, validators=[validate_template],
+        blank=True, max_length=1000, validators=[validate_template],
     )
     keywords = models.CharField(
-        blank=True, max_length=255, verbose_name=_('keywords'),
+        blank=True, max_length=1000, verbose_name=_('keywords'),
         validators=[validate_template],
     )
     description = models.TextField(
@@ -84,6 +84,12 @@ class Page(mptt.models.MPTTModel, ImageMixin):
     CUSTOM_PAGES_URL_NAME = 'custom_page'
 
     objects = PageManager()
+    # @todo #182:60m Resolve Model.objects field resolution order
+    #  `assert(isinstance(Page.objects, PageManager))` is `False` now.
+    #  See `shopelectro.sitemaps.PagesSitemap` for failed code example.
+    #  Fix `shopelectro.models.Category.objects_` too.
+    #  Fix `shopelectro.models.ExcludedModelTPage.objects_` too.
+    objects_ = PageManager()
 
     class Meta:
         unique_together = ('type', 'slug', 'related_model_name')
