@@ -227,10 +227,10 @@ class ProductImages(AbstractProductsListContext):
                 self.product_pages.filter(shopelectro_product__in=self.products)
             )
 
-        return [
-            (product.id, images.get(product.page))
+        return {
+            product.id: images.get(product.page)
             for product in self.products
-        ]
+        }
 
     def get_context_data(self):
         return {
