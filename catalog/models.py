@@ -36,7 +36,10 @@ class CategoryQuerySet(mptt.querysets.TreeQuerySet):
         return self.filter(page__is_active=True)
 
 
-class CategoryManager(models.Manager.from_queryset(CategoryQuerySet)):
+class CategoryManager(
+    models.Manager.from_queryset(CategoryQuerySet),
+    mptt.managers.TreeManager
+):
     def get_root_categories_by_products(self, products: models.QuerySet) -> dict:
         root_categories = self.root_nodes()
 
