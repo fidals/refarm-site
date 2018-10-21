@@ -235,7 +235,10 @@ class ProductImages(AbstractProductsListContext):
     def get_context_data(self):
         return {
             'product_images': self.images,
-            **self.super.get_context_data(),
+            **(
+                self.super.get_context_data()
+                if self.super else {}
+            ),
         }
 
 
