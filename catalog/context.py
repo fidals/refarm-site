@@ -216,6 +216,7 @@ class AbstractProductsListContext(AbstractPageContext, ABC):
 class ProductImages(AbstractProductsListContext):
 
     @property
+    @lru_cache(maxsize=256)
     def images(self):
         assert isinstance(self.products, ProductQuerySet)
 
