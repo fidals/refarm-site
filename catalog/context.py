@@ -347,12 +347,7 @@ class TaggedCategory(AbstractProductsListContext):
             **context,
             'tags': tags,
             'group_tags_pairs': group_tags_pairs,
-            'products_data': prepare_tile_products(
-                self.products,
-                self.product_pages,
-                # requires all tags, not only selected
-                tags
-            ),
+            'products_data': [],  # empty for optimization
             # Category's canonical link is `category.page.get_absolute_url`.
             # So, this link always contains no tags.
             # That's why we skip canonical link on tagged category page.
@@ -493,7 +488,13 @@ class PaginationCategory(AbstractProductsListContext):
 
         return {
             **context,
-            'products_data': [],  # empty for optimization
+            'products_data': prepare_tile_products(
+                self.products,
+                self.product_pages,
+                # requires all tags, not only selected.
+                # And this `super.super` will gone after rf#197
+                self.super.super.all_tags
+            ),
             'total_products': total_products,
             'products_count': self.products_count,
             'paginated': paginated,
