@@ -268,7 +268,7 @@ class Category(AbstractProductsListContext):
         assert view_type in self.PRODUCT_LIST_VIEW_TYPES
 
         return {
-            'products_data': prepare_tile_products(self.products, self.product_pages),
+            'products_data': [],  # empty for optimization
             # can be `tile` or `list`. Defines products list layout.
             'view_type': view_type,
         }
@@ -351,7 +351,7 @@ class TaggedCategory(AbstractProductsListContext):
                 self.products,
                 self.product_pages,
                 # requires all tags, not only selected
-                self.all_tags
+                tags
             ),
             # Category's canonical link is `category.page.get_absolute_url`.
             # So, this link always contains no tags.
@@ -415,9 +415,7 @@ class SortingCategory(AbstractProductsListContext):
         context = self.super.get_context_data()
         return {
             **context,
-            'products_data': prepare_tile_products(
-                self.products, self.product_pages
-            ),
+            'products_data': [],  # empty for optimization
             'sort': self.get_sorting_index(),
         }
 
@@ -460,6 +458,10 @@ class PaginationCategory(AbstractProductsListContext):
         return products
 
     @property
+    def product_pages(self):
+        return self.super.product_pages.filter(shopelectro_product__in=self.products)
+
+    @property
     def products_count(self):
         return (self.page_number - 1) * self.products_on_page + self.products.count()
 
@@ -491,9 +493,7 @@ class PaginationCategory(AbstractProductsListContext):
 
         return {
             **context,
-            'products_data': prepare_tile_products(
-                self.products, self.product_pages
-            ),
+            'products_data': [],  # empty for optimization
             'total_products': total_products,
             'products_count': self.products_count,
             'paginated': paginated,
