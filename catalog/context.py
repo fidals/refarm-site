@@ -80,8 +80,6 @@ class PaginatorLinks:
         return {number: self._url(number) for number in numbers}
 
 
-# @todo #182:30m Move prepare_tile_products to ProductBrandContext.
-#  ProductImages is already forked.
 @lru_cache(maxsize=64)
 def prepare_tile_products(
     products: ProductQuerySet, product_pages: QuerySet, tags: TagQuerySet=None
@@ -133,7 +131,7 @@ class AbstractContext(ObjectsComposition, ABC):
 
     @property
     def url_kwargs(self) -> typing.Dict[str, str]:
-        return self.url_kwargs_ or self.super.url_kwargs
+        return self.url_kwargs_ or getattr(self.super, 'url_kwargs', {})
 
     @property
     def request(self) -> http.HttpRequest:
@@ -241,10 +239,6 @@ class ProductImages(AbstractProductsListContext):
                 if self.super else {}
             ),
         }
-
-
-class ProductBrand:
-    pass
 
 
 class Category(AbstractProductsListContext):
@@ -488,17 +482,42 @@ class PaginationCategory(AbstractProductsListContext):
 
         return {
             **context,
-            'products_data': prepare_tile_products(
-                self.products,
-                self.product_pages,
-                # requires all tags, not only selected.
-                # And this `super.super` will gone after rf#197
-                self.super.super.all_tags
-            ),
+            'products': self.products,
             'total_products': total_products,
             'products_count': self.products_count,
             'paginated': paginated,
             'paginated_page': paginated_page,
             'sorting_options': settings.CATEGORY_SORTING_OPTIONS.values(),
             'limits': settings.CATEGORY_STEP_MULTIPLIERS,
+        }
+
+
+class ProductBrands(AbstractProductsListContext):
+
+    @property
+    def tags(self):
+        return self.super.super.super.tags
+
+    @property
+    def brands(self):
+        assert isinstance(self.products, ProductQuerySet)
+
+        brands = (
+            self.tags
+            .filter_by_products(self.products)
+            .get_brands(self.products)
+        ) if self.tags else defaultdict(lambda: None)
+
+        return {
+            product.id: brands.get(product)
+            for product in self.products
+        }
+
+    def get_context_data(self):
+        return {
+            'product_brands': self.brands,
+            **(
+                self.super.get_context_data()
+                if self.super else {}
+            ),
         }
