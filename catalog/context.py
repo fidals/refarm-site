@@ -214,22 +214,8 @@ class AbstractProductsListContext(AbstractPageContext, ABC):
 class ProductImages(AbstractProductsListContext):
 
     @property
-    @lru_cache(maxsize=256)
-    def images(self):
-        assert isinstance(self.products, ProductQuerySet)
-
-        images = {}
-        if self.product_pages:
-            images = Image.objects.get_main_images_by_pages(
-                # @todo #182:30m Customize `prepare_tile_products` for every site
-                #  Inherit this class at every site.
-                self.product_pages.filter(shopelectro_product__in=self.products)
-            )
-
-        return {
-            product.id: images.get(product.page)
-            for product in self.products
-        }
+    def images(self) -> typing.Dict[int, Image]:
+        raise NotImplemented()
 
     def get_context_data(self):
         return {
