@@ -2,22 +2,8 @@ import typing
 
 from django.db.models import QuerySet
 
-from catalog.context.context import ModelContext
+from catalog.context.context import Products, Tags, Category
 from catalog.models import AbstractCategory
-
-
-class Products(ModelContext):
-
-    def __init__(self, qs: QuerySet):
-        self._qs = qs
-
-    def qs(self):
-        return self._qs
-
-    def context(self):
-        return {
-            'products': self.qs(),
-        }
 
 
 class ActiveProducts(Products):
@@ -31,12 +17,20 @@ class ActiveProducts(Products):
 
 class OrderedProducts(Products):
 
-    def __init__(self, context: Products, order_by_fields: typing.List[str]):
+    def __init__(self, context: Products, req_kwargs):
         self._context = context
-        self._order_by_fields = order_by_fields
+        self._sorting_index = self._req_kwargs.get('sorting', 0)
 
     def qs(self):
-        return self._context.qs().order_by(self._order_by_fields)
+        return self._context.qs().order_by(
+            SortingOption(index=self._sorting_index).directed_field,
+        )
+
+    def context(self):
+        return {
+            **super().context(),
+            'sorting_index': _sorting_index,
+        }
 
 
 class ProductsByCategory(Products):
@@ -46,23 +40,18 @@ class ProductsByCategory(Products):
         self._category = category
 
     def qs(self):
-        return self._context.qs().active().get_category_descendants(self._category)
+        return self._context.qs().get_category_descendants(self._category)
 
 
 class ProductsByTags(Products):
 
-    def __init__(self, context: Products, tags: QuerySet):
+    def __init__(self, context: Products, tags_context: Tags):
         self._context = context
         self._tags = tags
 
     def qs(self):
-        qs = self._context.qs()
-        # Distinct because a relation of tags and products is M2M.
-        # We do not specify the args for `distinct` to avoid dependencies
-        # between `order_by` and `distinct` methods.
-
-        # Postgres has `SELECT DISTINCT ON`, that depends on `ORDER BY`.
-        # See docs for details:
-        # https://www.postgresql.org/docs/10/static/sql-select.html#SQL-DISTINCT
-        # https://docs.djangoproject.com/en/2.1/ref/models/querysets/#django.db.models.query.QuerySet.distinct
-        return qs.filter(tags__in=self._tags).distinct()
+        tags = self._tags.qs()
+        if tags.exists():
+            return self._context.qs().tagged(tags)
+        else:
+            return self._context.qs()

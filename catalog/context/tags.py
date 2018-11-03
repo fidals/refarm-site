@@ -1,52 +1,39 @@
-from catalog.context.context import ModelContext
-from catalog.models import Tag
+from catalog.context.context import Context, Tags, Products
+
+from django.db.models import QuerySet
 
 
-class Tags(ModelContext):
+class GroupedTags(Context):
 
-    def __init__(self, qs):
-        self._qs = qs
-
-    def qs(self):
-        return self._qs
+    def __init__(self, tags: Tags):
+        self._tags = tags
 
     def context(self):
         return {
-            'tags': self.qs(),
+            'group_tags_pairs': self._tags.qs().get_group_tags_pairs(),
         }
 
 
-class TagsByRaw(Tags):
+class ParsedTags(Tags):
 
-    def __init__(self, qs, raw_tags: str):
-        self._qs = qs
-        self._raw_tags = raw_tags
-
-    def qs(self):
-        slugs = Tag.parse_url_tags(self._raw_tags)
-        return self._qs.filter(slug__in=slugs)
-
-
-class GroupTagsByProducts(Tags):
-
-    def __init__(self, qs, products):
-        self._qs = qs
-        self._products = products
+    def __init__(self, tags: Tags, req_kwargs):
+        self._tags = tags
+        self._req_kwargs = req_kwargs
 
     def qs(self):
-        return self._qs.filter_by_products(self._products)
-
-    def context(self):
-        return {
-            **super().context(),
-            'group_tags_pairs': self.qs().get_group_tags_pairs(),
-        }
+        raw_tags = self._kwargs.get('tags')
+        if not raw_tags:
+            self._tags.none()
+        return self._tags.parsed(raw_tags)
 
 
 class Checked404Tags(Tags):
 
+    def __init__(self, tags: Tags):
+        self._tags = tags
+
     def qs(self):
-        tags = self.qs()
+        tags = self._tags.qs()
         if not tags:
             raise http.Http404('No such tag.')
         return tags

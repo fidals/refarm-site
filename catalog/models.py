@@ -95,7 +95,7 @@ class ProductQuerySet(models.QuerySet):
     def get_offset(self, start, step):
         return self[start:start + step]
 
-    # @todo #183:60m Try to remove `ordering` arg from ProductQuerySet.get_by_category
+    # @todo #183:30m Try to remove `ordering` arg from ProductQuerySet.get_by_category
     def get_by_category(self, category: models.Model, ordering: [str]=None) -> models.QuerySet:
         ordering = ordering or ['name']
         categories = category.get_descendants(True)
@@ -122,6 +122,17 @@ class ProductQuerySet(models.QuerySet):
     def active(self):
         return self.filter(page__is_active=True)
 
+    def tagged(self, tags):
+        # Distinct because a relation of tags and products is M2M.
+        # We do not specify the args for `distinct` to avoid dependencies
+        # between `order_by` and `distinct` methods.
+
+        # Postgres has `SELECT DISTINCT ON`, that depends on `ORDER BY`.
+        # See docs for details:
+        # https://www.postgresql.org/docs/10/static/sql-select.html#SQL-DISTINCT
+        # https://docs.djangoproject.com/en/2.1/ref/models/querysets/#django.db.models.query.QuerySet.distinct
+        return self.filter(tags__in=self._tags).distinct()
+
 
 class ProductManager(models.Manager.from_queryset(ProductQuerySet)):
     """Get all products of given category by Category's id or instance."""
@@ -139,6 +150,9 @@ class ProductManager(models.Manager.from_queryset(ProductQuerySet)):
 
     def active(self):
         return self.get_queryset().active()
+
+    def tagged(self, tags):
+        return self.get_queryset().tagged(tags)
 
 
 class AbstractProduct(models.Model, AdminTreeDisplayMixin):
@@ -239,7 +253,7 @@ class TagQuerySet(models.QuerySet):
             for group, tags_ in grouped_tags
         ]
 
-    def get_brands(self, products: List[AbstractProduct]) -> Dict[AbstractProduct, 'Tag']:
+    def get_brands(self, products: Iterable[AbstractProduct]) -> Dict[AbstractProduct, 'Tag']:
         brand_tags = (
             self.filter(group__name=settings.BRAND_TAG_GROUP_NAME)
             .prefetch_related('products')
@@ -322,6 +336,10 @@ class TagQuerySet(models.QuerySet):
             group_delimiter=settings.TAG_GROUPS_TITLE_DELIMITER
         )
 
+    def parsed(self, raw: str):
+        """Get tags from raw."""
+        return self.filter(slug__in=Tag.parse_url_tags(raw))
+
 
 class TagManager(models.Manager.from_queryset(TagQuerySet)):
 
@@ -340,6 +358,9 @@ class TagManager(models.Manager.from_queryset(TagQuerySet)):
     def get_brands(self, products):
         """Get a batch of products' brands."""
         return self.get_queryset().get_brands(products)
+
+    def parsed_tags(self, raw):
+        return self.get_queryset().parsed_tags(raw)
 
 
 class Tag(models.Model):
