@@ -30,7 +30,7 @@ Context.register(ModelContext)
 
 class Contexts(Context):
 
-    def __init__(self, contexts: typing.List[Context]):
+    def __init__(self, *contexts: typing.List[Context]):
         self.contexts = contexts
 
     def context(self):

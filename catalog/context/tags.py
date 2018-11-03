@@ -18,13 +18,13 @@ class ParsedTags(Tags):
 
     def __init__(self, tags: Tags, req_kwargs):
         self._tags = tags
-        self._req_kwargs = req_kwargs
+        self._raw_tags = req_kwargs.get('tags')
 
     def qs(self):
-        raw_tags = self._kwargs.get('tags')
-        if not raw_tags:
-            self._tags.none()
-        return self._tags.parsed(raw_tags)
+        tags = self._tags.qs()
+        if not self._raw_tags:
+            tags.none()
+        return tags.parsed(self._raw_tags)
 
 
 class Checked404Tags(Tags):
@@ -34,6 +34,6 @@ class Checked404Tags(Tags):
 
     def qs(self):
         tags = self._tags.qs()
-        if not tags:
+        if not tags.exists():
             raise http.Http404('No such tag.')
         return tags

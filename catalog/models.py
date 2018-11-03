@@ -337,7 +337,6 @@ class TagQuerySet(models.QuerySet):
         )
 
     def parsed(self, raw: str):
-        """Get tags from raw."""
         return self.filter(slug__in=Tag.parse_url_tags(raw))
 
 
@@ -359,8 +358,8 @@ class TagManager(models.Manager.from_queryset(TagQuerySet)):
         """Get a batch of products' brands."""
         return self.get_queryset().get_brands(products)
 
-    def parsed_tags(self, raw):
-        return self.get_queryset().parsed_tags(raw)
+    def parsed(self, raw):
+        return self.get_queryset().parsed(raw)
 
 
 class Tag(models.Model):
