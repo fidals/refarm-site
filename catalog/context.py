@@ -306,10 +306,8 @@ class TaggedCategory(AbstractProductsListContext):
             products = (
                 products
                 .filter(tags__in=tags)
-                # Use distinct because filtering by QuerySet tags,
-                # that related with products by many-to-many relation.
-                # @todo #550:60m Try to rm sorting staff from context.TaggedCategory.
-                #  Or explain again why it's impossible. Now it's not clear from comment.
+                # See the ProductQuerySet.tagged
+                # for detail about `distinct` and `order_by` above
                 .distinct(*self.get_undirected_sorting_options())
                 .order_by(*self.get_undirected_sorting_options())
             )
