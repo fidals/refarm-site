@@ -57,7 +57,7 @@ class ProductsByTags(Products):
             return self._products.qs()
 
 
-class ProductBrands(Context):
+class ProductBrand(Context):
 
     def __init__(self, products: Products, tags: Tags):
         self._products = products
@@ -77,21 +77,22 @@ class ProductBrands(Context):
         }
 
 
-class ProductBrands(Context):
+class ProductImages
 
-    def __init__(self, products: Products, tags: Tags):
+    def __init__(self, products: Products):
         self._products = products
-        self._tags = tags
 
     def context(self):
-        products_qs = self.products.qs()
-        brands = self.tags.qs().get_brands(products_qs)
-
-        product_brands = {
-            product.id: brands.get(product)
-            for product in products_qs
+        page_product_map = {
+            product.page: product
+            for product in self._products.qs()
+        }
+        images = Image.objects.get_main_images_by_pages(page_product_map.keys())
+        product_images = {
+            product: images.get(page)
+            for page, product in page_product_map.items()
         }
 
         return {
-            'product_brands': product_brands,
+            'product_images': product_images,
         }
