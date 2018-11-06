@@ -2,7 +2,7 @@ import typing
 
 from django.db.models import QuerySet
 
-from catalog.context.context import Products, Tags
+from catalog.newcontext.context import Products, Tags
 from catalog.models import AbstractCategory
 
 

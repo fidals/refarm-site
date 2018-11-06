@@ -1,4 +1,4 @@
-from catalog.context.context import Context, Tags, Products
+from catalog.newcontext.context import Context, Tags, Products
 
 from django.db.models import QuerySet
 
