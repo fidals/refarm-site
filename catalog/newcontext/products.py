@@ -2,7 +2,7 @@ import typing
 
 from django.db.models import QuerySet
 
-from catalog.newcontext.context import Products, Tags
+from catalog.newcontext.context import Context, Products, Tags
 from catalog.models import AbstractCategory
 
 
@@ -55,3 +55,43 @@ class ProductsByTags(Products):
             return self._products.qs().tagged(tags)
         else:
             return self._products.qs()
+
+
+class ProductBrands(Context):
+
+    def __init__(self, products: Products, tags: Tags):
+        self._products = products
+        self._tags = tags
+
+    def context(self):
+        products_qs = self.products.qs()
+        brands = self.tags.qs().get_brands(products_qs)
+
+        product_brands = {
+            product.id: brands.get(product)
+            for product in products_qs
+        }
+
+        return {
+            'product_brands': product_brands,
+        }
+
+
+class ProductBrands(Context):
+
+    def __init__(self, products: Products, tags: Tags):
+        self._products = products
+        self._tags = tags
+
+    def context(self):
+        products_qs = self.products.qs()
+        brands = self.tags.qs().get_brands(products_qs)
+
+        product_brands = {
+            product.id: brands.get(product)
+            for product in products_qs
+        }
+
+        return {
+            'product_brands': product_brands,
+        }

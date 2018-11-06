@@ -259,6 +259,7 @@ class TagQuerySet(models.QuerySet):
     def get_brands(self, products: Iterable[AbstractProduct]) -> Dict[AbstractProduct, 'Tag']:
         brand_tags = (
             self.filter(group__name=settings.BRAND_TAG_GROUP_NAME)
+            .filter_by_products(products)
             .prefetch_related('products')
             .select_related('group')
         )
