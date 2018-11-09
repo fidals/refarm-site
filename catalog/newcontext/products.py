@@ -1,9 +1,22 @@
 import typing
 
+from django.conf import settings
 from django.db.models import QuerySet
 
 from catalog.newcontext.context import Context, Products, Tags
 from catalog.models import AbstractCategory
+
+
+class SortingOption:
+    def __init__(self, index=0):
+        options = settings.CATEGORY_SORTING_OPTIONS[index]
+        self.label = options['label']
+        self.field = options['field']
+        self.direction = options['direction']
+
+    @property
+    def directed_field(self):
+        return self.direction + self.field
 
 
 class ActiveProducts(Products):
@@ -19,7 +32,7 @@ class OrderedProducts(Products):
 
     def __init__(self, products: Products, req_kwargs):
         self._products = products
-        self._sorting_index = self._req_kwargs.get('sorting', 0)
+        self._sorting_index = req_kwargs.get('sorting', 0)
 
     def qs(self):
         return self._products.qs().order_by(
@@ -43,9 +56,9 @@ class ProductsByCategory(Products):
         return self._products.qs().get_category_descendants(self._category)
 
 
-class ProductsByTags(Products):
+class TaggedProducts(Products):
 
-    def __init__(self, products: Products, tags_context: Tags):
+    def __init__(self, products: Products, tags: Tags):
         self._products = products
         self._tags = tags
 
@@ -57,7 +70,7 @@ class ProductsByTags(Products):
             return self._products.qs()
 
 
-class ProductBrand(Context):
+class ProductBrands(Context):
 
     def __init__(self, products: Products, tags: Tags):
         self._products = products
@@ -77,17 +90,18 @@ class ProductBrand(Context):
         }
 
 
-class ProductImages
+class ProductImages(Context):
 
-    def __init__(self, products: Products):
+    def __init__(self, products: Products, images: QuerySet):
         self._products = products
+        self._images = images
 
     def context(self):
         page_product_map = {
             product.page: product
             for product in self._products.qs()
         }
-        images = Image.objects.get_main_images_by_pages(page_product_map.keys())
+        images = self._images.get_main_images_by_pages(page_product_map.keys())
         product_images = {
             product: images.get(page)
             for page, product in page_product_map.items()

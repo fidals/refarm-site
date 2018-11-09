@@ -134,7 +134,7 @@ class ProductQuerySet(models.QuerySet):
         # See docs for details:
         # https://www.postgresql.org/docs/10/static/sql-select.html#SQL-DISTINCT
         # https://docs.djangoproject.com/en/2.1/ref/models/querysets/#django.db.models.query.QuerySet.distinct
-        return self.filter(tags__in=self._tags).distinct()
+        return self.filter(tags__in=tags).distinct()
 
 
 class ProductManager(models.Manager.from_queryset(ProductQuerySet)):
