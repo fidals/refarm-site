@@ -25,7 +25,7 @@ class ImageManager(models.Manager):
 
         images_query = (
             self.get_queryset()
-                .filter(object_id__in=[page.id for page in pages], is_main=True)
+            .filter(object_id__in=[page.id for page in pages], is_main=True)
         )
 
         if not images_query.exists():

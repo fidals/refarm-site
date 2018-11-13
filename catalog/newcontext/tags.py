@@ -1,6 +1,7 @@
 from catalog.newcontext.context import Context, Tags, Products
 
 from django.db.models import QuerySet
+from django.http import Http404
 
 
 class GroupedTags(Context):
@@ -23,7 +24,7 @@ class ParsedTags(Tags):
     def qs(self):
         tags = self._tags.qs()
         if not self._raw_tags:
-            tags.none()
+            return tags.none()
         return tags.parsed(self._raw_tags)
 
 
@@ -35,5 +36,5 @@ class Checked404Tags(Tags):
     def qs(self):
         tags = self._tags.qs()
         if not tags.exists():
-            raise http.Http404('No such tag.')
+            raise Http404('No such tag.')
         return tags
