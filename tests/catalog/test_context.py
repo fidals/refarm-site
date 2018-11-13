@@ -17,14 +17,21 @@ def mocked_ctx(qs_attrs=None, context_attrs=None):
 
 class ProductsContext(TestCase):
 
-    @override_settings(CATEGORY_SORTING_OPTIONS={
-        1: {'label': 'price', 'field': 'price', 'direction': ''}
-    })
+    fixtures = ['catalog.json']
+
+    def products_ctx(self, qs=None) -> context.context.Products:
+        return context.context.Products(qs or catalog_models.MockProduct.objects.all())
+
     def test_ordered_products(self):
-        products_ctx = mocked_ctx()
-        context.products.OrderedProducts(products_ctx, {'sorting': 1}).qs()
-        self.assertTrue(products_ctx.qs().order_by.called)
-        self.assertEqual(products_ctx.qs().order_by.call_args[0][0], 'price')
+        order_by = 'price'
+        with override_settings(CATEGORY_SORTING_OPTIONS={
+            1: {'label': order_by, 'field': order_by, 'direction': ''}
+        }):
+            products_ctx = self.products_ctx()
+            self.assertEqual(
+                list(products_ctx.qs().order_by(order_by)),
+                list(context.products.OrderedProducts(products_ctx, {'sorting': 1}).qs()),
+            )
 
     def test_tagged_products(self):
         products_ctx = mocked_ctx()
@@ -48,14 +55,15 @@ class TagsContext(TestCase):
 
     def test_parsed_tags(self):
         tags_ctx = mocked_ctx()
-        raw_tags = 'test'
-        context.tags.ParsedTags(tags_ctx, {'tags': raw_tags}).qs()
+        context.tags.ParsedTags(tags_ctx, {'tags': 'test'}).qs()
         self.assertTrue(tags_ctx.qs().parsed.called)
 
     def test_unparsed_tags(self):
-        tags_ctx = mocked_ctx()
-        context.tags.ParsedTags(tags_ctx, {}).qs()
-        self.assertFalse(tags_ctx.qs().parsed.called)
+        self.assertFalse(
+            context.tags.ParsedTags(
+                mocked_ctx(qs_attrs={'none.return_value': []}), {},
+            ).qs()
+        )
 
     def test_404_check_tags(self):
         with self.assertRaises(Http404):
