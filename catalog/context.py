@@ -166,7 +166,7 @@ class AbstractPageContext(AbstractContext, ABC):
         return (
             self.page_
             if self.page_ is not None
-            else self.super.page
+            else getattr(self.super, 'page', None)
         )
 
 
