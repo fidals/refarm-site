@@ -98,19 +98,15 @@ class ProductQuerySet(models.QuerySet):
     def get_offset(self, start, step):
         return self[start:start + step]
 
-    # @todo #183:30m Try to remove `ordering` arg from ProductQuerySet.get_by_category
-    def get_by_category(self, category: models.Model, ordering: [str]=None) -> models.QuerySet:
-        ordering = ordering or ['name']
-        categories = category.get_descendants(True)
+    def get_by_category(self, category: models.Model) -> models.QuerySet:
+        return self.filter(category__in=category.get_descendants(True))
 
-        return self.filter(category__in=categories).order_by(*ordering)
-
-    def get_category_descendants(self, category: models.Model, ordering: [str]=None):
+    def get_category_descendants(self, category: models.Model):
         """Return products with prefetch pages and images."""
         return (
             self.prefetch_related('page__images')
             .select_related('page')
-            .get_by_category(category, ordering=ordering)
+            .get_by_category(category)
         )
 
     def filter_by_categories(self, categories: Iterable[AbstractCategory]):
@@ -140,16 +136,12 @@ class ProductQuerySet(models.QuerySet):
 class ProductManager(models.Manager.from_queryset(ProductQuerySet)):
     """Get all products of given category by Category's id or instance."""
 
-    def get_by_category(
-        self, category: models.Model, ordering: [str]=None
-    ) -> models.QuerySet:
-        return self.get_queryset().get_by_category(category, ordering)
+    def get_by_category(self, category: models.Model) -> models.QuerySet:
+        return self.get_queryset().get_by_category(category)
 
-    def get_category_descendants(
-        self, category: models.Model, ordering: [str]=None
-    ) -> models.QuerySet:
+    def get_category_descendants(self, category: models.Model) -> models.QuerySet:
         """Return products with prefetch pages and images."""
-        return self.get_queryset().get_category_descendants(category, ordering)
+        return self.get_queryset().get_category_descendants(category)
 
     def active(self):
         return self.get_queryset().active()
