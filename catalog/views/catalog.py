@@ -61,6 +61,9 @@ class AbstractProductWithoutContent(ListView):
     context_object_name = 'products'
     title = None
 
+    def get_queryset(self):
+        return super().get_queryset().active()
+
     def get_context_data(self, **kwargs):
         context = super(AbstractProductWithoutContent, self).get_context_data(**kwargs)
         return {
