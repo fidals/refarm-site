@@ -22,7 +22,7 @@ class RefarmTestRunner(DiscoverRunner):
             metavar='N', help='Shows top N of slowest tests.',
         )
         parser.add_argument(
-            '--disable-check-tags', action='store_false', dest='check_tags',
+            '--disable-tags-check', action='store_false', dest='check_tags',
             help='Disables checking that each test is tagged.'
         )
 
@@ -49,7 +49,7 @@ class RefarmTestRunner(DiscoverRunner):
                 self.top_slow
             ))
 
-            print('\nTop slowest tests.')
+            print('\nTop slowest tests:')
             for i, (name, elapsed) in enumerate(timings, 1):
                 print(f'{i}. {elapsed:.2f} {name.splitlines()[0]}')
 
