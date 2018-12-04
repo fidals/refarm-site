@@ -63,7 +63,7 @@ class PageQuerySet(mptt.querysets.TreeQuerySet):
         return self.filter(is_active=True)
 
 
-class PageManager(models.Manager.from_queryset(PageQuerySet)):
+class PageManager(mptt.managers.TreeManager.from_queryset(PageQuerySet)):
     def active(self):
         return self.get_queryset().active()
 
@@ -84,12 +84,6 @@ class Page(mptt.models.MPTTModel, ImageMixin):
     CUSTOM_PAGES_URL_NAME = 'custom_page'
 
     objects = PageManager()
-    # @todo #182:60m Resolve Model.objects field resolution order
-    #  `assert(isinstance(Page.objects, PageManager))` is `False` now.
-    #  See `shopelectro.sitemaps.PagesSitemap` for failed code example.
-    #  Fix `shopelectro.models.Category.objects_` too.
-    #  Fix `shopelectro.models.ExcludedModelTPage.objects_` too.
-    objects_ = PageManager()
 
     class Meta:
         unique_together = ('type', 'slug', 'related_model_name')
