@@ -375,7 +375,7 @@ class Tag(models.Model):
 
     uuid = models.UUIDField(default=uuid4, editable=False)
     name = models.CharField(
-        max_length=100, db_index=True, verbose_name=_('name'))
+        max_length=1000, db_index=True, verbose_name=_('name'))
     position = models.PositiveSmallIntegerField(
         default=0, blank=True, db_index=True, verbose_name=_('position'),
     )
