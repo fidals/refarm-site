@@ -15,9 +15,15 @@ from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext_lazy as _
 
 
-def randomize_slug(slug: str) -> str:
+# was set in django orm as hardcoded value.
+# See django's SlugField implementation.
+MAX_SLUG_LENGTH = 50
+
+
+def randomize_slug(slug: str, hash_size: int) -> str:
+    hash_size = hash_size
     slug_hash = ''.join(
-        random.choices(string.ascii_lowercase, k=settings.SLUG_HASH_SIZE)
+        random.choices(string.ascii_lowercase, k=hash_size)
     )
     return f'{slug}_{slug_hash}'
 
@@ -359,6 +365,8 @@ class TagManager(models.Manager.from_queryset(TagQuerySet)):
 
 class Tag(models.Model):
 
+    SLUG_HASH_SIZE = 5
+
     class Meta:
         abstract = True
         unique_together = ('name', 'group')
@@ -380,9 +388,17 @@ class Tag(models.Model):
     def save(self, *args, **kwargs):
         if not self.slug:
             # same slugify code used in PageMixin object
-            self.slug = slugify(
+            slug = slugify(
                 unidecode(self.name.replace('.', '-').replace('+', '-'))
             )
+            if len(slug) < MAX_SLUG_LENGTH:
+                self.slug = slug
+            else:
+                slug_length = MAX_SLUG_LENGTH - self.SLUG_HASH_SIZE - 1
+                self.slug = randomize_slug(
+                    slug=slug[:slug_length],
+                    hash_size=self.SLUG_HASH_SIZE
+                )
         tag_is_doubled = (
             self.__class__.objects
             .filter(slug=self.slug)
@@ -390,7 +406,10 @@ class Tag(models.Model):
             .exists()
         )
         if tag_is_doubled:
-            self.slug = randomize_slug(self.slug)
+            self.slug = randomize_slug(
+                self.slug, hash_size=self.SLUG_HASH_SIZE
+            )
+
         super(Tag, self).save(*args, **kwargs)
 
     # @todo #168:15m Move `Tags.parse_url_tags` Tags context.

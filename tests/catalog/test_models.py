@@ -1,10 +1,12 @@
 """Defines tests for models in Catalog app."""
 import unittest
 
+from django.db import DataError
 from django.test import TestCase
 
 from pages.models import CustomPage
 
+import catalog
 from tests.catalog import models as catalog_models
 
 
@@ -276,3 +278,18 @@ class Tag(TestCase):
         self.assertEqual(tag.slug, '12-v')
         tag.save()
         self.assertEqual(tag.slug, '12-v')
+
+    def test_long_name(self):
+        """
+        Tag should accept long names.
+
+        Slug length has limited limited size `catalog.models.MAX_SLUG_LENGTH`.
+        It may create problems for tag with long name.
+        """
+        name = 'Имя ' * 50
+        group = catalog_models.MockTagGroup.objects.first()
+        try:
+            tag = catalog_models.MockTag.objects.create(group=group, name=name)
+            self.assertLessEqual(len(tag.slug), catalog.models.MAX_SLUG_LENGTH)
+        except DataError as e:
+            self.assertTrue(False, f'Tag has too long name. {e}')
