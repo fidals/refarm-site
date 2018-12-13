@@ -290,6 +290,6 @@ class Tag(TestCase):
         group = catalog_models.MockTagGroup.objects.first()
         try:
             tag = catalog_models.MockTag.objects.create(group=group, name=name)
-            self.assertLessEqual(len(tag.slug), catalog.models.MAX_SLUG_LENGTH)
+            self.assertLessEqual(len(tag.slug), catalog.models.SLUG_MAX_LENGTH)
         except DataError as e:
             self.assertTrue(False, f'Tag has too long name. {e}')

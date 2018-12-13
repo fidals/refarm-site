@@ -367,7 +367,7 @@ class Tag(models.Model):
 
     class Meta:
         abstract = True
-        unique_together = ('name', 'group')
+        unique_together = [('name', 'group'), ('slug', 'group')]
 
     objects = TagManager()
 
@@ -379,7 +379,7 @@ class Tag(models.Model):
     )
 
     slug = models.SlugField(
-        blank=False, unique=True, max_length=SLUG_MAX_LENGTH
+        blank=False, unique=False, max_length=SLUG_MAX_LENGTH
     )
 
     def __str__(self):
@@ -409,14 +409,13 @@ class Tag(models.Model):
         tag_is_doubled = (
             self.__class__.objects
             .filter(slug=self.slug)
+            .exclude(group=self.group)
             .exists()
         )
         if tag_is_doubled:
-            self._make_slug_unique()
-
-        self.slug = randomize_slug(
-            self.slug, hash_size=self.SLUG_HASH_SIZE
-        )
+            self.slug = randomize_slug(
+                self.slug, hash_size=self.SLUG_HASH_SIZE
+            )
 
     def save(self, *args, **kwargs):
         if not self.slug:
