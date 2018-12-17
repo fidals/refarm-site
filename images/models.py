@@ -9,6 +9,12 @@ from sorl import thumbnail
 from sorl.thumbnail import delete
 
 
+# @todo #STB296:60m Generate image file name with hash.
+#  Now generation uses timestamp.
+#  It breaks media<->fixtures consistency.
+#  See comment for details:
+#  https://github.com/fidals/stroyprombeton/issues/296#issuecomment-447770194
+#  And test absolute filename generation.
 def model_directory_path(instance, filename):
     def generate_filename(old_name: str, slug: str) -> str:
         _, file_extension = os.path.splitext(old_name)
