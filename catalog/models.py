@@ -245,9 +245,27 @@ class TagQuerySet(models.QuerySet):
         )
 
     def get_group_tags_pairs(self) -> List[Tuple[TagGroup, List['Tag']]]:
+        """
+        Return set of group_tag pairs with specific properties.
+
+        Every pair contains tag group and sorted tag list.
+        It's sorted alphabetically or numerically.
+        Sort method depends of tag value type.
+        """
+        # @todo #STB374:120m Move tag's value to separated field.
+        #  Now we have fields like `tag.name == '10 м'`.
+        #  But should have smth like this:
+        #  `tag.value, tag.group.measure, tag.label == 10, 'м', '10 м'`.
+        #  Right now we should do dirty hacks for tags comparing mech.
+        def int_or_str(value: str):
+            try:
+                return int(value.split(' ')[0])
+            except ValueError:
+                return value
+
         grouped_tags = groupby(self.prefetch_related('group'), key=attrgetter('group'))
         return [
-            (group, list(tags_))
+            (group, sorted(list(tags_), key=lambda t: int_or_str(t.name)))
             for group, tags_ in grouped_tags
         ]
 
