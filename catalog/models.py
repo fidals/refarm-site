@@ -263,11 +263,26 @@ class TagQuerySet(models.QuerySet):
             except ValueError:
                 return value
 
+        def has_only_int_keys(tags: list):
+            for t in tags:
+                key = int_or_str(t.name)
+                if isinstance(key, str):
+                    return False
+            return True
+
         grouped_tags = groupby(self.prefetch_related('group'), key=attrgetter('group'))
-        return [
-            (group, sorted(list(tags_), key=lambda t: int_or_str(t.name)))
-            for group, tags_ in grouped_tags
-        ]
+        result = []
+        for group, tags_ in grouped_tags:
+            tags_ = list(tags_)
+            key = (
+                lambda t: int_or_str(t.name)
+                if has_only_int_keys(tags_)
+                else attrgetter('name')
+            )
+            tags_ = sorted(tags_, key=key)
+            result.append((group, tags_))
+
+        return result
 
     def get_brands(self, products: Iterable[AbstractProduct]) -> Dict[AbstractProduct, 'Tag']:
         brand_tags = (
