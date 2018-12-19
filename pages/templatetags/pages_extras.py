@@ -117,3 +117,8 @@ def hasattr_(obj, arg):
 @register.filter
 def verbose_type(object):
     return object._meta.verbose_name.title()
+
+
+@register.filter
+def get_item(dictionary: dict, key: str):
+    return dictionary.get(key)

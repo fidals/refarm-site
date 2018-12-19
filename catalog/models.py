@@ -275,7 +275,7 @@ class TagQuerySet(models.QuerySet):
         for group, tags_ in grouped_tags:
             tags_ = list(tags_)
             key = (
-                lambda t: int_or_str(t.name)
+                (lambda t: int_or_str(t.name))
                 if has_only_int_keys(tags_)
                 else attrgetter('name')
             )
