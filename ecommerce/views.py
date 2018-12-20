@@ -35,7 +35,7 @@ class OrderPage(CustomPageView):
     success_url = reverse_lazy(
         Page.CUSTOM_PAGES_URL_NAME,
         current_app='ecommerce',
-        args=('order-success',)
+        kwargs={'page': 'order-success'}
     )
     template_name = 'ecommerce/order/order.html'
     email_extra_context = {}

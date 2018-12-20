@@ -19,4 +19,6 @@ urlpatterns = [
     url(r'^shop/', include(test_url)),
     url(r'^shop/(?P<page>order)/$', views.OrderPage.as_view(),
         name=Page.CUSTOM_PAGES_URL_NAME),
+    url(r'^shop/(?P<page>order-success)/$', views.CustomPageView.as_view(),
+        name=Page.CUSTOM_PAGES_URL_NAME),
 ]
