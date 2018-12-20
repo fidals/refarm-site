@@ -108,6 +108,13 @@ EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'
 EMAIL_RECIPIENTS = ['test@test.test']
 EMAIL_SENDER = 'test@test.test'
 
+# Subjects for different types of emails sent from SE.
+EMAIL_SUBJECTS = {
+    'call': 'Back call',
+    'order': 'Order №{0.fake_order_number}',
+    'one_click': 'One click order №{0.fake_order_number}',
+}
+
 TAGS_URL_DELIMITER = '-or-'
 TAG_GROUPS_URL_DELIMITER = '-and-'
 

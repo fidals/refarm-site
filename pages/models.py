@@ -80,7 +80,8 @@ class Page(mptt.models.MPTTModel, ImageMixin):
     # This field
     INDEX_PAGE_SLUG = ''
 
-    # Use for reversing custom pages
+    # @todo #SE619:15m  Move Page's const to it's ancestor
+    #  And rename it from `_URL_` to `_ROUTE_`
     CUSTOM_PAGES_URL_NAME = 'custom_page'
 
     objects = PageManager()

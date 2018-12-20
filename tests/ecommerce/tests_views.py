@@ -7,10 +7,11 @@ from django.test import TestCase
 from django.apps.registry import apps
 from django.core.urlresolvers import reverse
 
-from pages.models import CustomPage
+from pages.models import CustomPage, Page
 
 from tests.ecommerce.models import MockEcommerceProduct, MockEcommerceCategory
 from ecommerce.cart import Cart
+from ecommerce.models import Order
 
 
 def get_json_carts(response):
@@ -18,13 +19,11 @@ def get_json_carts(response):
     return response.json()['header'], response.json()['table']
 
 
-class TestView(TestCase):
-    """Test suite for views in eCommerce app."""
-
+class Cart(TestCase):
     @classmethod
     def setUpClass(cls):
         """Set up test models, get urls for tests."""
-        super(TestView, cls).setUpClass()
+        super().setUpClass()
         cls.model = MockEcommerceProduct
         category = MockEcommerceCategory.objects.create(name='Category')
         cls.product1, _ = cls.model.objects.get_or_create(
@@ -127,3 +126,33 @@ class TestView(TestCase):
         self.assertContains(response, 'Positions in cart: 2')
         self.assertContains(
             response, 'Total cost: {}'.format(self.product1.price + 2 * self.product2.price))
+
+
+class Order_(TestCase):
+
+    def setUp(self):
+        # @todo #SE619:60m Use fixtures at ecommerce tests
+        self.page = CustomPage.objects.create(h1='Order page', slug='order')
+        self.success_page = CustomPage.objects.create(h1='Order success', slug='order-success')
+
+    def prepare_cart(self):
+        category = MockEcommerceCategory.objects.create(name='Category')
+        product = MockEcommerceProduct.objects.create(
+            name='Product one', price=10, category=category
+        )
+        self.client.post(
+            reverse('cart_add'), {'quantity': 1, 'product': product.id},
+        )
+
+    def test_save_to_db(self):
+        url = reverse(Page.CUSTOM_PAGES_URL_NAME, kwargs={'page': 'order'})
+        email, phone = 'test@example.com', '+7 (222) 222 22 22'
+        self.prepare_cart()
+        response = self.client.post(url, {'email': email, 'phone': phone})
+        self.assertEqual(302, response.status_code)
+        count = Order.objects.filter(email=email, phone=phone).count()
+        self.assertEqual(1, count)
+
+    # @todo #SE619:30m Test if order sends mails
+    def test_send_mail(self):
+        pass
