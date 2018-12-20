@@ -63,8 +63,10 @@ def check_tagged_tests(suite):
     suite_class = type(suite)
     for test in suite:
         if isinstance(test, suite_class):
+            # check a nested suite
             check_tagged_tests(test)
-        else:
+        elif not isinstance(test, unittest.loader._FailedTest):
+            # check a non failed test
             test_tags = set(getattr(test, 'tags', set()))
             test_fn_name = getattr(test, '_testMethodName', str(test))
             test_fn = getattr(test, test_fn_name, test)
