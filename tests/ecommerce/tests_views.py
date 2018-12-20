@@ -19,7 +19,7 @@ def get_json_carts(response):
     return response.json()['header'], response.json()['table']
 
 
-class Cart(TestCase):
+class Cart_(TestCase):
     @classmethod
     def setUpClass(cls):
         """Set up test models, get urls for tests."""
