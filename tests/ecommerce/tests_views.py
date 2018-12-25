@@ -5,6 +5,7 @@ Tests for views in eCommerce app.
 from unittest.mock import patch
 from django.test import TestCase
 from django.apps.registry import apps
+from django.core import mail
 from django.core.urlresolvers import reverse
 
 from pages.models import CustomPage, Page
@@ -130,6 +131,9 @@ class Cart_(TestCase):
 
 class Order_(TestCase):
 
+    EMAIL = 'test@example.com'
+    PHONE = '+7 (222) 222 22 22'
+
     def setUp(self):
         # @todo #SE619:60m Use fixtures at ecommerce tests
         self.page = CustomPage.objects.create(h1='Order page', slug='order')
@@ -144,15 +148,28 @@ class Order_(TestCase):
             reverse('cart_add'), {'quantity': 1, 'product': product.id},
         )
 
-    def test_save_to_db(self):
+    def do_order(self, email='', phone='') -> None:
+        """Do order. Requires prepared cart."""
+        email = email or self.EMAIL
+        phone = phone or self.PHONE
         url = reverse(CustomPage.ROUTE, kwargs={'page': 'order'})
-        email, phone = 'test@example.com', '+7 (222) 222 22 22'
-        self.prepare_cart()
         response = self.client.post(url, {'email': email, 'phone': phone})
         self.assertEqual(302, response.status_code)
-        count = Order.objects.filter(email=email, phone=phone).count()
+
+    def test_save_to_db(self):
+        self.prepare_cart()
+        self.do_order()
+        count = (
+            Order.objects
+            .filter(email=self.EMAIL, phone=self.PHONE)
+            .count()
+        )
         self.assertEqual(1, count)
 
-    # @todo #SE619:30m Test if order sends mails
     def test_send_mail(self):
-        pass
+        self.prepare_cart()
+        self.do_order()
+        self.assertEqual(len(mail.outbox), 1)
+        body = mail.outbox[0].body
+        self.assertIn(self.EMAIL, body)
+        self.assertIn(self.PHONE, body)
