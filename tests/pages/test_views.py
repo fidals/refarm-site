@@ -128,7 +128,7 @@ class PageTests(TestCase):
         """Robots db-route without an related object in db returns 404."""
         self.assertEqual(
             self.client.get(reverse(
-                Page.CUSTOM_PAGES_URL_NAME,
+                CustomPage.ROUTE,
                 args=('robots-404',))
             ).status_code,
             404,

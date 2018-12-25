@@ -145,7 +145,7 @@ class Order_(TestCase):
         )
 
     def test_save_to_db(self):
-        url = reverse(Page.CUSTOM_PAGES_URL_NAME, kwargs={'page': 'order'})
+        url = reverse(CustomPage.ROUTE, kwargs={'page': 'order'})
         email, phone = 'test@example.com', '+7 (222) 222 22 22'
         self.prepare_cart()
         response = self.client.post(url, {'email': email, 'phone': phone})

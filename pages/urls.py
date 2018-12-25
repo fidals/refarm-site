@@ -3,11 +3,11 @@ from functools import partial
 from django.conf.urls import url
 
 from pages import views
-from pages.models import Page
+from pages.models import CustomPage
 
 app_name = 'pages'
 
-custom_page_url = partial(url, name=Page.CUSTOM_PAGES_URL_NAME)
+custom_page_url = partial(url, name=CustomPage.ROUTE)
 
 urlpatterns = [
     # /one/

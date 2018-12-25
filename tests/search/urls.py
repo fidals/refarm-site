@@ -4,13 +4,13 @@ from tests.search.views import (
     MockAutocompleteView, MockAdminAutocompleteView, MockSearchView
 )
 
-from pages.models import Page
+from pages.models import CustomPage
 
 urlpatterns = [
     url(
         r'^(?P<page>search)/$',
         MockSearchView.as_view(),
-        name=Page.CUSTOM_PAGES_URL_NAME
+        name=CustomPage.ROUTE
     ),
     url(
         r'^search/autocomplete/$',
