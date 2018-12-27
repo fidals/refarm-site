@@ -131,14 +131,12 @@ class Cart_(TestCase):
 
 class Order_(TestCase):
 
-    fixtures = ['catalog.json']
-
     EMAIL = 'test@example.com'
     PHONE = '+7 (222) 222 22 22'
 
     def setUp(self):
-        self.page = CustomPage.objects.get(slug='order')
-        self.success_page = CustomPage.objects.get(slug='order-success')
+        self.page = CustomPage.objects.create(slug='order')
+        self.success_page = CustomPage.objects.create(slug='order-success')
 
     def prepare_cart(self):
         category = MockEcommerceCategory.objects.create(name='Category')
@@ -149,7 +147,7 @@ class Order_(TestCase):
             reverse('cart_add'), {'quantity': 1, 'product': product.id},
         )
 
-    def do_order(self, email='', phone='') -> None:
+    def place_order(self, email='', phone='') -> None:
         """Do order. Requires prepared cart."""
         email = email or self.EMAIL
         phone = phone or self.PHONE
@@ -159,7 +157,7 @@ class Order_(TestCase):
 
     def test_save_to_db(self):
         self.prepare_cart()
-        self.do_order()
+        self.place_order()
         count = (
             Order.objects
             .filter(email=self.EMAIL, phone=self.PHONE)
@@ -169,7 +167,7 @@ class Order_(TestCase):
 
     def test_send_mail(self):
         self.prepare_cart()
-        self.do_order()
+        self.place_order()
         self.assertEqual(len(mail.outbox), 1)
         body = mail.outbox[0].body
         self.assertIn(self.EMAIL, body)

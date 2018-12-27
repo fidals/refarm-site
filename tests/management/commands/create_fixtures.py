@@ -78,7 +78,6 @@ class GeneratedPages(GeneratedFixture):
 class Command(BaseCommand):
 
     # @todo #230:120m Use fixtures in every test.
-    #  Create categories and products fixtures to do it.
     def handle(self, *args, **options):
         call_command('migrate')
 
