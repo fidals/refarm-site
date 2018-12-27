@@ -8,6 +8,7 @@ DIRNAME = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DEBUG = True
 
 DATABASES = {
+    # @todo #230:15m Drop `dj_database_url` dependency.
     'default': dj_database_url.config(
         env='DATABASE_URL',
     )
@@ -102,6 +103,8 @@ CUSTOM_PAGES = {
     'search': {'slug': 'search', 'h1': 'Search page'},
     'catalog': {'slug': 'catalog', 'h1': 'Catalog page'},
     'robots': {'slug': 'robots', 'content': 'Robots content with {{ url }}'},
+    'order': {'slug': 'order', 'h1': 'Order creation'},
+    'order_success': {'slug': 'order-success', 'h1': 'Success order'},
 }
 
 EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'

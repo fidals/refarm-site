@@ -80,10 +80,6 @@ class Page(mptt.models.MPTTModel, ImageMixin):
     # This field
     INDEX_PAGE_SLUG = ''
 
-    # @todo #SE619:15m  Move Page's const to it's ancestor
-    #  And rename it from `_URL_` to `_ROUTE_`
-    CUSTOM_PAGES_URL_NAME = 'custom_page'
-
     objects = PageManager()
 
     class Meta:
@@ -177,7 +173,7 @@ class Page(mptt.models.MPTTModel, ImageMixin):
             return self.model.get_absolute_url()
 
         if self.is_custom:
-            return reverse(Page.CUSTOM_PAGES_URL_NAME, args=(self.slug, ))
+            return reverse(CustomPage.ROUTE, args=(self.slug, ))
 
         if self.is_flat:
             return reverse('pages:flat_page', args=self.get_ancestors_fields('slug'))
@@ -266,6 +262,9 @@ class ModelPageManager(PageManager):
 
 # ------- Proxies ----------
 class CustomPage(Page):
+
+    ROUTE = 'custom_page'
+
     class Meta:
         proxy = True
         verbose_name = _('Custom Page')

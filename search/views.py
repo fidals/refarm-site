@@ -10,7 +10,7 @@ from catalog.models import AbstractCategory, AbstractProduct
 from search import search as search_engine
 
 from pages.views import CustomPageView
-from pages.models import Page
+from pages.models import CustomPage
 
 SEARCH_RESULT = Tuple[List[AbstractCategory], List[AbstractProduct]]
 
@@ -80,7 +80,7 @@ class AutocompleteView(View):
     limit = 20
     search_entities = []  # query lookups
 
-    search_url = reverse_lazy(Page.CUSTOM_PAGES_URL_NAME, kwargs={'page': 'search'})
+    search_url = reverse_lazy(CustomPage.ROUTE, kwargs={'page': 'search'})
     see_all_label = 'See all results'
 
     @staticmethod

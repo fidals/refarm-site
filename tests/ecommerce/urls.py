@@ -5,7 +5,7 @@ from tests.ecommerce.views import (
     MockAddToCart, MockChangeCount, MockFlushCart, MockRemoveFromCart
 )
 
-from pages.models import Page
+from pages.models import CustomPage
 
 test_url = [
     url(r'^cart-add/$', MockAddToCart.as_view(), name='cart_add'),
@@ -18,7 +18,7 @@ urlpatterns = [
     url(r'^catalog/', include('catalog.urls')),
     url(r'^shop/', include(test_url)),
     url(r'^shop/(?P<page>order)/$', views.OrderPage.as_view(),
-        name=Page.CUSTOM_PAGES_URL_NAME),
+        name=CustomPage.ROUTE),
     url(r'^shop/(?P<page>order-success)/$', views.CustomPageView.as_view(),
-        name=Page.CUSTOM_PAGES_URL_NAME),
+        name=CustomPage.ROUTE),
 ]

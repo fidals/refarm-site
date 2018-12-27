@@ -9,7 +9,7 @@ from django.template.defaultfilters import floatformat
 from django.template.loader import render_to_string
 from django.views.generic import View
 
-from pages.models import Page
+from pages.models import CustomPage
 from pages.views import CustomPageView
 
 from ecommerce import mailer
@@ -33,7 +33,7 @@ class OrderPage(CustomPageView):
     order_form = OrderForm
     cart = Cart
     success_url = reverse_lazy(
-        Page.CUSTOM_PAGES_URL_NAME,
+        CustomPage.ROUTE,
         current_app='ecommerce',
         kwargs={'page': 'order-success'}
     )
