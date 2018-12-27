@@ -72,8 +72,13 @@ class GeneratedPages(GeneratedFixture):
         call_command('custom_pages')
 
 
+# @todo #230:120m Create base class for `create_fixtures`.
+#  And use it for refarm and every site.
+#  Sites now call it `test_db` instead `create_fixtures`.
 class Command(BaseCommand):
 
+    # @todo #230:120m Use fixtures in every test.
+    #  Create categories and products fixtures to do it.
     def handle(self, *args, **options):
         call_command('migrate')
 

@@ -1,8 +1,8 @@
 from django.conf import settings
-from django.test import TestCase, override_settings
+from django.test import TestCase
 from django.urls import reverse
 
-from pages.models import Page, FlatPage, CustomPage
+from pages.models import FlatPage, CustomPage
 from pages.utils import save_custom_pages
 
 

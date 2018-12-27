@@ -131,13 +131,14 @@ class Cart_(TestCase):
 
 class Order_(TestCase):
 
+    fixtures = ['catalog.json']
+
     EMAIL = 'test@example.com'
     PHONE = '+7 (222) 222 22 22'
 
     def setUp(self):
-        # @todo #SE619:60m Use fixtures at ecommerce tests
-        self.page = CustomPage.objects.create(h1='Order page', slug='order')
-        self.success_page = CustomPage.objects.create(h1='Order success', slug='order-success')
+        self.page = CustomPage.objects.get(slug='order')
+        self.success_page = CustomPage.objects.get(slug='order-success')
 
     def prepare_cart(self):
         category = MockEcommerceCategory.objects.create(name='Category')
