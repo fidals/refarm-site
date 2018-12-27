@@ -9,20 +9,31 @@ from sorl import thumbnail
 from sorl.thumbnail import delete
 
 
-# @todo #STB296:60m Generate image file name with hash.
-#  Now generation uses timestamp.
-#  It breaks media<->fixtures consistency.
-#  See comment for details:
-#  https://github.com/fidals/stroyprombeton/issues/296#issuecomment-447770194
-#  And test absolute filename generation.
-def model_directory_path(instance, filename):
-    def generate_filename(old_name: str, slug: str) -> str:
-        _, file_extension = os.path.splitext(old_name)
-        return (slug or str(time.time())) + file_extension
+# stayed here for migrations compatibility
+def model_directory_path(*args, **kwargs):
+    return ''
 
-    result_filename = generate_filename(filename, instance.slug)
-    models_folder_name = type(instance.model).__name__.lower()
-    return '{}/{}/{}'.format(models_folder_name, instance.model.pk, result_filename)
+
+class ImageField(thumbnail.ImageField):
+
+    def generate_filename(self, instance, filename):
+        """
+        Apply (if callable) or prepend (if a string) upload_to to the filename,
+        then delegate further processing of the name to the storage backend.
+        Until the storage layer, all file paths are expected to be Unix style
+        (with forward slashes).
+        """
+        f = getattr(instance, self.name).file
+        _, extension = os.path.splitext(filename)
+        import hashlib
+        file_hash = hashlib.md5(f.read()).hexdigest()
+        models_folder_name = type(instance.model).__name__.lower()
+        filename = '/'.join([
+            models_folder_name,
+            str(instance.model.pk),
+            file_hash + extension
+        ])
+        return self.storage.generate_filename(filename)
 
 
 class ImageManager(models.Manager):
@@ -67,7 +78,7 @@ class Image(models.Model):
     slug = models.SlugField(max_length=400, blank=True, db_index=True, verbose_name=_('slug'))
     description = models.TextField(default='', blank=True, verbose_name=_('description'))
     created = models.DateField(auto_now_add=True, verbose_name=_('created'))
-    image = thumbnail.ImageField(upload_to=model_directory_path, verbose_name=_('image'))
+    image = ImageField(verbose_name=_('image'))
     is_main = models.BooleanField(default=False, db_index=True, verbose_name=_('is main'))
 
     def __str__(self):

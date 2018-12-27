@@ -1,4 +1,5 @@
 import os.path
+import string
 
 from django.core.files.images import ImageFile
 from django.db import models
@@ -94,3 +95,21 @@ class TestImage(TestCase):
         self.assertTrue(another_image_model.is_main)
         self.assertEquals(another_image_model.image, self.page.main_image)
         another_image_model.delete()
+
+    def test_file_name(self):
+        """ImageField should generate filename based on file's content hash."""
+
+        def is_md5(data: str) -> bool:
+            return (
+                all(s in (string.ascii_letters + string.digits) for s in data)
+                and len(data) == 32
+            )
+
+        model = create_image_model(self.page, self.IMG_PATH, slug='one-another')
+        # @todo #227:60m Explore additional hash.
+        #  Now autosaved file has this pattern `<md5>_dTy2ykr.jpg`
+        #  but should have this one: `<md5>.jpg`.
+        #  ManifestStaticFilesStorage adds redundant hash after md5.
+        #  Make the storage to remove this hash.
+        hash, _ = os.path.basename(model.image.file.file.name).split('_')
+        self.assertTrue(is_md5(hash))
