@@ -1,4 +1,5 @@
 import typing
+from functools import lru_cache
 
 from django import http
 from django.conf import settings
@@ -7,7 +8,6 @@ from django.db.models import QuerySet
 from catalog.newcontext.context import Context, Products, Tags
 from catalog.models import AbstractCategory
 from refarm_pagination.context import PaginationContext
-from refarm_pagination.pagination import Paginator
 
 
 class SortingOption:
@@ -118,7 +118,7 @@ class ProductImages(Context):
 
 
 class PaginatedProducts(Products):
-    """Slice products and add pagination data to context."""
+    """Slice products and add pagination data to a context."""
 
     def __init__(self, products: Products, url: str, page_number: int, per_page: int):
         if (
@@ -132,11 +132,15 @@ class PaginatedProducts(Products):
         self._page_number = page_number
         self._pagination = PaginationContext(url, page_number, per_page, self._products.qs())
 
+    @lru_cache()
+    def _pagination_context(self):
+        return self._pagination.context()
+
     def qs(self):
-        return self._pagination.context()['page'].object_list
+        return self._pagination_context()['page'].object_list
 
     def context(self):
         return {
             **self._products.context(),
-            'paginated': self._pagination.context(),
+            'paginated': self._pagination_context(),
         }

@@ -1,5 +1,3 @@
-from functools import lru_cache
-
 from refarm_pagination.pagination import Paginator, NeighborPages
 
 
@@ -10,7 +8,6 @@ class PaginationContext:
         self.number = number
         self.paginator = Paginator(objects, per_page)
 
-    @lru_cache()
     def context(self):
         page = self.paginator.page(self.number)
         showed_count = (self.number - 1) * self.paginator.per_page + len(page)
