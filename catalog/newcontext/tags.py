@@ -1,3 +1,5 @@
+import typing
+
 from catalog.newcontext.context import Context, Tags, Products
 
 from django.db.models import QuerySet
@@ -17,9 +19,9 @@ class GroupedTags(Context):
 
 class ParsedTags(Tags):
 
-    def __init__(self, tags: Tags, req_kwargs):
+    def __init__(self, tags: Tags, raw_tags: str=''):
         self._tags = tags
-        self._raw_tags = req_kwargs.get('tags')
+        self._raw_tags = raw_tags
 
     def qs(self):
         tags = self._tags.qs()

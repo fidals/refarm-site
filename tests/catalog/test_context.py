@@ -30,8 +30,31 @@ class ProductsContext(TestCase):
             products_ctx = self.products_ctx()
             self.assertEqual(
                 list(products_ctx.qs().order_by(order_by)),
-                list(context.products.OrderedProducts(products_ctx, {'sorting': 1}).qs()),
+                list(context.products.OrderedProducts(products_ctx, 1).qs()),
             )
+
+    def test_paginated_qs(self):
+        with override_settings(CATEGORY_STEP_MULTIPLIERS=[30]):
+            products = self.products_ctx()
+            per_page = 30
+            self.assertEqual(
+                list(products.qs()[:per_page]),
+                list(context.products.PaginatedProducts(
+                    products, '', 1, per_page,
+                ).qs()),
+            )
+
+    def test_paginated_404(self):
+        per_page = 30
+        page_number = 1
+        with override_settings(CATEGORY_STEP_MULTIPLIERS=[per_page]):
+            with self.assertRaises(Http404):
+                # per_page not in CATEGORY_STEP_MULTIPLIERS
+                context.products.PaginatedProducts(None, '', page_number, per_page-1)
+
+            with self.assertRaises(Http404):
+                # page_number < 1
+                context.products.PaginatedProducts(None, '', page_number-1, per_page)
 
     def test_tagged_products(self):
         products_ctx = mocked_ctx()
@@ -55,13 +78,13 @@ class TagsContext(TestCase):
 
     def test_parsed_tags(self):
         tags_ctx = mocked_ctx()
-        context.tags.ParsedTags(tags_ctx, {'tags': 'test'}).qs()
+        context.tags.ParsedTags(tags_ctx, 'test').qs()
         self.assertTrue(tags_ctx.qs().parsed.called)
 
     def test_unparsed_tags(self):
         self.assertFalse(
             context.tags.ParsedTags(
-                mocked_ctx(qs_attrs={'none.return_value': []}), {},
+                mocked_ctx(qs_attrs={'none.return_value': []}), '',
             ).qs()
         )
 
