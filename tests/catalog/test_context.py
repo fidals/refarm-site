@@ -1,3 +1,8 @@
+"""
+@todo #213:30m Remove mocked Context classes.
+ Wait for fixtures of Tag models to implement this.
+"""
+
 import unittest
 
 from django.test import TestCase, override_settings
