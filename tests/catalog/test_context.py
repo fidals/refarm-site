@@ -25,7 +25,7 @@ class ProductsContext(TestCase):
     fixtures = ['catalog.json']
     per_page = 30
 
-    def products_ctx(self, qs=None) -> context.context.Products:
+    def context(self, qs=None) -> context.context.Products:
         return context.context.Products(qs or catalog_models.MockProduct.objects.all())
 
     def test_ordered_products(self):
@@ -33,7 +33,7 @@ class ProductsContext(TestCase):
         with override_settings(CATEGORY_SORTING_OPTIONS={
             1: {'label': order_by, 'field': order_by, 'direction': ''}
         }):
-            products_ctx = self.products_ctx()
+            products_ctx = self.context()
             self.assertEqual(
                 list(products_ctx.qs().order_by(order_by)),
                 list(context.products.OrderedProducts(products_ctx, 1).qs()),
@@ -41,7 +41,7 @@ class ProductsContext(TestCase):
 
     def test_paginated_qs(self):
         with override_settings(CATEGORY_STEP_MULTIPLIERS=[self.per_page]):
-            products = self.products_ctx()
+            products = self.context()
             self.assertEqual(
                 list(products.qs()[:self.per_page]),
                 list(context.products.PaginatedProducts(
