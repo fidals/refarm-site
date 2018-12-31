@@ -128,7 +128,6 @@ class PaginatedProducts(Products):
             raise http.Http404('Page does not exist.')
 
         self._products = products
-        self._url = url
         self._page_number = page_number
         self._pagination = PaginationContext(url, page_number, per_page, self._products.qs())
 

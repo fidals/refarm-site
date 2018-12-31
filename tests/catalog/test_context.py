@@ -23,6 +23,7 @@ def mocked_ctx(qs_attrs=None, context_attrs=None):
 class ProductsContext(TestCase):
 
     fixtures = ['catalog.json']
+    per_page = 30
 
     def products_ctx(self, qs=None) -> context.context.Products:
         return context.context.Products(qs or catalog_models.MockProduct.objects.all())
@@ -39,27 +40,25 @@ class ProductsContext(TestCase):
             )
 
     def test_paginated_qs(self):
-        with override_settings(CATEGORY_STEP_MULTIPLIERS=[30]):
+        with override_settings(CATEGORY_STEP_MULTIPLIERS=[self.per_page]):
             products = self.products_ctx()
-            per_page = 30
             self.assertEqual(
-                list(products.qs()[:per_page]),
+                list(products.qs()[:self.per_page]),
                 list(context.products.PaginatedProducts(
-                    products, '', 1, per_page,
+                    products, '', 1, self.per_page,
                 ).qs()),
             )
 
     def test_paginated_404(self):
-        per_page = 30
         page_number = 1
-        with override_settings(CATEGORY_STEP_MULTIPLIERS=[per_page]):
+        with override_settings(CATEGORY_STEP_MULTIPLIERS=[self.per_page]):
             with self.assertRaises(Http404):
                 # per_page not in CATEGORY_STEP_MULTIPLIERS
-                context.products.PaginatedProducts(None, '', page_number, per_page-1)
+                context.products.PaginatedProducts(None, '', page_number, self.per_page-1)
 
             with self.assertRaises(Http404):
-                # page_number < 1
-                context.products.PaginatedProducts(None, '', page_number-1, per_page)
+                # page number doesn't exist
+                context.products.PaginatedProducts(None, '', page_number-1, self.per_page)
 
     def test_tagged_products(self):
         products_ctx = mocked_ctx()
@@ -83,7 +82,7 @@ class TagsContext(TestCase):
 
     def test_parsed_tags(self):
         tags_ctx = mocked_ctx()
-        context.tags.ParsedTags(tags_ctx, 'test').qs()
+        context.tags.ParsedTags(tags_ctx, raw_tags='test1=test2').qs()
         self.assertTrue(tags_ctx.qs().parsed.called)
 
     def test_unparsed_tags(self):
