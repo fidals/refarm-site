@@ -3,17 +3,17 @@ from unittest import mock
 
 from django.conf import settings
 from django.test import TestCase
-from refarm_pagination import views, pagination
+from refarm_pagination.context import PaginationContext
 
 from tests.catalog.models import MockProduct
 
 
-class PaginationContext(TestCase):
+class TestPaginationContext(TestCase):
 
     fixtures = ['catalog.json']
 
     def context(self, **kwargs):
-        return views.PaginationContext(**{
+        return PaginationContext(**{
             'url': '',
             'number': 1,
             'per_page': 1,
@@ -23,7 +23,7 @@ class PaginationContext(TestCase):
 
     @contextmanager
     def mock_neighbor_pairs(self, url, number):
-        with mock.patch('refarm_pagination.views.NeighborPages') as mocked_pages:
+        with mock.patch('refarm_pagination.context.NeighborPages') as mocked_pages:
             mocked_page = mock.Mock()
             mocked_page.url = lambda _: url
             mocked_page.number = number

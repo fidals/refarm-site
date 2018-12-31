@@ -17,9 +17,9 @@ class GroupedTags(Context):
 
 class ParsedTags(Tags):
 
-    def __init__(self, tags: Tags, req_kwargs):
+    def __init__(self, tags: Tags, raw_tags=''):
         self._tags = tags
-        self._raw_tags = req_kwargs.get('tags')
+        self._raw_tags = raw_tags
 
     def qs(self):
         tags = self._tags.qs()

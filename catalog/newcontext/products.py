@@ -1,10 +1,13 @@
 import typing
+from functools import lru_cache
 
+from django import http
 from django.conf import settings
 from django.db.models import QuerySet
 
 from catalog.newcontext.context import Context, Products, Tags
 from catalog.models import AbstractCategory
+from refarm_pagination.context import PaginationContext
 
 
 class SortingOption:
@@ -30,9 +33,9 @@ class ActiveProducts(Products):
 
 class OrderedProducts(Products):
 
-    def __init__(self, products: Products, req_kwargs):
+    def __init__(self, products: Products, sorting_index=0):
         self._products = products
-        self._sorting_index = req_kwargs.get('sorting', 0)
+        self._sorting_index = sorting_index
 
     def qs(self):
         return self._products.qs().order_by(
@@ -86,6 +89,7 @@ class ProductBrands(Context):
         }
 
         return {
+            **self._products.context(),
             'product_brands': product_brands,
         }
 
@@ -108,5 +112,34 @@ class ProductImages(Context):
         }
 
         return {
+            **self._products.context(),
             'product_images': product_images,
+        }
+
+
+class PaginatedProducts(Products):
+    """Slice products and add pagination data to a context."""
+
+    def __init__(self, products: Products, url: str, page_number: int, per_page: int):
+        if (
+            page_number < 1 or
+            per_page not in settings.CATEGORY_STEP_MULTIPLIERS
+        ):
+            raise http.Http404('Page does not exist.')
+
+        self._products = products
+        self._page_number = page_number
+        self._pagination = PaginationContext(url, page_number, per_page, self._products.qs())
+
+    @lru_cache()
+    def _pagination_context(self):
+        return self._pagination.context()
+
+    def qs(self):
+        return self._pagination_context()['page'].object_list
+
+    def context(self):
+        return {
+            **self._products.context(),
+            'paginated': self._pagination_context(),
         }

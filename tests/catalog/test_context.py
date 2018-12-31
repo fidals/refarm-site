@@ -1,3 +1,8 @@
+"""
+@todo #213:30m Remove mocked Context classes.
+ Wait for fixtures of Tag models to implement this.
+"""
+
 import unittest
 
 from django.test import TestCase, override_settings
@@ -18,8 +23,9 @@ def mocked_ctx(qs_attrs=None, context_attrs=None):
 class ProductsContext(TestCase):
 
     fixtures = ['catalog.json']
+    per_page = 30
 
-    def products_ctx(self, qs=None) -> context.context.Products:
+    def context(self, qs=None) -> context.context.Products:
         return context.context.Products(qs or catalog_models.MockProduct.objects.all())
 
     def test_ordered_products(self):
@@ -27,11 +33,32 @@ class ProductsContext(TestCase):
         with override_settings(CATEGORY_SORTING_OPTIONS={
             1: {'label': order_by, 'field': order_by, 'direction': ''}
         }):
-            products_ctx = self.products_ctx()
+            products_ctx = self.context()
             self.assertEqual(
                 list(products_ctx.qs().order_by(order_by)),
-                list(context.products.OrderedProducts(products_ctx, {'sorting': 1}).qs()),
+                list(context.products.OrderedProducts(products_ctx, 1).qs()),
             )
+
+    def test_paginated_qs(self):
+        with override_settings(CATEGORY_STEP_MULTIPLIERS=[self.per_page]):
+            products = self.context()
+            self.assertEqual(
+                list(products.qs()[:self.per_page]),
+                list(context.products.PaginatedProducts(
+                    products, '', 1, self.per_page,
+                ).qs()),
+            )
+
+    def test_paginated_404(self):
+        page_number = 1
+        with override_settings(CATEGORY_STEP_MULTIPLIERS=[self.per_page]):
+            with self.assertRaises(Http404):
+                # per_page not in CATEGORY_STEP_MULTIPLIERS
+                context.products.PaginatedProducts(None, '', page_number, self.per_page-1)
+
+            with self.assertRaises(Http404):
+                # page number doesn't exist
+                context.products.PaginatedProducts(None, '', page_number-1, self.per_page)
 
     def test_tagged_products(self):
         products_ctx = mocked_ctx()
@@ -55,13 +82,13 @@ class TagsContext(TestCase):
 
     def test_parsed_tags(self):
         tags_ctx = mocked_ctx()
-        context.tags.ParsedTags(tags_ctx, {'tags': 'test'}).qs()
+        context.tags.ParsedTags(tags_ctx, raw_tags='test1=test2').qs()
         self.assertTrue(tags_ctx.qs().parsed.called)
 
     def test_unparsed_tags(self):
         self.assertFalse(
             context.tags.ParsedTags(
-                mocked_ctx(qs_attrs={'none.return_value': []}), {},
+                mocked_ctx(qs_attrs={'none.return_value': []}), '',
             ).qs()
         )
 
