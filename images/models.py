@@ -1,5 +1,5 @@
+import hashlib
 import os
-import time
 
 from django.db import models
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
@@ -17,15 +17,9 @@ def model_directory_path(*args, **kwargs):
 class ImageField(thumbnail.ImageField):
 
     def generate_filename(self, instance, filename):
-        """
-        Apply (if callable) or prepend (if a string) upload_to to the filename,
-        then delegate further processing of the name to the storage backend.
-        Until the storage layer, all file paths are expected to be Unix style
-        (with forward slashes).
-        """
+        """Reloaded this method. See `django.db.models.fields.files.FileField`."""
         f = getattr(instance, self.name).file
         _, extension = os.path.splitext(filename)
-        import hashlib
         file_hash = hashlib.md5(f.read()).hexdigest()
         models_folder_name = type(instance.model).__name__.lower()
         filename = '/'.join([
