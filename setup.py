@@ -36,7 +36,7 @@ setup(
         'Django==1.11.17',  # python 3.7 compatible
         'django-mptt==0.8.7',
         'dj-database-url==0.4.1',
-        'sorl-thumbnail==12.4a1',
+        'sorl-thumbnail==12.5.0',
         'Django-Select2==5.11.1',
         'unidecode',
         'psycopg2-binary==2.7.5',
