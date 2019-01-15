@@ -30,13 +30,13 @@ class ImageField(thumbnail.ImageField):
         return self.storage.generate_filename(filename)
 
 
-class ImageManager(models.Manager):
+class ImageQuerySet(models.QuerySet):
+
     def get_main_images_by_pages(self, pages) -> dict:
         pages = list(pages)
 
         images_query = (
-            self.get_queryset()
-            .filter(object_id__in=[page.id for page in pages], is_main=True)
+            self.filter(object_id__in=[page.id for page in pages], is_main=True)
         )
 
         if not images_query.exists():
@@ -47,6 +47,12 @@ class ImageManager(models.Manager):
             for image in images_query for page in pages
             if image.object_id == page.id
         }
+
+
+class ImageManager(models.Manager.from_queryset(ImageQuerySet)):
+
+    def get_main_images_by_pages(self, pages) -> dict:
+        return self.get_queryset().get_main_images_by_pages(pages)
 
 
 class Image(models.Model):

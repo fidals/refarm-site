@@ -34,9 +34,9 @@ class Contexts(Context):
         self.contexts = contexts
 
     def context(self):
-        return collections.ChainMap(
+        return dict(collections.ChainMap(
             *[ctx.context() for ctx in self.contexts]
-        )
+        ))
 
 
 class Tags(ModelContext):
