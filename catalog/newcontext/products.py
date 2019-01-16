@@ -42,12 +42,6 @@ class OrderedProducts(Products):
             SortingOption(index=self._sorting_index).directed_field,
         )
 
-    def context(self):
-        return {
-            **super().context(),
-            'sorting_index': self._sorting_index,
-        }
-
 
 class ProductsByCategory(Products):
 
@@ -80,16 +74,15 @@ class ProductBrands(Context):
         self._tags = tags
 
     def context(self):
-        products_qs = self.products.qs()
-        brands = self.tags.qs().get_brands(products_qs)
+        products = list(self._products.qs())
+        brands = self._tags.qs().get_brands(products)
 
         product_brands = {
             product.id: brands.get(product)
-            for product in products_qs
+            for product in products
         }
 
         return {
-            **self._products.context(),
             'product_brands': product_brands,
         }
 
@@ -105,14 +98,14 @@ class ProductImages(Context):
             product.page: product
             for product in self._products.qs()
         }
+
         images = self._images.get_main_images_by_pages(page_product_map.keys())
         product_images = {
-            product: images.get(page)
+            product.id: images.get(page)
             for page, product in page_product_map.items()
         }
 
         return {
-            **self._products.context(),
             'product_images': product_images,
         }
 
@@ -140,6 +133,6 @@ class PaginatedProducts(Products):
 
     def context(self):
         return {
-            **self._products.context(),
+            **super().context(),
             'paginated': self._pagination_context(),
         }
