@@ -3,16 +3,16 @@ Tests for views in eCommerce app.
 """
 
 from unittest.mock import patch
-from django.test import TestCase
+
 from django.apps.registry import apps
 from django.core import mail
 from django.core.urlresolvers import reverse
+from django.test import TestCase
 
-from pages.models import CustomPage, Page
-
-from tests.ecommerce.models import MockEcommerceProduct, MockEcommerceCategory
 from ecommerce.cart import Cart
 from ecommerce.models import Order
+from pages.models import CustomPage
+from tests.ecommerce.models import MockEcommerceProduct, MockEcommerceCategory
 
 
 def get_json_carts(response):
@@ -138,6 +138,10 @@ class Order_(TestCase):
         self.page = CustomPage.objects.create(slug='order')
         self.success_page = CustomPage.objects.create(slug='order-success')
 
+    @property
+    def url(self):
+        return reverse(CustomPage.ROUTE, kwargs={'page': 'order'})
+
     def prepare_cart(self):
         category = MockEcommerceCategory.objects.create(name='Category')
         product = MockEcommerceProduct.objects.create(
@@ -151,8 +155,7 @@ class Order_(TestCase):
         """Do order. Requires prepared cart."""
         email = email or self.EMAIL
         phone = phone or self.PHONE
-        url = reverse(CustomPage.ROUTE, kwargs={'page': 'order'})
-        response = self.client.post(url, {'email': email, 'phone': phone})
+        response = self.client.post(self.url, {'email': email, 'phone': phone})
         self.assertEqual(302, response.status_code)
 
     def test_save_to_db(self):
@@ -172,3 +175,25 @@ class Order_(TestCase):
         body = mail.outbox[0].body
         self.assertIn(self.EMAIL, body)
         self.assertIn(self.PHONE, body)
+
+    def test_order_success_page(self):
+        """
+        Success page should show actual order.
+
+        Test was created because of this bug:
+        https://github.com/fidals/shopelectro/issues/678
+        """
+        # first order placing
+        self.prepare_cart()
+        self.place_order('first@mail.me')
+
+        # second order placing
+        self.prepare_cart()
+        response = self.client.post(
+            self.url,
+            {'email': 'second@mail.me', 'phone': self.PHONE},
+            follow=True
+        )
+        first, last = Order.objects.first(), Order.objects.last()
+        self.assertNotContains(response, str(first))
+        self.assertContains(response, str(last))

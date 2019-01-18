@@ -21,7 +21,7 @@ class Order(models.Model):
         A string representation of Order.
         :return: a string with 'Order #id' format.
         """
-        return 'Order #{}'.format(self.id)
+        return f'Order #{self.id}'
 
     @property
     def fake_order_number(self):
