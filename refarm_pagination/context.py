@@ -6,6 +6,7 @@ class PaginationContext:
     def __init__(self, url, number, per_page, objects):
         self.url = url
         self.number = number
+        self.objects = objects
         self.paginator = Paginator(objects, per_page)
 
     def context(self):
@@ -27,4 +28,5 @@ class PaginationContext:
             'prev_pairs': prev_pairs,
             'next_pairs': next_pairs,
             'showed_count': showed_count,
+            'total_products': self.objects.count(),
         }
