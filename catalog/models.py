@@ -104,7 +104,7 @@ class ProductQuerySet(models.QuerySet):
     def get_by_category(self, category: models.Model) -> models.QuerySet:
         return self.filter(category__in=category.get_descendants(True))
 
-    def get_category_descendants(self, category: models.Model):
+    def get_category_descendants(self, category: models.Model) -> models.QuerySet:
         """Return products with prefetch pages and images."""
         return (
             self.prefetch_related('page__images')
@@ -240,6 +240,17 @@ class TagQuerySet(models.QuerySet):
         return (
             self
             .filter(products__in=products)
+            .order_by(*ordering)
+            .distinct(*distinct, 'id')
+        )
+
+    def exclude_by_products(self, products: Iterable[AbstractProduct]):
+        ordering = settings.TAGS_ORDER
+        distinct = [order.lstrip('-') for order in ordering]
+
+        return (
+            self
+            .exclude(products__in=products)
             .order_by(*ordering)
             .distinct(*distinct, 'id')
         )

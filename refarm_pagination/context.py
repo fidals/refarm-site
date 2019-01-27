@@ -12,15 +12,15 @@ class PaginationContext:
     def context(self):
         page = self.paginator.page(self.number)
         showed_count = (self.number - 1) * self.paginator.per_page + len(page)
-        neighbords = NeighborPages(page)
+        neighbours = NeighborPages(page)
 
         prev_pairs = [
             (prev.number, prev.url(self.url))
-            for prev in neighbords.prev_neighbors()
+            for prev in neighbours.prev_neighbors()
         ]
         next_pairs = [
             (next.number, next.url(self.url))
-            for next in neighbords.next_neighbors()
+            for next in neighbours.next_neighbors()
         ]
 
         return {
