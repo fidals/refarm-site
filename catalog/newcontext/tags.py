@@ -1,7 +1,17 @@
+from catalog import models
 from catalog.newcontext.context import Context, Tags, Products
 
-from django.db.models import QuerySet
 from django.http import Http404
+
+
+class TagsByProducts(Tags):
+
+    def __init__(self, tags: Tags, products: models.ProductQuerySet):
+        self._tags = tags
+        self.products = products
+
+    def qs(self):
+        return self._tags.qs().filter_by_products(self.products)
 
 
 class GroupedTags(Context):
