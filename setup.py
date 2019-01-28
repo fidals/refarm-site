@@ -21,7 +21,7 @@ setup(
     classifiers=[
         'Environment :: Web Environment',
         'Framework :: Django',
-        'Framework :: Django :: 1.9',
+        'Framework :: Django :: 1.11',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT',
         'Operating System :: OS Independent',
@@ -32,14 +32,14 @@ setup(
         'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
     ],
     install_requires=[
-        'celery==4.1.1',
+        'celery==4.2.1',
         'Django==1.11.18',  # python 3.7 compatible
-        'django-mptt==0.8.7',
+        'django-mptt==0.9.1',
         'dj-database-url==0.4.1',
         'sorl-thumbnail==12.5.0',
         'Django-Select2==5.11.1',
         'unidecode',
-        'psycopg2-binary==2.7.5',
+        'psycopg2-binary==2.7.7',
         'Pillow==5.2.0',
     ],
 )
