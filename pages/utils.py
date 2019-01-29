@@ -1,10 +1,11 @@
 from django.conf import settings
 from django.contrib.redirects.models import Site
-from django.template import Template, Context
+from django.template import engines
 
 
 def render_str(text, data):
-    return Template(text).render(Context(data))
+    django_engine = engines['django']
+    return django_engine.from_string(text).render(data)
 
 
 def save_custom_pages():
