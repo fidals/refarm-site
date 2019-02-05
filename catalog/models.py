@@ -110,7 +110,6 @@ class ProductQuerySet(models.QuerySet):
         return self[start:start + step]
 
     def filter_descendants(self, category: models.Model) -> models.QuerySet:
-        """Filter all descendants for given category."""
         return self.filter(category__in=category.get_descendants(True))
 
     def active(self):
@@ -227,7 +226,6 @@ class TagQuerySet(models.QuerySet):
 
         return (
             self
-            .prefetch_related('tags')
             .filter(products__in=products)
             .order_by(*ordering)
             .distinct(*distinct, 'id')
