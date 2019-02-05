@@ -238,9 +238,7 @@ class Category(AbstractProductsListContext):
         # code like this breaks isolation,
         # it'll be fixed at #183
         products = self.products_ or super().products
-        return products.active().get_category_descendants(
-            self.page.model
-        )
+        return products.active().filter_descendants(self.page.model)
 
     def get_context_data(self):
         """Add sorting options and view_types in context."""
@@ -326,10 +324,6 @@ class TaggedCategory(AbstractProductsListContext):
             'tags': tags,
             'group_tags_pairs': group_tags_pairs,
             'products_data': [],  # empty for optimization
-            # Category's canonical link is `category.page.get_absolute_url`.
-            # So, this link always contains no tags.
-            # That's why we skip canonical link on tagged category page.
-            'skip_canonical': bool(tags),
         }
 
 

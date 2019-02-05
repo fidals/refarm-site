@@ -50,7 +50,7 @@ class ProductsByCategory(Products):
         self._category = category
 
     def qs(self):
-        return self._products.qs().get_category_descendants(self._category)
+        return self._products.qs().filter_descendants(self._category)
 
 
 class TaggedProducts(Products):
