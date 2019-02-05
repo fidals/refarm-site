@@ -98,28 +98,20 @@ class AbstractCategory(mptt.models.MPTTModel, AdminTreeDisplayMixin):
 
 class ProductQuerySet(models.QuerySet):
 
-    def get_offset(self, start, step):
-        return self[start:start + step]
-
-    def get_by_category(self, category: models.Model) -> models.QuerySet:
-        return self.filter(category__in=category.get_descendants(True))
-
-    def get_category_descendants(self, category: models.Model) -> models.QuerySet:
-        """Return products with prefetch pages and images."""
-        return (
-            self.prefetch_related('page__images')
-            .select_related('page')
-            .get_by_category(category)
-        )
-
-    def filter_by_categories(self, categories: Iterable[AbstractCategory]):
-        """Filter products by given categories."""
+    def bind_fields(self):
+        """Prefetch or select typical related fields to reduce sql queries count."""
         return (
             self.select_related('page')
             .select_related('category')
             .prefetch_related('page__images')
-            .filter(category__in=categories, price__gt=0)
         )
+
+    def get_offset(self, start, step):
+        return self[start:start + step]
+
+    def filter_descendants(self, category: models.Model) -> models.QuerySet:
+        """Filter all descendants for given category."""
+        return self.filter(category__in=category.get_descendants(True))
 
     def active(self):
         return self.filter(page__is_active=True)
@@ -139,12 +131,8 @@ class ProductQuerySet(models.QuerySet):
 class ProductManager(models.Manager.from_queryset(ProductQuerySet)):
     """Get all products of given category by Category's id or instance."""
 
-    def get_by_category(self, category: models.Model) -> models.QuerySet:
-        return self.get_queryset().get_by_category(category)
-
-    def get_category_descendants(self, category: models.Model) -> models.QuerySet:
-        """Return products with prefetch pages and images."""
-        return self.get_queryset().get_category_descendants(category)
+    def filter_descendants(self, category: models.Model) -> models.QuerySet:
+        return self.get_queryset().filter_descendants(category)
 
     def active(self):
         return self.get_queryset().active()
@@ -239,6 +227,7 @@ class TagQuerySet(models.QuerySet):
 
         return (
             self
+            .prefetch_related('tags')
             .filter(products__in=products)
             .order_by(*ordering)
             .distinct(*distinct, 'id')

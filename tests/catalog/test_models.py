@@ -232,7 +232,9 @@ class TestProduct(TestCase):
 
     def test_get_product_by_category(self):
         """We can get products related to category by category_id or Category instance"""
-        products_by_instance = catalog_models.MockProduct.objects.get_by_category(self.category)
+        products_by_instance = (
+            catalog_models.MockProduct.objects.filter_descendants(self.category)
+        )
 
         self.assertEqual(products_by_instance.count(), 2)
 

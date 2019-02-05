@@ -238,9 +238,7 @@ class Category(AbstractProductsListContext):
         # code like this breaks isolation,
         # it'll be fixed at #183
         products = self.products_ or super().products
-        return products.active().get_category_descendants(
-            self.page.model
-        )
+        return products.active().filter_descendants(self.page.model)
 
     def get_context_data(self):
         """Add sorting options and view_types in context."""
