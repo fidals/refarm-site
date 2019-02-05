@@ -324,10 +324,6 @@ class TaggedCategory(AbstractProductsListContext):
             'tags': tags,
             'group_tags_pairs': group_tags_pairs,
             'products_data': [],  # empty for optimization
-            # Category's canonical link is `category.page.get_absolute_url`.
-            # So, this link always contains no tags.
-            # That's why we skip canonical link on tagged category page.
-            'skip_canonical': bool(tags),
         }
 
 
