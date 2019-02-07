@@ -1,5 +1,4 @@
 from itertools import chain
-from functools import partial
 from typing import Iterator, Tuple
 
 from django.contrib.admin.views.decorators import staff_member_required
@@ -143,7 +142,6 @@ class TableEditorPut:
 
         try:
             entity = self.model.objects.get(id=body['id'])
-
         except KeyError:
             return HttpResponse(content='Request body has no `id` param.', status=422)
         except ObjectDoesNotExist:
@@ -167,12 +165,15 @@ class TableEditorPut:
         return HttpResponse('Entity was updated.')
 
     def update_related_model(self, entity, key, value):
-        model_name = next(filter(partial(key.startswith), self.relation_field_names))
+        model_name = next(filter(key.startswith, self.relation_field_names))
         model_entity = getattr(entity, model_name)
         model_key = key.replace('{}_'.format(model_name), '')
 
+        if not model_entity:
+            raise ValueError(f'{entity} doesn`t have any {model_name}. Create {model_name} and assign to the {entity}.')
+
         if not hasattr(model_entity, model_key):
-            raise ValueError('{} hasn`t `{}` field.'.format(model_entity, model_key))
+            raise ValueError(f'{model_entity} doesn`t have `{model_key}` field.')
 
         python_value = self.field_controller.value_to_python(model_entity, model_key, value)
         model_strategy = self.pattern_to_update_related_model.get(model_name, {})
