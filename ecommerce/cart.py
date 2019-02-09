@@ -14,11 +14,13 @@ class Cart:
     cart = {
         123: {  # models.Product.id
             500.00,  # models.Product.price (float)
-            2,  # quantity in cart of products with id=123
+            2,  # quantity in cart of positions with id=123
             'Battery MR720',  # models.Product.name
         }
     }
     """
+
+    REQUIRED_POSITION_FIELDS = ['id', 'name', 'price']
 
     def __init__(self, session):
         """
@@ -41,7 +43,7 @@ class Cart:
     def __iter__(self):
         """
         Iterate over the positions in the Cart,
-        add 'product' key with respective model to every item.
+        add 'position' key with respective model to every item.
         """
         # Since dict is mutable we should copy it.
         cart = deepcopy(self._cart)
@@ -52,65 +54,63 @@ class Cart:
             yield id_, item
 
     def __len__(self):
-        """Return number of products in Cart."""
+        """Return number of positions in Cart."""
         return len(self._cart)
 
     def __bool__(self):
         """True if Cart has at least one item, False otherwise."""
         return bool(self._cart)
 
-    def __contains__(self, product_id):
-        """Return True if given product in Cart, False otherwise."""
-        return product_id in self._cart
+    def __contains__(self, position_id):
+        """Return True if given position in Cart, False otherwise."""
+        return position_id in self._cart
 
     def save(self):
         """Actualize cart in session and trigger 'modified' event on it."""
         self._session[settings.CART_ID] = self._cart
         self._session.modified = True  # Tells Django that session must be saved
 
-    def update_product_prices(self, new_positions):
-        """Update product price in cart."""
+    def update_position_prices(self, new_positions):
+        """Update position price in cart."""
         for item in new_positions:
             self._cart[item['id']]['price'] = item['price']
         self.save()
 
-    def get_product_data(self, product):
-        page = getattr(product, 'page', None)
+    def get_position_data(self, position):
+        page = getattr(position, 'page', None)
         image_path = (
             page.main_image.url
             if (page and page.main_image) else placeholder_image_url()
         )
         return {
-            'name': product.name,
-            'price': product.price if product.price else 0,
-            'in_stock': product.in_stock,
+            'name': position.name,
+            'price': position.price if position.price else 0,
+            'in_stock': position.in_stock,
             'image': image_path,
-            'url': product.get_absolute_url(),
+            'url': position.url,
         }
 
-    def add(self, product: Model, quantity=1):
-        """Add a Product to the Cart or update its quantity if it's already in it."""
+    def add(self, position: Model, quantity=1):
+        """Add a Position to the Cart or update its quantity if it's already in it."""
+        for field in self.REQUIRED_POSITION_FIELDS:
+            assert hasattr(position, field), f'Position has not required field "{field}"'
 
-        required_fields = ['id', 'name', 'price']
-        for field in required_fields:
-            assert hasattr(product, field), 'Product has not required field {}'.format(field)
-
-        if product.id not in self:
-            self._cart[product.id] = self.get_product_data(product)
-            self._cart[product.id]['quantity'] = quantity
+        if position.id not in self:
+            self._cart[position.id] = self.get_position_data(position)
+            self._cart[position.id]['quantity'] = quantity
         else:
-            self._cart[product.id]['quantity'] += quantity
+            self._cart[position.id]['quantity'] += quantity
         self.save()
 
-    def set_product_quantity(self, product: Model, quantity: int):
-        """Change quantity of a Product in Cart. Raise IndexError if Product not in Cart."""
-        self._cart[product.id]['quantity'] = quantity
+    def set_position_quantity(self, position: Model, quantity: int):
+        """Change quantity of a Position in Cart. Raise IndexError if Position not in Cart."""
+        self._cart[position.id]['quantity'] = quantity
         self.save()
 
-    def remove(self, product: Model):
-        """Remove a product from the cart."""
-        if product.id in self._cart:
-            del self._cart[product.id]
+    def remove(self, position: Model):
+        """Remove a position from the cart."""
+        if position.id in self._cart:
+            del self._cart[position.id]
             self.save()
 
     @property
@@ -120,7 +120,7 @@ class Cart:
 
     @property
     def total_quantity(self):
-        """Total quantity of products in cart."""
+        """Total quantity of positions in cart."""
         return sum(item['quantity'] for _, item in self)
 
     def clear(self):

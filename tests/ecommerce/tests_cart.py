@@ -144,7 +144,7 @@ class TestCart(TestCase):
         """We can change quantity of existing product in cart."""
         cart = self.cart
         cart.add(self.first_product, 10)
-        cart.set_product_quantity(self.first_product, 42)
+        cart.set_position_quantity(self.first_product, 42)
         self.assertEqual(cart.total_quantity, 42)
 
     def test_change_quantity_for_nonexistent_product(self):
@@ -155,4 +155,4 @@ class TestCart(TestCase):
         cart = self.cart
         cart.add(self.first_product, 10)
         with self.assertRaises(KeyError):
-            cart.set_product_quantity(self.second_product, 42)
+            cart.set_position_quantity(self.second_product, 42)
