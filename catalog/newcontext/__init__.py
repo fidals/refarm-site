@@ -2,5 +2,5 @@
 
 # @todo #207:15m Annotate methods of Context implementations.
 
-from . import products, tags
+from . import category, products, tags
 from .context import Context, Contexts, ModelContext, Products, Tags

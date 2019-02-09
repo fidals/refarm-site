@@ -14,7 +14,7 @@ class Context(abc.ABC):
 
 class ModelContext(abc.ABC):
 
-    def __init__(self, qs: QuerySet):
+    def __init__(self, qs: typing.Union[QuerySet, typing.Iterable]):
         self._qs = qs
 
     def qs(self):
@@ -30,8 +30,10 @@ Context.register(ModelContext)
 
 class Contexts(Context):
 
-    def __init__(self, *contexts: typing.List[Context]):
-        self.contexts = contexts
+    # use context as list, not as args pack (`*context`)
+    # to move attention on homogeneous nature of args
+    def __init__(self, contexts: typing.List[Context]=None):
+        self.contexts = contexts or []
 
     def context(self):
         return dict(collections.ChainMap(
