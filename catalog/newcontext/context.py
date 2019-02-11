@@ -1,14 +1,9 @@
 import abc
-import collections
+
 
 from catalog import typing
 
-
-class Context(abc.ABC):
-
-    @abc.abstractmethod
-    def context(self) -> typing.Dict[str, typing.Any]:
-        ...
+from pages.newcontext import Context
 
 
 class ModelContext(abc.ABC):
@@ -25,19 +20,6 @@ class ModelContext(abc.ABC):
 
 
 Context.register(ModelContext)
-
-
-class Contexts(Context):
-
-    # use context as list, not as args pack (`*context`)
-    # to move attention on homogeneous nature of args
-    def __init__(self, contexts: typing.List[Context]):
-        self.contexts = contexts or []
-
-    def context(self):
-        return dict(collections.ChainMap(
-            *[ctx.context() for ctx in self.contexts]
-        ))
 
 
 class Tags(ModelContext):
