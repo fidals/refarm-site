@@ -116,9 +116,9 @@ class OrderSuccess(CustomPageView):
 class CartModifier(View):
     header_template = 'ecommerce/header_cart.html'
     table_template = 'ecommerce/order/table_form.html'
-    product_key = 'product'
+    position_key = 'product'
     order_form = OrderForm
-    product_model = None  # Necessary define at client-side
+    position_model = None  # Necessary define at client-side
     cart = Cart
 
     def json_response(self, request):
@@ -141,11 +141,11 @@ class CartModifier(View):
 class AddToCart(CartModifier):
     def post(self, request):
         cart = self.cart(request.session)
-        product = get_object_or_404(
-            self.product_model,
-            id=request.POST.get(self.product_key)
+        position = get_object_or_404(
+            self.position_model,
+            id=request.POST.get(self.position_key)
         )
-        cart.add(product, int(request.POST.get('quantity')))
+        cart.add(position, int(request.POST.get('quantity')))
 
         return self.json_response(request)
 
@@ -153,11 +153,11 @@ class AddToCart(CartModifier):
 class RemoveFromCart(CartModifier):
     def post(self, request):
         cart = self.cart(request.session)
-        product = get_object_or_404(
-            self.product_model,
-            id=request.POST.get(self.product_key)
+        position = get_object_or_404(
+            self.position_model,
+            id=request.POST.get(self.position_key)
         )
-        cart.remove(product)
+        cart.remove(position)
 
         return self.json_response(request)
 
@@ -172,10 +172,10 @@ class FlushCart(CartModifier):
 class ChangeCount(CartModifier):
     def post(self, request):
         cart = self.cart(request.session)
-        product_id, quantity = get_keys_from_post(
-            request, self.product_key, 'quantity'
+        position_id, quantity = get_keys_from_post(
+            request, self.position_key, 'quantity'
         )
-        product = get_object_or_404(self.product_model, id=product_id)
-        cart.set_product_quantity(product, int(quantity))
+        position = get_object_or_404(self.position_model, id=position_id)
+        cart.set_position_quantity(position, int(quantity))
 
         return self.json_response(request)

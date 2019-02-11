@@ -140,6 +140,10 @@ class ProductManager(models.Manager.from_queryset(ProductQuerySet)):
         return self.get_queryset().tagged(tags)
 
 
+# @todo #257:30m  Document terms Product, Position and Option
+#  Seems the best way is to do it with subclassing.
+#  Such documentation will clarify types and will be obvious for programmers.
+#  But check the docs too. May be some of this terms are mentioned there.
 class AbstractProduct(models.Model, AdminTreeDisplayMixin):
     """
     Product model.
