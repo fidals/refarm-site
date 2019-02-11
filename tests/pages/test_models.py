@@ -1,5 +1,6 @@
 from django.test import TestCase
 
+from pages import db_views
 from pages.models import ModelPage, CustomPage, FlatPage, Page, PageTemplate
 
 from tests.models import MockEntity, MockEntityWithSync
@@ -100,34 +101,43 @@ class TestPage(TestCase):
 
         self.assertTrue(page.slug)
 
+    # @todo #240:30m  Improve DB templates (and views) tests.
+    #  Move them to separated module.
+    #  Rename theirs `test_display` prefix.
+    #  Separate them on small pieces.
+    #  Add test for `db_views.Page` with passing context.
     def test_display_seo_fields(self):
         page_with_custom_fields = Page.objects.create(
             name='some page', slug='test', h1='test h1'
         )
-        self.assertEqual(page_with_custom_fields.display_h1, 'test h1')
+        page_view = db_views.Page(page_with_custom_fields, {})
+        self.assertEqual(page_view.fields.h1, 'test h1')
 
         custom_page_template = PageTemplate.objects.create(
             name='test',
             h1='{{ page.name }} - купить в СПб',
         )
 
-        page_with_template = Page.objects.create(
+        page = Page.objects.create(
             name='different page', template=custom_page_template
         )
 
-        self.assertEqual(page_with_template.display_h1, 'different page - купить в СПб')
+        page_view = db_views.Page(page, {'page': page})
+
+        self.assertEqual(page_view.fields.h1, 'different page - купить в СПб')
 
     def test_display_attribute_uses_template(self):
-        custom_page_template = PageTemplate.objects.create(
+        template = PageTemplate.objects.create(
             name='test',
             h1='{{ page.h1 }} - template',
         )
-        page_with_template = Page.objects.create(
+        page = Page.objects.create(
             name='different page',
             h1='page h1',
-            template=custom_page_template,
+            template=template,
         )
-        self.assertEqual(page_with_template.display_h1, 'page h1 - template')
+        page_view = db_views.Page(page, {'page': page})
+        self.assertEqual(page_view.fields.h1, 'page h1 - template')
 
 
 class TestCustomPage(TestCase):

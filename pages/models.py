@@ -54,8 +54,8 @@ class PageTemplate(models.Model):
     def __str__(self):
         return self.name
 
-    def render(self, field, context):
-        return render_str(field, context)
+    def render_field(self, field: str, context: dict) -> str:
+        return render_str(getattr(self, field), context)
 
 
 class PageQuerySet(mptt.querysets.TreeQuerySet):
@@ -211,9 +211,9 @@ class Page(mptt.models.MPTTModel, ImageMixin):
         if not self.template:
             return getattr(self, name) or self.name
 
-        return self.template.render(
-            getattr(self.template, name),
-            self.get_template_render_context(),
+        return self.template.render_field(
+            field=name,
+            context=self.get_template_render_context(),
         )
 
     @property
