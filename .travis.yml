@@ -22,7 +22,7 @@ before_install:
 jobs:
   include:
     - stage: "Tests"
-      script: cd docker/ && docker-compose run --rm python
+      script: cd docker/ && docker-compose run --rm app
     - stage: "Lints"
       script: cd docker/ && docker-compose run --rm pdd
 
