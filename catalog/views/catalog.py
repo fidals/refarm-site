@@ -1,6 +1,7 @@
 from django.db.models.aggregates import Count
 from django.views.generic.list import ListView
 from django.views.generic.detail import DetailView
+from django.views.generic.base import TemplateView
 
 from pages.views import CustomPageView
 from pages.models import ModelPage
@@ -20,6 +21,10 @@ class CategoryTree(CustomPageView):
             **context,
             'nodes': self.category_model.objects.all()
         }
+
+
+class CategoryPageTemplate(TemplateView):
+    template_name = 'catalog/category.html'
 
 
 class CategoryPage(DetailView):
