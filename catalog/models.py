@@ -115,7 +115,7 @@ class ProductQuerySet(models.QuerySet):
     def active(self):
         return self.filter(page__is_active=True)
 
-    def tagged(self, tags):
+    def tagged(self, tags: 'TagQuerySet'):
         # Distinct because a relation of tags and products is M2M.
         # We do not specify the args for `distinct` to avoid dependencies
         # between `order_by` and `distinct` methods.
@@ -125,6 +125,13 @@ class ProductQuerySet(models.QuerySet):
         # https://www.postgresql.org/docs/10/static/sql-select.html#SQL-DISTINCT
         # https://docs.djangoproject.com/en/2.1/ref/models/querysets/#django.db.models.query.QuerySet.distinct
         return self.filter(tags__in=tags).distinct()
+
+    def tagged_or_all(self, tags: 'TagQuerySet'):
+        return (
+            self.tagged(tags)
+            if tags.exists()
+            else self
+        )
 
 
 class ProductManager(models.Manager.from_queryset(ProductQuerySet)):

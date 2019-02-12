@@ -4,79 +4,19 @@ from django import http
 from django.conf import settings
 from django.db.models import QuerySet
 
-from catalog.newcontext.context import Context, Products, Tags
-from catalog.models import AbstractCategory
+from catalog import typing
+from catalog.newcontext.context import Products, Tags
 from refarm_pagination.context import PaginationContext
 
 
-# @todo #255:60m  Move `CATEGORY_SORTING_OPTIONS` to dataclass or enum.
-#  Or write why we should not do it.
-#  Maybe remove `SortingOption` class.
-class SortingOption:
-    def __init__(self, index=0):
-        options = settings.CATEGORY_SORTING_OPTIONS[index]
-        self.label = options['label']
-        self.field = options['field']
-        self.direction = options['direction']
+class ProductBrands(Products):
 
-    @property
-    def directed_field(self):
-        return self.direction + self.field
-
-
-class ActiveProducts(Products):
-
-    def __init__(self, products: Products):
-        self._products = products
-
-    def qs(self):
-        return self._products.qs().active()
-
-
-class OrderedProducts(Products):
-
-    def __init__(self, products: Products, sorting_index=0):
-        self._products = products
-        self._sorting_index = sorting_index
-
-    def qs(self):
-        return self._products.qs().order_by(
-            SortingOption(index=self._sorting_index).directed_field,
-        )
-
-
-class ProductsByCategory(Products):
-
-    def __init__(self, products: Products, category: AbstractCategory):
-        self._products = products
-        self._category = category
-
-    def qs(self):
-        return self._products.qs().filter_descendants(self._category)
-
-
-class TaggedProducts(Products):
-
-    def __init__(self, products: Products, tags: Tags):
-        self._products = products
-        self._tags = tags
-
-    def qs(self):
-        tags = self._tags.qs()
-        if tags.exists():
-            return self._products.qs().tagged(tags)
-        else:
-            return self._products.qs()
-
-
-class ProductBrands(Context):
-
-    def __init__(self, products: Products, tags: Tags):
-        self._products = products
+    def __init__(self, products: typing.Products, tags: Tags):
+        super().__init__(products)
         self._tags = tags
 
     def context(self):
-        products = list(self._products.qs())
+        products = list(self._products)
         brands = self._tags.qs().get_brands(products)
 
         product_brands = {
@@ -89,16 +29,16 @@ class ProductBrands(Context):
         }
 
 
-class ProductImages(Context):
+class ProductImages(Products):
 
-    def __init__(self, products: Products, images: QuerySet):
-        self._products = products
+    def __init__(self, products: typing.Products, images: QuerySet):
+        super().__init__(products)
         self._images = images
 
     def context(self):
         page_product_map = {
             product.page: product
-            for product in self._products.qs()
+            for product in self.products
         }
 
         images = self._images.get_main_images_by_pages(page_product_map.keys())
@@ -115,22 +55,24 @@ class ProductImages(Context):
 class PaginatedProducts(Products):
     """Slice products and add pagination data to a context."""
 
-    def __init__(self, products: Products, url: str, page_number: int, per_page: int):
+    def __init__(
+        self, products: typing.Products,
+        url: str, page_number: int, per_page: int
+    ):
         if (
             page_number < 1 or
             per_page not in settings.CATEGORY_STEP_MULTIPLIERS
         ):
             raise http.Http404('Page does not exist.')
-
-        self._products = products
-        self._page_number = page_number
-        self._pagination = PaginationContext(url, page_number, per_page, self._products.qs())
+        super().__init__(products)
+        self._pagination = PaginationContext(url, page_number, per_page, products)
 
     @lru_cache()
     def _pagination_context(self):
         return self._pagination.context()
 
-    def qs(self):
+    @property
+    def products(self):
         return self._pagination_context()['page'].object_list
 
     def context(self):
