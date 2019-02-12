@@ -32,7 +32,7 @@ class Contexts(Context):
 
     # use context as list, not as args pack (`*context`)
     # to move attention on homogeneous nature of args
-    def __init__(self, contexts: typing.List[Context]=None):
+    def __init__(self, contexts: typing.List[Context]):
         self.contexts = contexts or []
 
     def context(self):
