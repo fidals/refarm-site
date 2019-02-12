@@ -9,6 +9,9 @@ from catalog.models import AbstractCategory
 from refarm_pagination.context import PaginationContext
 
 
+# @todo #255:60m  Move `CATEGORY_SORTING_OPTIONS` to dataclass or enum.
+#  Or write why we should not do it.
+#  Maybe remove `SortingOption` class.
 class SortingOption:
     def __init__(self, index=0):
         options = settings.CATEGORY_SORTING_OPTIONS[index]
