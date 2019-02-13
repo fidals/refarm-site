@@ -12,12 +12,14 @@ class Fields:
     # Fields stored in DB. See class `pages.models.PageTemplate`
     STORED = ['name', 'h1', 'keywords', 'description', 'title', 'seo_text']
 
-    def __init__(self, page_view: 'Page'):
-        self.page_view = page_view
+    def __init__(self, page_display: 'Page'):
+        self.page_display = page_display
 
     def __getattr__(self, item):
         if item in self.STORED:
-            return self.page_view.render(item)
+            return self.page_display.render(item)
+        else:
+            return super().__getattribute__(item)
 
 
 class Page:

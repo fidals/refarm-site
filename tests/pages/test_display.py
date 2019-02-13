@@ -1,0 +1,13 @@
+from django.test import TestCase
+
+from pages import display
+
+
+class TestFields(TestCase):
+    fixtures = []
+
+    def test_attribute_error(self):
+        # noinspection PyTypeChecker
+        page = display.Page(None, {})
+        with self.assertRaises(AttributeError):
+            _ = page.fields.bad_attr
