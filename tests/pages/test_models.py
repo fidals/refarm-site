@@ -1,6 +1,6 @@
 from django.test import TestCase
 
-from pages import db_views
+from pages import display
 from pages.models import ModelPage, CustomPage, FlatPage, Page, PageTemplate
 
 from tests.models import MockEntity, MockEntityWithSync
@@ -105,12 +105,12 @@ class TestPage(TestCase):
     #  Move them to separated module.
     #  Rename theirs `test_display` prefix.
     #  Separate them on small pieces.
-    #  Add test for `db_views.Page` with passing context.
+    #  Add test for `display.Page` with passing context.
     def test_display_seo_fields(self):
         page_with_custom_fields = Page.objects.create(
             name='some page', slug='test', h1='test h1'
         )
-        page_view = db_views.Page(page_with_custom_fields, {})
+        page_view = display.Page(page_with_custom_fields, {})
         self.assertEqual(page_view.fields.h1, 'test h1')
 
         custom_page_template = PageTemplate.objects.create(
@@ -122,7 +122,7 @@ class TestPage(TestCase):
             name='different page', template=custom_page_template
         )
 
-        page_view = db_views.Page(page, {'page': page})
+        page_view = display.Page(page, {'page': page})
 
         self.assertEqual(page_view.fields.h1, 'different page - купить в СПб')
 
@@ -136,7 +136,7 @@ class TestPage(TestCase):
             h1='page h1',
             template=template,
         )
-        page_view = db_views.Page(page, {'page': page})
+        page_view = display.Page(page, {'page': page})
         self.assertEqual(page_view.fields.h1, 'page h1 - template')
 
 
