@@ -33,7 +33,7 @@ setup(
     ],
     install_requires=[
         'celery==4.2.1',
-        'Django==1.11.18',  # python 3.7 compatible
+        'Django~=1.11.19',  # python 3.7 compatible
         'django-mptt==0.9.1',
         'dj-database-url==0.4.1',
         'sorl-thumbnail==12.5.0',
