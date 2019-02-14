@@ -1,5 +1,5 @@
 from catalog.models import AbstractCategory
-from catalog.newcontext.context import Context as BaseContext
+from pages.newcontext import Context as BaseContext
 
 
 class Context(BaseContext):

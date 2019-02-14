@@ -3,9 +3,12 @@ from django.contrib.redirects.models import Site
 from django.template import engines
 
 
-def render_str(text, data):
+# @todo #240:30m  Create TextView class.
+#  Instead of render_str method.
+#  And inherit `pages.db_views.Page` from this class.
+def render_str(template: str, context: dict):
     django_engine = engines['django']
-    return django_engine.from_string(text).render(data)
+    return django_engine.from_string(template).render(context)
 
 
 def save_custom_pages():
