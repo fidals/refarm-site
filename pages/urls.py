@@ -10,6 +10,7 @@ app_name = 'pages'
 custom_page_url = partial(url, name=CustomPage.ROUTE)
 
 urlpatterns = [
+    url(r'^$', views.FlatPageView.as_view(), name='index'),
     # /one/
     url(r'^([\w-]+)/$', views.FlatPageView.as_view(), name='flat_page'),
     # /one/two/
