@@ -173,7 +173,10 @@ class Page(mptt.models.MPTTModel, ImageMixin):
             return self.model.get_absolute_url()
 
         if self.is_custom:
-            return reverse(CustomPage.ROUTE, args=(self.slug, ))
+            return (
+                reverse(CustomPage.ROUTE, args=(self.slug, ))
+                if self.slug else reverse('index')
+            )
 
         if self.is_flat:
             return reverse('pages:flat_page', args=self.get_ancestors_fields('slug'))
