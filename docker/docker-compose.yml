@@ -16,7 +16,7 @@ services:
       - db
     volumes:
       - ./../:$SRC_DIR  # code volume
-    command: python manage.py test
+    command: sleep infinity
 
   db:
     image: postgres:9.5

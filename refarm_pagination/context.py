@@ -1,6 +1,11 @@
 from refarm_pagination.pagination import Paginator, NeighborPages
 
 
+# @todo #255:30m  Improve `PaginationContext` interface.
+#  It's not clear now.
+#  For example client should know the class context details
+#  to fetch objects iterable.
+#  See `catalog.newcontext.products.PaginatedProducts#qs`.
 class PaginationContext:
 
     def __init__(self, url, number, per_page, objects):

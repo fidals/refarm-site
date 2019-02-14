@@ -1,8 +1,7 @@
 import abc
 import collections
-import typing
 
-from django.db.models import QuerySet
+from catalog import typing
 
 
 class Context(abc.ABC):
@@ -14,7 +13,7 @@ class Context(abc.ABC):
 
 class ModelContext(abc.ABC):
 
-    def __init__(self, qs: typing.Union[QuerySet, typing.Iterable]):
+    def __init__(self, qs: typing.QuerySet):
         self._qs = qs
 
     def qs(self):
@@ -49,9 +48,16 @@ class Tags(ModelContext):
         }
 
 
-class Products(ModelContext):
+class Products(Context):
+
+    def __init__(self, products: typing.ProductQuerySet):
+        self._products = products
+
+    @property
+    def products(self):
+        return self._products
 
     def context(self):
         return {
-            'products': self.qs(),
+            'products': self.products,
         }
