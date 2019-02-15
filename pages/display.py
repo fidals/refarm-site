@@ -8,22 +8,11 @@ import typing
 from pages import models
 
 
-class Fields:
-    # Fields stored in DB. See class `pages.models.PageTemplate`
-    STORED = ['name', 'h1', 'keywords', 'description', 'title', 'seo_text']
-
-    def __init__(self, page_display: 'Page'):
-        self.page_display = page_display
-
-    def __getattr__(self, item):
-        if item in self.STORED:
-            return self.page_display.render(item)
-        else:
-            return super().__getattribute__(item)
-
-
 class Page:
     # @todo #240:30m  Create usage doc for page view.
+
+    # Fields stored in DB. See class `pages.models.PageTemplate`
+    STORED = ['name', 'h1', 'keywords', 'description', 'title', 'seo_text']
 
     def __init__(self, page: models.Page, context: typing.Dict[str, typing.Any]):
         """
@@ -31,8 +20,20 @@ class Page:
         because client code wants the same context for many different cases.
         """
         self.page = page
-        self.context = context
-        self.fields = Fields(self)
+        self._context = context
+
+    @property
+    def context(self):
+        return {
+            'page': self.page,
+            **self._context
+        }
+
+    def __getattr__(self, item):
+        if item in self.STORED:
+            return self.render(item)
+        else:
+            return super().__getattribute__(item)
 
     def render(self, field: str):
         return (
