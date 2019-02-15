@@ -122,9 +122,8 @@ class TestPage(TestCase):
             name='different page', template=custom_page_template
         )
 
-        page_view = display.Page(page, {'page': page})
-
-        self.assertEqual(page_view.fields.h1, 'different page - купить в СПб')
+        page_display = display.Page(page, {'page': page})
+        self.assertEqual(page_display.h1, 'different page - купить в СПб')
 
     def test_display_attribute_uses_template(self):
         template = PageTemplate.objects.create(
@@ -136,8 +135,8 @@ class TestPage(TestCase):
             h1='page h1',
             template=template,
         )
-        page_view = display.Page(page, {'page': page})
-        self.assertEqual(page_view.fields.h1, 'page h1 - template')
+        page_display = display.Page(page, {'page': page})
+        self.assertEqual(page_display.h1, 'page h1 - template')
 
 
 class TestCustomPage(TestCase):
