@@ -111,7 +111,7 @@ class TestPage(TestCase):
             name='some page', slug='test', h1='test h1'
         )
         page_view = display.Page(page_with_custom_fields, {})
-        self.assertEqual(page_view.fields.h1, 'test h1')
+        self.assertEqual(page_view.h1, 'test h1')
 
         custom_page_template = PageTemplate.objects.create(
             name='test',
