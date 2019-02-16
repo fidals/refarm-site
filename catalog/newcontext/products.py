@@ -2,10 +2,10 @@ from functools import lru_cache
 
 from django import http
 from django.conf import settings
-from django.db.models import QuerySet
 
 from catalog import typing
 from catalog.newcontext.context import Products, Tags
+from images.models import ImageQuerySet
 from refarm_pagination.context import PaginationContext
 
 
@@ -31,7 +31,7 @@ class ProductBrands(Products):
 
 class ProductImages(Products):
 
-    def __init__(self, products: typing.Products, images: QuerySet):
+    def __init__(self, products: typing.Products, images: ImageQuerySet):
         super().__init__(products)
         self._images = images
 
