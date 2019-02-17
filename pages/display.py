@@ -5,29 +5,29 @@ Responsible only for rendering given context data with db preserved text templat
 """
 import typing
 
-from pages import models
-
 
 class Page:
+    """It's python Descriptor."""
+
     # @todo #240:30m  Create usage doc for page view.
 
     # Fields stored in DB. See class `pages.models.PageTemplate`
     STORED = ['name', 'h1', 'keywords', 'description', 'title', 'seo_text']
 
-    def __init__(self, page: models.Page, context: typing.Dict[str, typing.Any]):
+    def __init__(self, page: 'pages.models.Page'=None, context: typing.Dict[str, typing.Any]=None):
         """
         Pass context at ctor, but not render method,
         because client code wants the same context for many different cases.
         """
-        self.page = page
-        self._context = context
+        self._page = page
+        self._context = context or {}
 
-    @property
-    def context(self):
-        return {
-            'page': self.page,
-            **self._context
-        }
+    def __get__(self, instance: 'pages.models.Page', type_):
+        return Page(instance, {'page': instance, **self._context})
+
+    def __set__(self, instance: 'pages.models.Page', value: typing.Dict[str, typing.Any]):
+        self._page = instance
+        self._context = value
 
     def __getattr__(self, item):
         if item in self.STORED:
@@ -37,7 +37,7 @@ class Page:
 
     def render(self, field: str):
         return (
-            self.page.template.render_field(field, self.context)
-            if self.page.template
-            else getattr(self.page, field)
+            self._page.template.render_field(field, self._context)
+            if self._page.template
+            else getattr(self._page, field)
         )
