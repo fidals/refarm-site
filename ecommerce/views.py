@@ -9,13 +9,12 @@ from django.template.defaultfilters import floatformat
 from django.template.loader import render_to_string
 from django.views.generic import View
 
-from pages.models import CustomPage
-from pages.views import CustomPageView
-
 from ecommerce import mailer
 from ecommerce.cart import Cart
 from ecommerce.forms import OrderForm
 from ecommerce.models import Order
+from pages.models import CustomPage
+from pages.views import CustomPageView
 
 
 def save_order_to_session(session, order: Order):
@@ -24,6 +23,7 @@ def save_order_to_session(session, order: Order):
     session.modified = True
 
 
+# TODO - rm it
 def get_keys_from_post(request, *args):
     """Get a tuple of given keys from request.POST object."""
     return tuple(request.POST[arg] for arg in args)

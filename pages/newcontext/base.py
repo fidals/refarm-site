@@ -21,3 +21,18 @@ class Contexts(Context):
         return dict(collections.ChainMap(
             *[ctx.context() for ctx in self.contexts]
         ))
+
+
+class SimpleContext(Context):
+    """Context object constructed from given context dict."""
+
+    def __init__(self, context: dict):
+        self._context = context
+
+    # TODO - rm it
+    @property
+    def products(self):
+        return self._context['products']
+
+    def context(self):
+        return self._context
