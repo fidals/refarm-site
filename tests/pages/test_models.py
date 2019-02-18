@@ -1,8 +1,6 @@
 from django.test import TestCase
 
-from pages import display
 from pages.models import ModelPage, CustomPage, FlatPage, Page, PageTemplate
-
 from tests.models import MockEntity, MockEntityWithSync
 
 
@@ -110,8 +108,7 @@ class TestPage(TestCase):
         page_with_custom_fields = Page.objects.create(
             name='some page', slug='test', h1='test h1'
         )
-        page_view = display.Page(page_with_custom_fields, {})
-        self.assertEqual(page_view.fields.h1, 'test h1')
+        self.assertEqual(page_with_custom_fields.display.h1, 'test h1')
 
         custom_page_template = PageTemplate.objects.create(
             name='test',
@@ -121,10 +118,7 @@ class TestPage(TestCase):
         page = Page.objects.create(
             name='different page', template=custom_page_template
         )
-
-        page_view = display.Page(page, {'page': page})
-
-        self.assertEqual(page_view.fields.h1, 'different page - купить в СПб')
+        self.assertEqual(page.display.h1, 'different page - купить в СПб')
 
     def test_display_attribute_uses_template(self):
         template = PageTemplate.objects.create(
@@ -136,8 +130,7 @@ class TestPage(TestCase):
             h1='page h1',
             template=template,
         )
-        page_view = display.Page(page, {'page': page})
-        self.assertEqual(page_view.fields.h1, 'page h1 - template')
+        self.assertEqual(page.display.h1, 'page h1 - template')
 
 
 class TestCustomPage(TestCase):

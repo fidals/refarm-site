@@ -1,7 +1,7 @@
 from datetime import date
 from itertools import chain
-from unidecode import unidecode
 
+import mptt
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.db import models, transaction
@@ -9,10 +9,10 @@ from django.template import Template
 from django.template.defaultfilters import slugify
 from django.template.exceptions import TemplateSyntaxError
 from django.utils.translation import ugettext_lazy as _
+from unidecode import unidecode
 
-import mptt
 from images.models import ImageMixin
-
+from pages import display
 from pages.utils import render_str
 
 
@@ -81,6 +81,10 @@ class Page(mptt.models.MPTTModel, ImageMixin):
     INDEX_PAGE_SLUG = ''
 
     objects = PageManager()
+
+    # field for dirty patch with `pages.display.Page` object.
+    # See `shopelectro.context.Page#context` for example why it's needed.
+    display = display.Page()
 
     class Meta:
         unique_together = ('type', 'slug', 'related_model_name')

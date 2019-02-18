@@ -10,4 +10,4 @@ class TestFields(TestCase):
         # noinspection PyTypeChecker
         page = display.Page(None, {})
         with self.assertRaises(AttributeError):
-            _ = page.fields.bad_attr
+            _ = page.bad_attr
