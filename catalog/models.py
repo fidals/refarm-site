@@ -441,24 +441,10 @@ class Tag(models.Model):
                 hash_size=self.SLUG_HASH_SIZE
             )
 
-    def _make_slug_unique(self) -> None:
-        """Force slug name to be unique."""
-        tag_is_doubled = (
-            self.__class__.objects
-            .filter(slug=self.slug)
-            .exclude(group=self.group)
-            .exists()
-        )
-        if tag_is_doubled:
-            self.slug = randomize_slug(
-                self.slug, hash_size=self.SLUG_HASH_SIZE
-            )
-
     def save(self, *args, **kwargs):
         if not self.slug:
             # same slugify code used in PageMixin object
             self._generate_short_slug()
-        self._make_slug_unique()
         super(Tag, self).save(*args, **kwargs)
 
     # @todo #168:15m Move `Tags.parse_url_tags` Tags context.
