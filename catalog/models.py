@@ -13,6 +13,8 @@ from django.utils.text import slugify
 from django.utils.translation import ugettext_lazy as _
 from unidecode import unidecode
 
+from catalog.expressions import Substring
+
 SLUG_MAX_LENGTH = 50
 
 
@@ -226,26 +228,28 @@ class TagGroup(models.Model):
 
 class TagQuerySet(models.QuerySet):
 
-    def filter_by_products(self, products: Iterable[AbstractProduct]):
-        ordering = settings.TAGS_ORDER
-        distinct = [order.lstrip('-') for order in ordering]
+    # @todo #273: 60m Create an index for order_by_alphanumeric query.
+    def order_by_alphanumeric(self):
+        """Sort the Tag by name's alphabetic chars and then by numeric chars."""
+        return Tag.objects.annotate(
+            tag_name=Substring(F('name'), Value('[a-zA-Zа-яА-Я]+')),
+            tag_value=Cast(
+                Substring(F('name'), Value('[0-9]+\.?[0-9]*')),
+                FloatField(),
+        )).order_by('tag_name', 'tag_value')
 
+    def filter_by_products(self, products: Iterable[AbstractProduct]):
         return (
             self
             .filter(products__in=products)
-            .order_by(*ordering)
-            .distinct(*distinct, 'id')
+            .distinct()
         )
 
     def exclude_by_products(self, products: Iterable[AbstractProduct]):
-        ordering = settings.TAGS_ORDER
-        distinct = [order.lstrip('-') for order in ordering]
-
         return (
             self
             .exclude(products__in=products)
-            .order_by(*ordering)
-            .distinct(*distinct, 'id')
+            .distinct()
         )
 
     def get_group_tags_pairs(self) -> List[Tuple[TagGroup, List['Tag']]]:
@@ -378,11 +382,8 @@ class TagQuerySet(models.QuerySet):
 
 class TagManager(models.Manager.from_queryset(TagQuerySet)):
 
-    def get_queryset(self):
-        return (
-            super().get_queryset()
-            .order_by(*settings.TAGS_ORDER)
-        )
+    def order_by_alphanumeric(self):
+        return self.get_queryset().order_by_alphanumeric()
 
     def get_group_tags_pairs(self):
         return self.get_queryset().get_group_tags_pairs()
