@@ -7,11 +7,14 @@ from django.db import models
 from django.db.models import Q, F, When, Case, Value, BooleanField
 from django.shortcuts import _get_queryset
 
-QuerySet_ = TypeVar('QuerySet_')
+# generic type.
+# See code example here to clarify why we are needed generic type:
+# https://docs.python.org/3/library/typing.html#generics
+QuerySetType = TypeVar('QuerySetType')
 
 
-def search(term: str, model_type: Union[models.Model, models.Manager, QuerySet_],
-           lookups: list, ordering=None) -> QuerySet_:
+def search(term: str, model_type: Union[models.Model, models.Manager, QuerySetType],
+           lookups: list, ordering=None) -> QuerySetType:
     """
     Return search results based on a given model
     """
