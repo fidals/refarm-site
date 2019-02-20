@@ -300,7 +300,7 @@ class Tag(TestCase):
             catalog_models.MockTag(name='12 В'),
         ]
 
-        # revese just in case
+        # reverse just in case
         catalog_models.MockTag.objects.bulk_create(ordered_tags[::-1])
 
         for i, tag in enumerate(catalog_models.MockTag.objects.order_by_alphanumeric()):
