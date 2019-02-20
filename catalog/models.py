@@ -231,11 +231,11 @@ class TagQuerySet(models.QuerySet):
     # @todo #273: 60m Create an index for order_by_alphanumeric query.
     def order_by_alphanumeric(self):
         """Sort the Tag by name's alphabetic chars and then by numeric chars."""
-        return self.annotate(
-            tag_name=Substring(models.F('name'), models.Value('[a-zA-Zа-яА-Я]+')),
-            tag_value=models.functions.Cast(
-                Substring(models.F('name'), models.Value('[0-9]+\.?[0-9]*')),
-                models.FloatField(),
+        return Tag.objects.annotate(
+            tag_name=Substring(F('name'), Value('[a-zA-Zа-яА-Я]+')),
+            tag_value=Cast(
+                Substring(F('name'), Value('[0-9]+\.?[0-9]*')),
+                FloatField(),
         )).order_by('tag_name', 'tag_value')
 
     def filter_by_products(self, products: Iterable[AbstractProduct]):

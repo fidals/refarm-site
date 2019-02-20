@@ -289,19 +289,3 @@ class Tag(TestCase):
             self.assertLessEqual(len(tag.slug), catalog.models.SLUG_MAX_LENGTH)
         except DataError as e:
             self.assertTrue(False, f'Tag has too long name. {e}')
-
-    def test_order_by_alphanumeric(self):
-        ordered_tags = [
-            catalog_models.MockTag(name='a'),
-            catalog_models.MockTag(name='b'),
-            catalog_models.MockTag(name='1.2 В'),
-            catalog_models.MockTag(name='1.6 В'),
-            catalog_models.MockTag(name='5 В'),
-            catalog_models.MockTag(name='12 В'),
-        ]
-
-        # revese just in case
-        catalog_models.MockTag.objects.bulk_create(ordered_tags[::-1])
-
-        for i, tag in enumerate(catalog_models.MockTag.objects.order_by_alphanumeric()):
-            self.assertEqual(tag, ordered_tags[i])
