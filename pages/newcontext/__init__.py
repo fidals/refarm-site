@@ -1,3 +1,3 @@
 from . import base, pages
-from .base import Context, Contexts, SimpleContext
+from .base import Context, Contexts
 from .pages import Page
