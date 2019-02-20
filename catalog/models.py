@@ -228,7 +228,7 @@ class TagGroup(models.Model):
 
 class TagQuerySet(models.QuerySet):
 
-    # @todo #273: 60m Create an index for order_by_alphanumeric query.
+    # @todo #273:60m Create an index for order_by_alphanumeric query.
     def order_by_alphanumeric(self):
         """Sort the Tag by name's alphabetic chars and then by numeric chars."""
         return self.annotate(
