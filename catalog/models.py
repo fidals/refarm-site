@@ -5,15 +5,13 @@ from operator import attrgetter
 from typing import Dict, Iterable, List, Tuple
 from uuid import uuid4
 
-from django.conf import settings
-from django.utils.text import slugify
-from unidecode import unidecode
-
 import mptt
-from django.db import models
+from django.conf import settings
 from django.core.urlresolvers import reverse
+from django.db import models
+from django.utils.text import slugify
 from django.utils.translation import ugettext_lazy as _
-
+from unidecode import unidecode
 
 SLUG_MAX_LENGTH = 50
 
@@ -105,9 +103,6 @@ class ProductQuerySet(models.QuerySet):
             .select_related('category')
             .prefetch_related('page__images')
         )
-
-    def get_offset(self, start, step):
-        return self[start:start + step]
 
     def filter_descendants(self, category: models.Model) -> models.QuerySet:
         return self.filter(category__in=category.get_descendants(True))

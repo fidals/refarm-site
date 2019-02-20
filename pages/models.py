@@ -82,8 +82,6 @@ class Page(mptt.models.MPTTModel, ImageMixin):
 
     objects = PageManager()
 
-    # field for dirty patch with `pages.display.Page` object.
-    # See `shopelectro.context.Page#context` for example why it's needed.
     display = display.Page()
 
     class Meta:

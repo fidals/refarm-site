@@ -4,9 +4,8 @@ import unittest
 from django.db import DataError
 from django.test import TestCase
 
-from pages.models import CustomPage
-
 import catalog
+from pages.models import CustomPage
 from tests.catalog import models as catalog_models
 
 
@@ -240,11 +239,6 @@ class TestProduct(TestCase):
 
         for products_by_instance in products_by_instance:
             self.assertEqual(products_by_instance.category, self.category)
-
-    def test_get_offset(self):
-        products_offset = catalog_models.MockProduct.objects.all().get_offset(1, 3)
-
-        self.assertEqual(len(products_offset), 2)
 
 
 class Tag(TestCase):

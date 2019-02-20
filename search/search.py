@@ -1,15 +1,20 @@
 from functools import reduce
-from typing import List, Union, Iterable
 from operator import or_, add
+from typing import List, Union, Iterable, TypeVar
 
 from django.contrib.postgres.search import TrigramSimilarity
 from django.db import models
 from django.db.models import Q, F, When, Case, Value, BooleanField
 from django.shortcuts import _get_queryset
 
+# generic type.
+# See code example here to clarify why we are needed generic type:
+# https://docs.python.org/3/library/typing.html#generics
+QuerySetType = TypeVar('QuerySetType')
 
-def search(term: str, model_type: Union[models.Model, models.Manager, models.QuerySet],
-           lookups: list, ordering=None) -> models.QuerySet:
+
+def search(term: str, model_type: Union[models.Model, models.Manager, QuerySetType],
+           lookups: list, ordering=None) -> QuerySetType:
     """
     Return search results based on a given model
     """
