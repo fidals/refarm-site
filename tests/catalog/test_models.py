@@ -293,7 +293,7 @@ class Tag(TestCase):
 
     def test_order_by_alphanumeric(self):
         ordered_tags = [
-            catalog_models.MockTag(name=name),
+            catalog_models.MockTag(name=name)
             for name in [
                 'a', 'b', '1 A', '2.1 A', '1.2 В', '1.2 В', '1.6 В', '5 В', '12 В',
             ]
