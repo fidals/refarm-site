@@ -23,7 +23,8 @@ def save_order_to_session(session, order: Order):
     session.modified = True
 
 
-# TODO - rm it
+# @todo 279:30m Fix PDD linter from CI pipeline.
+#  It missed the wrong formatted task. See the parent task for details.
 def get_keys_from_post(request, *args):
     """Get a tuple of given keys from request.POST object."""
     return tuple(request.POST[arg] for arg in args)
