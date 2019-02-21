@@ -1,5 +1,6 @@
 """Defines tests for models in Catalog app."""
 import unittest
+from random import shuffle
 
 from django.db import DataError
 from django.test import TestCase
@@ -292,16 +293,14 @@ class Tag(TestCase):
 
     def test_order_by_alphanumeric(self):
         ordered_tags = [
-            catalog_models.MockTag(name='a'),
-            catalog_models.MockTag(name='b'),
-            catalog_models.MockTag(name='1.2 В'),
-            catalog_models.MockTag(name='1.6 В'),
-            catalog_models.MockTag(name='5 В'),
-            catalog_models.MockTag(name='12 В'),
+            catalog_models.MockTag(name=name),
+            for name in [
+                'a', 'b', '1 A', '2.1 A', '1.2 В', '1.2 В', '1.6 В', '5 В', '12 В',
+            ]
         ]
 
         # reverse just in case
-        catalog_models.MockTag.objects.bulk_create(ordered_tags[::-1])
+        catalog_models.MockTag.objects.bulk_create(shuffle(ordered_tags))
 
         for i, tag in enumerate(catalog_models.MockTag.objects.order_by_alphanumeric()):
             self.assertEqual(tag, ordered_tags[i])
