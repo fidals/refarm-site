@@ -304,3 +304,11 @@ class Tag(TestCase):
 
         for i, tag in enumerate(catalog_models.MockTag.objects.order_by_alphanumeric()):
             self.assertEqual(tag, ordered_tags[i])
+
+    def test_slugify_conflicts(self):
+        slugs = [
+            catalog_models.MockTag.objects.create(name=name).slug
+            for name in ['11 A', '1/1 A', '1 1 A']
+        ]
+
+        self.assertEqual(len(slugs), len(set(slugs)), msg=slugs)
