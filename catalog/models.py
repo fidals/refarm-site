@@ -227,6 +227,7 @@ class TagGroup(models.Model):
 
 
 class TagQuerySet(models.QuerySet):
+    # @todo #273:30m Apply new order_by_alphanumeric for SE/STB.
 
     # @todo #273:60m Create an index for order_by_alphanumeric query.
     def order_by_alphanumeric(self):
