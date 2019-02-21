@@ -424,7 +424,7 @@ class Tag(models.Model):
     def __str__(self):
         return self.name
 
-    # @todo fidals/shopelectro#741:15m Make _generate_short_slug actual.
+    # @todo #fidals/shopelectro#741:15m Make _generate_short_slug actual.
     #  _generate_short_slug contains unrelevant code and docs.
     def _generate_short_slug(self, max_length=SLUG_MAX_LENGTH) -> None:
         """

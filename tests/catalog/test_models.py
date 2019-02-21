@@ -299,7 +299,7 @@ class Tag(TestCase):
             ]
         ]
 
-        # reverse just in case
+        # shuffle just in case
         catalog_models.MockTag.objects.bulk_create(shuffle(ordered_tags))
 
         for i, tag in enumerate(catalog_models.MockTag.objects.order_by_alphanumeric()):
