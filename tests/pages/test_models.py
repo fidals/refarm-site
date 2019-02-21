@@ -145,9 +145,6 @@ class TestPage(TestCase):
         right = Page.objects.create(name='right', template=right_template)
 
         left.template.h1, right.template.h1 = '{{ tag }}', '{{ tag }}'
-        left.template.save()
-        right.template.save()
-
         left.display, right.display = {'tag': 'A'}, {'tag': 'B'}
 
         self.assertNotEqual(left.display.h1, right.display.h1)
