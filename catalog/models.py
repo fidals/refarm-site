@@ -13,7 +13,7 @@ from django.utils.text import slugify
 from django.utils.translation import ugettext_lazy as _
 from unidecode import unidecode
 
-from catalog.expressions import Substring
+from catalog.models_expressions import Substring
 
 SLUG_MAX_LENGTH = 50
 
@@ -229,7 +229,6 @@ class TagGroup(models.Model):
 class TagQuerySet(models.QuerySet):
     # @todo #273:30m Apply new order_by_alphanumeric for SE/STB.
 
-    # @todo #273:60m Create an index for order_by_alphanumeric query.
     def order_by_alphanumeric(self):
         """Sort the Tag by name's alphabetic chars and then by numeric chars."""
         return self.annotate(
