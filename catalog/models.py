@@ -253,6 +253,9 @@ class TagQuerySet(models.QuerySet):
             .distinct()
         )
 
+    # @todo #SE747:30m  Rm `get_group_tags_pairs`.
+    #  Use `get_grouped_tags -> Dict[Group, List[Tag]]` instead.
+    #  Tags pairs already lead us to errors with groups order.
     def get_group_tags_pairs(self) -> List[Tuple[TagGroup, List['Tag']]]:
         """
         Return set of group_tag pairs with specific properties.
@@ -279,7 +282,10 @@ class TagQuerySet(models.QuerySet):
                     return False
             return True
 
-        grouped_tags = groupby(self.prefetch_related('group'), key=attrgetter('group'))
+        grouped_tags = groupby(
+            self.prefetch_related('group').order_by('group__name'),
+            key=attrgetter('group')
+        )
         result = []
         for group, tags_ in grouped_tags:
             tags_ = list(tags_)
