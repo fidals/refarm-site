@@ -1,5 +1,3 @@
-import unittest
-
 from django.test import TestCase
 
 from pages.models import ModelPage, CustomPage, FlatPage, Page, PageTemplate
@@ -136,7 +134,6 @@ class TestPage(TestCase):
 
     # @todo #SE742:30m  Fix display issue with shared context.
     #  See the test below for details.
-    @unittest.expectedFailure
     def test_display_has_unique_context(self):
         """Two different pages should contain not overlapping display contexts."""
         left_template = PageTemplate.objects.create(name='left', h1='{{ tag }}')
