@@ -24,15 +24,16 @@ class AddIndexSQL(Operation):
     def _index_name(self, table_name):
         return f'{table_name}_{self.name}_idx'
 
-    def database_forwards(self, app_label, schema_editor, from_state, to_state):
+    def database_forwards(self, app_label, schema_editor, _, to_state):
         to_model = to_state.apps.get_model(app_label, self.model_name)
         if self.allow_migrate_model(schema_editor.connection.alias, to_model):
             table_name = to_model._meta.db_table
             schema_editor.execute(
-                f'CREATE INDEX {self._index_name(table_name)} ON {table_name} ({", ".join(self.columns)});'
+                f'CREATE INDEX {self._index_name(table_name)} ON {table_name}'
+                f'({", ".join(self.columns)});'
             )
 
-    def database_backwards(self, app_label, schema_editor, from_state, to_state):
+    def database_backwards(self, app_label, schema_editor, from_state, _):
         from_model = from_state.apps.get_model(app_label, self.model_name)
         if self.allow_migrate_model(schema_editor.connection.alias, from_model):
             table_name = from_model._meta.db_table
@@ -41,7 +42,7 @@ class AddIndexSQL(Operation):
             )
 
     def describe(self):
-        return f"Create index {self.name} for {self.model_name}"
+        return f'Create index {self.name} for {self.model_name}'
 
 # Django doesn't provide ability to add hooks to makemigrations.
 # So we have to create migration files and add operations for
