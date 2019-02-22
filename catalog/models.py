@@ -283,7 +283,9 @@ class TagQuerySet(models.QuerySet):
             return True
 
         grouped_tags = groupby(
-            self.prefetch_related('group').order_by('group__name'),
+            self
+            .prefetch_related('group')
+            .order_by('group__position', 'group__name'),
             key=attrgetter('group')
         )
         result = []
