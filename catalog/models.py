@@ -424,13 +424,7 @@ class Tag(models.Model):
         return self.name
 
     def _slugify(self) -> None:
-        """
-        Make a slug from the name.
-
-        1. Translate the name's punctution chars to "_"
-        2. Slugify the name
-        3. Keep the slug length less then SLUG_MAX_LENGTH
-        """
+        """Make a slug from the name."""
         # Translate all punctuation chars to "_".
         # It doesn't conflict with `slugify`, which translate spaces to "-"
         # and punctuation chars to "".
@@ -438,6 +432,7 @@ class Tag(models.Model):
             {ord(p): '_' for p in string.punctuation}
         )))
 
+        # Keep the slug length less then SLUG_MAX_LENGTH
         if len(slug) < self.SLUG_MAX_LENGTH:
             return slug
 
