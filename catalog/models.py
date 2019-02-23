@@ -1,8 +1,9 @@
 import random
 import string
+from itertools import OrderedDict
 from itertools import chain, groupby
 from operator import attrgetter
-from typing import Dict, Iterable, List, Tuple
+from typing import Dict, Iterable, List
 from uuid import uuid4
 
 import mptt
@@ -225,7 +226,6 @@ class TagGroup(models.Model):
 
 
 class TagQuerySet(models.QuerySet):
-    # @todo #273:30m Apply new order_by_alphanumeric for SE/STB.
 
     def order_by_alphanumeric(self):
         """Sort the Tag by name's alphabetic chars and then by numeric chars."""
@@ -250,53 +250,31 @@ class TagQuerySet(models.QuerySet):
             .distinct()
         )
 
-    # @todo #SE747:30m  Rm `get_group_tags_pairs`.
-    #  Use `get_grouped_tags -> Dict[Group, List[Tag]]` instead.
-    #  Tags pairs already lead us to errors with groups order.
-    def get_group_tags_pairs(self) -> List[Tuple[TagGroup, List['Tag']]]:
+    def get_group_tags_pairs(self) -> Dict[TagGroup, List['Tag']]:
         """
         Return set of group_tag pairs with specific properties.
 
         Every pair contains tag group and sorted tag list.
-        It's sorted alphabetically or numerically.
-        Sort method depends of tag value type.
+        It's sorted alphabetically and then numerically.
         """
         # @todo #STB374:120m Move tag's value to separated field.
         #  Now we have fields like `tag.name == '10 м'`.
         #  But should have smth like this:
         #  `tag.value, tag.group.measure, tag.label == 10, 'м', '10 м'`.
         #  Right now we should do dirty hacks for tags comparing mech.
-        def int_or_str(value: str):
-            try:
-                return int(value.split(' ')[0])
-            except ValueError:
-                return value
-
-        def has_only_int_keys(tags: list):
-            for t in tags:
-                key = int_or_str(t.name)
-                if isinstance(key, str):
-                    return False
-            return True
-
         grouped_tags = groupby(
             self
             .prefetch_related('group')
-            .order_by('group__position', 'group__name'),
-            key=attrgetter('group')
+            .order_by('group__position', 'group__name')
+            .order_by_alphanumeric(),
+            key=attrgetter('group'),
         )
-        result = []
-        for group, tags_ in grouped_tags:
-            tags_ = list(tags_)
-            key = (
-                (lambda t: int_or_str(t.name))
-                if has_only_int_keys(tags_)
-                else attrgetter('name')
-            )
-            tags_ = sorted(tags_, key=key)
-            result.append((group, tags_))
-
-        return result
+        # `groupby` is generator, so it will safer to evaluate it here
+        return OrderedDict([
+            (group, list(tags))
+            for group, tags in grouped_tags
+            if group
+        ])
 
     def get_brands(self, products: Iterable[AbstractProduct]) -> Dict[AbstractProduct, 'Tag']:
         brand_tags = (
@@ -328,8 +306,7 @@ class TagQuerySet(models.QuerySet):
             return ''
 
         group_tags_map = self.get_group_tags_pairs()
-
-        _, tags_by_group = zip(*group_tags_map)
+        tags_by_group = list(group_tags_map.values())
 
         return group_delimiter.join(
             type_delimiter.join(getattr(tag, field_name) for tag in tags_list)
@@ -360,8 +337,7 @@ class TagQuerySet(models.QuerySet):
             return ''
 
         group_tags_map = self.get_group_tags_pairs()
-
-        _, tags_by_group = zip(*group_tags_map)
+        tags_by_group = list(group_tags_map.values())
 
         return group_delimiter.join(
             type_delimiter.join(getattr(tag, field_name) for tag in tags_list)
