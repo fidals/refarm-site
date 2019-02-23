@@ -21,7 +21,7 @@ class GroupedTags(Context):
 
     def context(self):
         return {
-            'group_tags_pairs': self._tags.qs().get_group_tags_pairs(),
+            'group_tags_pairs': self._tags.qs().get_group_tags_pairs().items(),
         }
 
 
