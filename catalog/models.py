@@ -1,6 +1,6 @@
 import random
 import string
-from itertools import OrderedDict
+from collections import OrderedDict
 from itertools import chain, groupby
 from operator import attrgetter
 from typing import Dict, Iterable, List
@@ -262,13 +262,14 @@ class TagQuerySet(models.QuerySet):
         #  But should have smth like this:
         #  `tag.value, tag.group.measure, tag.label == 10, 'м', '10 м'`.
         #  Right now we should do dirty hacks for tags comparing mech.
-        grouped_tags = groupby(
+        grouped_tags = list(groupby(
             self
             .prefetch_related('group')
             .order_by('group__position', 'group__name')
             .order_by_alphanumeric(),
             key=attrgetter('group'),
-        )
+        ))
+        print(grouped_tags)
         # `groupby` is generator, so it will safer to evaluate it here
         return OrderedDict([
             (group, list(tags))
