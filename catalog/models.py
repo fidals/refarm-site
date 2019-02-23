@@ -1,7 +1,7 @@
 import random
 import string
 from collections import OrderedDict
-from itertools import chain, groupby
+from itertools import chain
 from operator import attrgetter
 from typing import Dict, Iterable, List
 from uuid import uuid4
@@ -234,7 +234,7 @@ class TagQuerySet(models.QuerySet):
             tag_value=models.functions.Cast(
                 Substring(models.F('name'), models.Value('[0-9]+\.?[0-9]*')),
                 models.FloatField(),
-        )).order_by('tag_name', 'tag_value')
+        )).order_by('group__position', 'group__name', 'tag_name', 'tag_value')
 
     def filter_by_products(self, products: Iterable[AbstractProduct]):
         return (
@@ -262,20 +262,15 @@ class TagQuerySet(models.QuerySet):
         #  But should have smth like this:
         #  `tag.value, tag.group.measure, tag.label == 10, 'м', '10 м'`.
         #  Right now we should do dirty hacks for tags comparing mech.
-        grouped_tags = list(groupby(
-            self
-            .prefetch_related('group')
-            .order_by('group__position', 'group__name')
-            .order_by_alphanumeric(),
-            key=attrgetter('group'),
-        ))
-        print(grouped_tags)
-        # `groupby` is generator, so it will safer to evaluate it here
-        return OrderedDict([
-            (group, list(tags))
-            for group, tags in grouped_tags
-            if group
-        ])
+        ordered = self.prefetch_related('group').order_by_alphanumeric()
+
+        grouped = OrderedDict()
+        for tag in ordered:
+            if tag.group in grouped:
+                grouped[tag.group].append(tag)
+            else:
+                grouped[tag.group] = [tag]
+        return grouped
 
     def get_brands(self, products: Iterable[AbstractProduct]) -> Dict[AbstractProduct, 'Tag']:
         brand_tags = (

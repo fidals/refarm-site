@@ -248,10 +248,6 @@ class Tag(TestCase):
     #  Copy from SE all tags fixtures creation logic.
     #  Then move `shopelectro.tests.tests_models.TagModel` to this class.
 
-    def bulk_save(self, values):
-        model = type(values[0])
-        model.objects.bulk_create(values)
-
     def test_tag_doubled_save_slug_postfix(self):
         """Tag should preserve it's slug value after several saves."""
         group = catalog_models.MockTagGroup.objects.create(name='Напряжение вход')
@@ -288,7 +284,7 @@ class Tag(TestCase):
         ]
 
         # reverse just in case
-        self.bulk_save(ordered_tags[::-1])
+        catalog_models.MockTag.objects.bulk_create(ordered_tags[::-1])
         for i, tag in enumerate(catalog_models.MockTag.objects.order_by_alphanumeric()):
             self.assertEqual(tag, ordered_tags[i])
 
@@ -302,26 +298,25 @@ class Tag(TestCase):
 
     def test_group_tags(self):
         groups = [
-            catalog_models.MockTagGroup(name=name)
-            for name in ['Производитель', 'Амперы', 'Вольты']
+            catalog_models.MockTagGroup.objects.create(name=name)
+            for name in ['Амперы', 'Вольты', 'Производитель']
         ]
-        self.bulk_save(groups)
 
         grouped_tags = []
         for i, names in enumerate([
-            ['a', 'b'], ['1 A', '2.1 A'], ['1.2 В', '12 В'],
+            ['1 A', '2.1 A'],
+            ['1.2 В', '12 В'],
+            ['a', 'b'],
         ]):
             grouped_tags.append([
-                catalog_models.MockTag(name=name, group=groups[i])
+                catalog_models.MockTag.objects.create(name=name, group=groups[i])
                 for name in names
             ])
-        self.bulk_save(list(chain.from_iterable(grouped_tags)))
 
-        print(catalog_models.MockTag.objects.first().group)
         grouped = catalog_models.MockTag.objects.get_group_tags_pairs()
 
         # assert grouping logic
-        for i, (group, tags) in enumerate(grouped):
+        for i, (group, tags) in enumerate(grouped.items()):
             self.assertEqual(group, groups[i])
             for j, tag in enumerate(tags):
                 self.assertEqual(group, tag.group)
