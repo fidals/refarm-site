@@ -249,7 +249,7 @@ class TagQuerySet(models.QuerySet):
             .exclude(products__in=products)
             .distinct()
         )
-
+    # @todo #282:15m Rename get_group_tags_pairs to group_tags
     def get_group_tags_pairs(self) -> Dict[TagGroup, List['Tag']]:
         """
         Return set of group_tag pairs with specific properties.
