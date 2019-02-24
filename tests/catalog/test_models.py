@@ -1,6 +1,6 @@
 """Defines tests for models in Catalog app."""
 import unittest
-from random import shuffle
+from itertools import chain
 
 from django.db import DataError
 from django.test import TestCase
@@ -248,23 +248,6 @@ class Tag(TestCase):
     #  Copy from SE all tags fixtures creation logic.
     #  Then move `shopelectro.tests.tests_models.TagModel` to this class.
 
-    @unittest.skip
-    def test_double_named_tag_saving(self):
-        """Two tags with the same name should have unique slugs."""
-        def save_doubled_tag(tag_from_):
-            group_to = catalog_models.MockTagGroup.objects.exclude(id=tag_from_.group.id).first()
-            tag_to_ = catalog_models.MockTag(
-                group=group_to, name=tag_from_.name, position=tag_from_.position
-            )
-            # required to create `tag.products` field
-            tag_to_.save()
-            tag_to_.products.set(tag_from.products.all())
-            tag_to_.save()
-            return tag_to_
-        tag_from = catalog_models.MockTag.objects.first()
-        tag_to = save_doubled_tag(tag_from)
-        self.assertNotEqual(tag_from.slug, tag_to.slug)
-
     def test_tag_doubled_save_slug_postfix(self):
         """Tag should preserve it's slug value after several saves."""
         group = catalog_models.MockTagGroup.objects.create(name='Напряжение вход')
@@ -295,13 +278,13 @@ class Tag(TestCase):
         ordered_tags = [
             catalog_models.MockTag(name=name)
             for name in [
-                'a', 'b', '1 A', '2.1 A', '1.2 В', '1.2 В', '1.6 В', '5 В', '12 В',
+                'a', '1 A', '2.1 A',
+                'b', '1.2 В', '1.6 В', '12 В',
             ]
         ]
 
-        # shuffle just in case
-        catalog_models.MockTag.objects.bulk_create(shuffle(ordered_tags))
-
+        # reverse just in case
+        catalog_models.MockTag.objects.bulk_create(ordered_tags[::-1])
         for i, tag in enumerate(catalog_models.MockTag.objects.order_by_alphanumeric()):
             self.assertEqual(tag, ordered_tags[i])
 
@@ -312,3 +295,34 @@ class Tag(TestCase):
         ]
 
         self.assertEqual(len(slugs), len(set(slugs)), msg=slugs)
+
+    def test_group_tags(self):
+        groups = [
+            catalog_models.MockTagGroup.objects.create(name=name)
+            for name in ['Амперы', 'Вольты', 'Производитель']
+        ]
+
+        grouped_tags = []
+        for i, names in enumerate([
+            ['1 A', '2.1 A'],
+            ['1.2 В', '12 В'],
+            ['a', 'b'],
+        ]):
+            grouped_tags.append([
+                catalog_models.MockTag.objects.create(name=name, group=groups[i])
+                for name in names
+            ])
+
+        grouped = catalog_models.MockTag.objects.get_group_tags_pairs()
+
+        # assert grouping logic
+        for i, (group, tags) in enumerate(grouped.items()):
+            self.assertEqual(group, groups[i])
+            for j, tag in enumerate(tags):
+                self.assertEqual(group, tag.group)
+
+        # assert tags ordering
+        self.assertEqual(
+            grouped_tags,
+            list(grouped.values()),
+        )

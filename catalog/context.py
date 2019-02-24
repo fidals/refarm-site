@@ -322,7 +322,7 @@ class TaggedCategory(AbstractProductsListContext):
         return {
             **context,
             'tags': tags,
-            'group_tags_pairs': group_tags_pairs,
+            'group_tags_pairs': group_tags_pairs.items(),
             'products_data': [],  # empty for optimization
         }
 
