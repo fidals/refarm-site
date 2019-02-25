@@ -74,7 +74,7 @@ class IndexOperation(Operation):
         return f'Operate the index {self.name} for {self.model_name}'
 
 
-class RevertIndex(Operation):
+class RevertOperation(Operation):
 
     reduces_to_sql = True
     reversible = True
@@ -108,25 +108,26 @@ class IndexTagAlphanumeric:
                 name=self.ALPHANUMERIC_NAME,
                 columns=[
                     "substring(name, '[a-zA-Zа-яА-Я]+')",
-                    "(substring(name, '[0-9]+\.?[0-9]*')::float)"
+                    "(substring(name, '[0-9]+\.?[0-9]*')::float)",
                 ],
             ),
             backward=DropIndex(name=self.ALPHANUMERIC_NAME),
         )]
 
     def v2(self) -> typing.List[IndexOperation]:
+        """Preserve whitespaces for alphabetic values of the index."""
         old = self.v1()[0]
         return [
-            RevertIndex(old),
+            RevertOperation(old),
             IndexOperation(
                 model_name=self.MODEL_NAME,
                 forward=AddIndex(
                     name=self.ALPHANUMERIC_NAME,
                     columns=[
                         "substring(name, '[a-zA-Zа-яА-Я\s]+')",
-                        "(substring(name, '[0-9]+\.?[0-9]*')::float)"
+                        "(substring(name, '[0-9]+\.?[0-9]*')::float)",
                     ],
                 ),
                 backward=DropIndex(name=self.ALPHANUMERIC_NAME),
-            )
+            ),
         ]
