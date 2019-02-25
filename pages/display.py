@@ -29,35 +29,35 @@ class Page:
         """
         self._context = context or {}
         self._page = _page
-        self._name = _name
+        self._key = _name
 
     def __set_name__(self, instance, name):
-        # get `Page` instace to create new `Page` instance with `name`
+        # get `Page` instance to create new `Page` instance with `name`
         page = getattr(instance, name)
         page_with_name = Page(page._context, _page=page._page, _name=name)
         # Set new `Page` instance with name
         setattr(instance, name, page_with_name)
 
     def __get__(self, instance: 'pages.models.Page', type_):
-        if instance and self._name in instance.__dict__:
-            return instance.__dict__[self._name]
+        if instance and self._key in instance.__dict__:
+            return instance.__dict__[self._key]
         return Page(
             {'page': instance, **self._context},
             _page=instance,
-            _name=self._name,
+            _name=self._key,
         )
 
     def __set__(self, instance: 'pages.models.Page', value: typing.Dict[str, typing.Any]):
         if not isinstance(value, dict):
             raise ValueError(f'Value should be a dict')
 
-        if self._name in instance.__dict__:
+        if self._key in instance.__dict__:
             # merge old context with new one
-            context = {**instance.__dict__[self._name]._context, **value}
+            context = {**instance.__dict__[self._key]._context, **value}
         else:
             context = {**self._context, **value}
 
-        instance.__dict__[self._name] = Page(context, _page=instance, _name=self._name)
+        instance.__dict__[self._key] = Page(context, _page=instance, _name=self._key)
 
     def __getattr__(self, item):
         if item in self.STORED:
