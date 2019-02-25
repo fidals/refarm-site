@@ -92,11 +92,11 @@ class RevertOperation(Operation):
     def database_backwards(self, app_label, schema_editor, from_state, to_state):
         self.operation.database_forwards(app_label, schema_editor, from_state, to_state)
 
-
-
 # Django doesn't provide ability to add hooks to makemigrations.
 # So we have to create migration files and add operations for
 # abstract classes (like Tag) manually.
+
+
 class IndexTagAlphanumeric:
 
     ALPHANUMERIC_NAME = 'alphanumeric_name'
