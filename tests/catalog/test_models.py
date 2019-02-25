@@ -1,4 +1,5 @@
 """Defines tests for models in Catalog app."""
+import string
 import unittest
 from itertools import chain
 
@@ -343,4 +344,11 @@ class TagsOrdering(TestCase):
                 "6 в пластмассовом боксе",
                 "1 в стяжке",
                 "4 в стяжке",
+        ])
+
+    def test_ordering_ignore_punctuations(self):
+        self.assert_alphanumeric([
+                # e.g. 'Тест-а'
+                f'Тест{punct}{alpha}'
+                for punct, alpha in zip('-,_:;', string.ascii_lowercase[:6])
         ])

@@ -20,10 +20,10 @@ class IndexSQL(abc.ABC):
         """Execute SQL operation."""
 
 
-class AddIndex(IndexSQL):
+class AddedIndex(IndexSQL):
 
     def __init__(self, name: str, columns: typing.List[str]):
-        self.name = name
+        super().__init__(name)
         self.columns = columns
 
     def execute(self, table, schema_editor):
@@ -33,7 +33,7 @@ class AddIndex(IndexSQL):
         )
 
 
-class DropIndex(IndexSQL):
+class DroppedIndex(IndexSQL):
 
     def execute(self, table, schema_editor):
         schema_editor.execute(
@@ -75,7 +75,7 @@ class IndexOperation(Operation):
         return f'Operate the index {self.name} for {self.model_name}'
 
 
-class RevertOperation(Operation):
+class RevertedOperation(Operation):
 
     reduces_to_sql = True
     reversible = True
@@ -105,30 +105,30 @@ class IndexTagAlphanumeric:
     def v1(self) -> typing.List[IndexOperation]:
         return [IndexOperation(
             model_name=self.MODEL_NAME,
-            forward=AddIndex(
+            forward=AddedIndex(
                 name=self.ALPHANUMERIC_NAME,
                 columns=[
                     "substring(name, '[a-zA-Zа-яА-Я]+')",
                     "(substring(name, '[0-9]+\.?[0-9]*')::float)",
                 ],
             ),
-            backward=DropIndex(name=self.ALPHANUMERIC_NAME),
+            backward=DroppedIndex(name=self.ALPHANUMERIC_NAME),
         )]
 
     def v2(self) -> typing.List[IndexOperation]:
         """Preserve whitespaces for alphabetic values of the index."""
         old = self.v1()[0]
         return [
-            RevertOperation(old),
+            RevertedOperation(old),
             IndexOperation(
                 model_name=self.MODEL_NAME,
-                forward=AddIndex(
+                forward=AddedIndex(
                     name=self.ALPHANUMERIC_NAME,
                     columns=[
-                        "substring(name, '[a-zA-Zа-яА-Я\s]+')",
+                        "substring(name, '[a-zA-Zа-яА-Я\s\-_,:;]+')",
                         "(substring(name, '[0-9]+\.?[0-9]*')::float)",
                     ],
                 ),
-                backward=DropIndex(name=self.ALPHANUMERIC_NAME),
+                backward=DroppedIndex(name=self.ALPHANUMERIC_NAME),
             ),
         ]
