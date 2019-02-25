@@ -8,7 +8,7 @@ from django.db.migrations.operations.base import Operation
 
 class IndexSQL(abc.ABC):
 
-    def __init__(self, name: str)
+    def __init__(self, name: str):
         self.name = name
 
     def _index_name(self, table: str):
@@ -21,18 +21,18 @@ class IndexSQL(abc.ABC):
 
 class AddIndex(IndexSQL):
 
-    def __init__(self, name: str, columns: typing.List[str])
+    def __init__(self, name: str, columns: typing.List[str]):
         self.name = name
         self.columns = columns
 
     def execute(self, table, schema_editor):
         schema_editor.execute(
-            f'CREATE INDEX {self._index_name(table_name)} ON {table}'
+            f'CREATE INDEX {self._index_name(table)} ON {table}'
             f'({", ".join(self.columns)});'
         )
 
 
-class DropIndex:
+class DropIndex(IndexSQL):
 
     def execute(self, table, schema_editor):
         schema_editor.execute(
@@ -51,7 +51,7 @@ class IndexOperation(Operation):
     reversible = True
 
     def __init__(self, model_name, forward: IndexSQL, backward: IndexSQL):
-        self.name = name
+        self.model_name = model_name
         self.forward = forward
         self.backward = backward
 
@@ -62,13 +62,13 @@ class IndexOperation(Operation):
         to_model = to_state.apps.get_model(app_label, self.model_name)
         if self.allow_migrate_model(schema_editor.connection.alias, to_model):
             table_name = to_model._meta.db_table
-            self.forward.operation(table_name, schema_editor)
+            self.forward.execute(table_name, schema_editor)
 
     def database_backwards(self, app_label, schema_editor, from_state, _):
         from_model = from_state.apps.get_model(app_label, self.model_name)
         if self.allow_migrate_model(schema_editor.connection.alias, from_model):
             table_name = from_model._meta.db_table
-            self.backward.operation(table_name, schema_editor)
+            self.backward.execute(table_name, schema_editor)
 
     def describe(self):
         return f'Operate the index {self.name} for {self.model_name}'
