@@ -2,6 +2,7 @@ import abc
 import typing
 
 from django.db.migrations.operations.base import Operation
+from django.db.backends.base.schema import BaseDatabaseSchemaEditor
 
 # @todo #283:30m Group models.py, models_operations.py, models_expressions.py into the module.
 
@@ -15,7 +16,7 @@ class IndexSQL(abc.ABC):
         return f'{table}_{self.name}_idx'
 
     @abc.abstractmethod
-    def execute(self, table: str, schema_editor):
+    def execute(self, table: str, schema_editor: BaseDatabaseSchemaEditor):
         """Execute SQL operation."""
 
 
