@@ -230,7 +230,7 @@ class TagQuerySet(models.QuerySet):
     def order_by_alphanumeric(self):
         """Sort the Tag by name's alphabetic chars and then by numeric chars."""
         return self.annotate(
-            tag_name=Substring(models.F('name'), models.Value('[a-zA-Zа-яА-Я]+')),
+            tag_name=Substring(models.F('name'), models.Value('[a-zA-Zа-яА-Я\s\-_,:;]+')),
             tag_value=models.functions.Cast(
                 Substring(models.F('name'), models.Value('[0-9]+\.?[0-9]*')),
                 models.FloatField(),

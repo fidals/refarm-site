@@ -1,4 +1,5 @@
 """Defines tests for models in Catalog app."""
+import string
 import unittest
 from itertools import chain
 
@@ -274,20 +275,6 @@ class Tag(TestCase):
         except DataError as e:
             self.assertTrue(False, f'Tag has too long name. {e}')
 
-    def test_order_by_alphanumeric(self):
-        ordered_tags = [
-            catalog_models.MockTag(name=name)
-            for name in [
-                'a', '1 A', '2.1 A',
-                'b', '1.2 В', '1.6 В', '12 В',
-            ]
-        ]
-
-        # reverse just in case
-        catalog_models.MockTag.objects.bulk_create(ordered_tags[::-1])
-        for i, tag in enumerate(catalog_models.MockTag.objects.order_by_alphanumeric()):
-            self.assertEqual(tag, ordered_tags[i])
-
     def test_slugify_conflicts(self):
         slugs = [
             catalog_models.MockTag.objects.create(name=name).slug
@@ -326,3 +313,42 @@ class Tag(TestCase):
             grouped_tags,
             list(grouped.values()),
         )
+
+
+class TagsOrdering(TestCase):
+
+    def assert_alphanumeric(self, names):
+        ordered_tags = [
+            catalog_models.MockTag(name=name)
+            for name in names
+        ]
+
+        # reverse just in case
+        catalog_models.MockTag.objects.bulk_create(ordered_tags[::-1])
+        for i, tag in enumerate(catalog_models.MockTag.objects.order_by_alphanumeric()):
+            self.assertEqual(tag, ordered_tags[i])
+
+    def test_ordering(self):
+        self.assert_alphanumeric([
+            'a', '1 A', '2.1 A',
+            'b', '1.2 В', '1.6 В', '12 В',
+        ])
+
+    def test_ordering_with_whitespaces(self):
+        self.assert_alphanumeric([
+                "1 в блистере",
+                "4 в блистере",
+                "1 в коробке",
+                "10 в коробке",
+                "4 в пластмассовом боксе",
+                "6 в пластмассовом боксе",
+                "1 в стяжке",
+                "4 в стяжке",
+        ])
+
+    def test_ordering_ignore_punctuations(self):
+        self.assert_alphanumeric([
+                # e.g. 'Тест-а'
+                f'Тест{punct}{alpha}'
+                for punct, alpha in zip('-,_:;', string.ascii_lowercase[:6])
+        ])
