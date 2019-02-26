@@ -8,6 +8,6 @@ class TestFields(TestCase):
 
     def test_attribute_error(self):
         # noinspection PyTypeChecker
-        page = display.Page(None, {})
+        page = display.Page({})
         with self.assertRaises(AttributeError):
             _ = page.bad_attr
