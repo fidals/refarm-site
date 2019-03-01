@@ -8,8 +8,8 @@ services:
       dockerfile: docker/Dockerfile.python
     image: fidals/rf:test
     working_dir: $SRC_DIR
-    environment:
-      - DATABASE_URL=postgres://$DB_USER:$DB_PASS@db/$DB_NAME
+    env_file:
+     - .env
     depends_on:
       - db
     links:
