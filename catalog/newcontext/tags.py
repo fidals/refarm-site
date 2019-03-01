@@ -1,7 +1,7 @@
-from catalog import models
-from catalog.newcontext.context import Context, Tags, Products
-
 from django.http import Http404
+
+from catalog import models
+from catalog.newcontext.context import Context, Tags
 
 
 class TagsByProducts(Tags):
@@ -21,7 +21,7 @@ class GroupedTags(Context):
 
     def context(self):
         return {
-            'group_tags_pairs': self._tags.qs().get_group_tags_pairs().items(),
+            'group_tags_pairs': self._tags.qs().group_tags().items(),
         }
 
 

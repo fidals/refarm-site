@@ -1,18 +1,10 @@
 import os
-import tests
 
-import dj_database_url
+import tests
 
 DIRNAME = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 DEBUG = True
-
-DATABASES = {
-    # @todo #230:15m Drop `dj_database_url` dependency.
-    'default': dj_database_url.config(
-        env='DATABASE_URL',
-    )
-}
 
 ROOT_URLCONF = 'tests.urls'
 

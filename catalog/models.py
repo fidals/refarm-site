@@ -2,7 +2,6 @@ import random
 import string
 from collections import OrderedDict
 from itertools import chain
-from operator import attrgetter
 from typing import Dict, Iterable, List
 from uuid import uuid4
 
@@ -249,8 +248,8 @@ class TagQuerySet(models.QuerySet):
             .exclude(products__in=products)
             .distinct()
         )
-    # @todo #282:15m Rename get_group_tags_pairs to group_tags
-    def get_group_tags_pairs(self) -> Dict[TagGroup, List['Tag']]:
+
+    def group_tags(self) -> Dict[TagGroup, List['Tag']]:
         """
         Return set of group_tag pairs with specific properties.
 
@@ -301,7 +300,7 @@ class TagQuerySet(models.QuerySet):
         if not self:
             return ''
 
-        group_tags_map = self.get_group_tags_pairs()
+        group_tags_map = self.group_tags()
         tags_by_group = list(group_tags_map.values())
 
         return group_delimiter.join(
@@ -332,7 +331,7 @@ class TagQuerySet(models.QuerySet):
         if not self:
             return ''
 
-        group_tags_map = self.get_group_tags_pairs()
+        group_tags_map = self.group_tags()
         tags_by_group = list(group_tags_map.values())
 
         return group_delimiter.join(
@@ -363,8 +362,8 @@ class TagManager(models.Manager.from_queryset(TagQuerySet)):
     def order_by_alphanumeric(self):
         return self.get_queryset().order_by_alphanumeric()
 
-    def get_group_tags_pairs(self):
-        return self.get_queryset().get_group_tags_pairs()
+    def group_tags(self):
+        return self.get_queryset().group_tags()
 
     def filter_by_products(self, products):
         return self.get_queryset().filter_by_products(products)
