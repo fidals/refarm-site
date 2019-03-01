@@ -1,18 +1,10 @@
 import os
-import tests
 
-import dj_database_url
+import tests
 
 DIRNAME = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 DEBUG = True
-
-DATABASES = {
-    # @todo #230:15m Drop `dj_database_url` dependency.
-    'default': dj_database_url.config(
-        env='DATABASE_URL',
-    )
-}
 
 ROOT_URLCONF = 'tests.urls'
 
@@ -30,6 +22,17 @@ PLACEHOLDER_IMAGE = 'logo.svg'
 PLACEHOLDER_ALT = 'Some useful logo'
 
 USE_CELERY = False
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.environ['DB_NAME'],
+        'USER': os.environ['DB_USER'],
+        'PASSWORD': os.environ['DB_PASS'],
+        'HOST': 'db',
+        'PORT': '5432',
+    }
+}
 
 TEMPLATES = [
     {

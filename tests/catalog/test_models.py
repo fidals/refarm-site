@@ -1,7 +1,5 @@
 """Defines tests for models in Catalog app."""
 import string
-import unittest
-from itertools import chain
 
 from django.db import DataError
 from django.test import TestCase
@@ -300,7 +298,7 @@ class Tag(TestCase):
                 for name in names
             ])
 
-        grouped = catalog_models.MockTag.objects.get_group_tags_pairs()
+        grouped = catalog_models.MockTag.objects.group_tags()
 
         # assert grouping logic
         for i, (group, tags) in enumerate(grouped.items()):

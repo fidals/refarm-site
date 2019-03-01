@@ -24,8 +24,8 @@ from functools import lru_cache, partial
 
 from django import http
 from django.conf import settings
-from django.db.models import QuerySet
 from django.core.paginator import Paginator, InvalidPage
+from django.db.models import QuerySet
 from django_user_agents.utils import get_user_agent
 
 from catalog.models import ProductQuerySet, Tag, TagQuerySet
@@ -317,7 +317,7 @@ class TaggedCategory(AbstractProductsListContext):
         group_tags_pairs = (
             self.all_tags
             .filter_by_products(self.products)
-            .get_group_tags_pairs()
+            .group_tags()
         )
         return {
             **context,
