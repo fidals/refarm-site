@@ -22,7 +22,9 @@ before_install:
 jobs:
   include:
     - stage: "Tests"
-      script: cd docker/ && docker-compose run --rm app python manage.py test
+      script:
+        - cd docker/ && cp .env.dist .env
+        - docker-compose run --rm app python manage.py test
     - stage: "Lints"
       script: cd docker/ && docker-compose run --rm pdd
 
