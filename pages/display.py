@@ -5,8 +5,6 @@ Responsible only for rendering given context data with db preserved text templat
 """
 import typing
 
-from collections import defaultdict
-
 
 class Page:
     """It's python Descriptor."""
@@ -23,6 +21,7 @@ class Page:
         """
         self._page = page
         self.key = ''
+        self._context = context or {}
 
     def __get__(self, instance: 'pages.models.Page', type_):
         return Page(
@@ -45,9 +44,7 @@ class Page:
 
     def render(self, field: str):
         return (
-            self._page.template.render_field(
-                field, context=self._page.__dict__.get(self.key, {})
-            )
+            self._page.template.render_field(field, context=self._context)
             if self._page.template
             else getattr(self._page, field)
         )
