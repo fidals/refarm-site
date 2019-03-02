@@ -132,8 +132,6 @@ class TestPage(TestCase):
         )
         self.assertEqual(page.display.h1, 'page h1 - template')
 
-    # @todo #SE742:30m  Fix display issue with shared context.
-    #  See the test below for details.
     def test_display_has_unique_context(self):
         """Two different pages should contain not overlapping display contexts."""
         left_template = PageTemplate.objects.create(name='left', h1='{{ tag }}')
@@ -143,6 +141,21 @@ class TestPage(TestCase):
 
         left.template.h1, right.template.h1 = '{{ tag }}', '{{ tag }}'
         left.display, right.display = {'tag': 'A'}, {'tag': 'B'}
+
+        self.assertNotEqual(left.display.h1, right.display.h1)
+
+    def test_display_has_unique_template(self):
+        """Two different pages should contain not overlapping display contexts."""
+        left_template = PageTemplate.objects.create(name='left', h1='{{ tag }}')
+        right_template = PageTemplate.objects.create(
+            name='right', h1='different {{ tag }}'
+        )
+        left = Page.objects.create(name='left', template=left_template)
+        right = Page.objects.create(name='right', template=right_template)
+
+        left.template.h1 = '{{ tag }}'
+        right.template.h1 = 'different {{ tag }}'
+        left.display, right.display = {'tag': 'A'}, {'tag': 'A'}
 
         self.assertNotEqual(left.display.h1, right.display.h1)
 
