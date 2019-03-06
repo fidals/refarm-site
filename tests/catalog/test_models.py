@@ -275,9 +275,17 @@ class Tag(TestCase):
         except DataError as e:
             self.assertTrue(False, f'Tag has too long name. {e}')
 
+    def test_slugify_conflicts(self):
+        slugs = [
+            catalog_models.MockTag.objects.create(name=name).slug
+            for name in ['11 A', '1/1 A', '1 1 A']
+        ]
+
+        self.assertEqual(len(slugs), len(set(slugs)), msg=slugs)
+
     # @todo #302:30m  Process more special symbols for slugs.
     @unittest.expectedFailure
-    def test_slugify_conflicts(self):
+    def test_slug_special_symbols(self):
         slugs = [
             catalog_models.MockTag.objects.create(name=name).slug
             for name in ['11 A', '1/1 A', '1 1 A', '1.1 A', '1-1 A', '1_1 A']

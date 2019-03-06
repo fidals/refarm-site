@@ -427,7 +427,6 @@ class Tag(models.Model):
         return self.name
 
     def _get_slug(self) -> str:
-        """Make a slug from the name."""
         # Translate all punctuation chars to "_".
         # It doesn't conflict with `slugify`, which translate spaces to "-"
         # and punctuation chars to "".
