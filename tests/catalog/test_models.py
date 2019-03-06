@@ -1,5 +1,6 @@
 """Defines tests for models in Catalog app."""
 import string
+import unittest
 
 from django.db import DataError
 from django.test import TestCase
@@ -273,10 +274,12 @@ class Tag(TestCase):
         except DataError as e:
             self.assertTrue(False, f'Tag has too long name. {e}')
 
+    # @todo #302:30m  Process more special symbols for slugs.
+    @unittest.expectedFailure
     def test_slugify_conflicts(self):
         slugs = [
             catalog_models.MockTag.objects.create(name=name).slug
-            for name in ['11 A', '1/1 A', '1 1 A']
+            for name in ['11 A', '1/1 A', '1 1 A', '1.1 A', '1-1 A', '1_1 A']
         ]
 
         self.assertEqual(len(slugs), len(set(slugs)), msg=slugs)
