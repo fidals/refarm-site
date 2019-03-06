@@ -250,14 +250,15 @@ class Tag(TestCase):
 
     def test_tag_doubled_save_slug_postfix(self):
         """Tag should preserve it's slug value after several saves."""
+        slug = '12-v'
         group = catalog_models.MockTagGroup.objects.create(name='Напряжение вход')
         tag = catalog_models.MockTag.objects.create(
             name='12 В',
             group=group
         )
-        self.assertEqual(tag.slug, '12-v')
+        self.assertEqual(tag.slug[-len(slug):], slug)
         tag.save()
-        self.assertEqual(tag.slug, '12-v')
+        self.assertEqual(tag.slug[-len(slug):], slug)
 
     def test_long_name(self):
         """
@@ -267,7 +268,7 @@ class Tag(TestCase):
         It may create problems for tag with long name.
         """
         name = 'Имя ' * 50
-        group = catalog_models.MockTagGroup.objects.first()
+        group = catalog_models.MockTagGroup.objects.create(name='Some group')
         try:
             tag = catalog_models.MockTag.objects.create(group=group, name=name)
             self.assertLessEqual(len(tag.slug), catalog.models.Tag.SLUG_MAX_LENGTH)
