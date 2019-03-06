@@ -284,6 +284,19 @@ class Tag(TestCase):
 
         self.assertEqual(len(slugs), len(set(slugs)), msg=slugs)
 
+    def test_slugs_for_cloned_tag_values(self):
+        groups = [
+            catalog_models.MockTagGroup.objects.create(name=name)
+            for name in ['Length', 'Width', 'Height']
+        ]
+        values = ['11 A']*3
+        slugs = [
+            catalog_models.MockTag.objects.create(group=group, name=value).slug
+            for group, value in zip(groups, values)
+        ]
+
+        self.assertEqual(len(slugs), len(set(slugs)), msg=slugs)
+
     def test_group_tags(self):
         groups = [
             catalog_models.MockTagGroup.objects.create(name=name)
