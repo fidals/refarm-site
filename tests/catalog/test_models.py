@@ -276,8 +276,9 @@ class Tag(TestCase):
             self.assertTrue(False, f'Tag has too long name. {e}')
 
     def test_slugify_conflicts(self):
+        group = catalog_models.MockTagGroup.objects.create(name='Some group')
         slugs = [
-            catalog_models.MockTag.objects.create(name=name).slug
+            catalog_models.MockTag.objects.create(group=group, name=name).slug
             for name in ['11 A', '1/1 A', '1 1 A']
         ]
 
