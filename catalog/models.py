@@ -210,6 +210,9 @@ class AbstractProduct(models.Model, AdminTreeDisplayMixin):
 # is not arch design, but about ORM hack.
 class TagGroup(models.Model):
 
+    SLUG_HASH_SIZE = 5
+    SLUG_MAX_LENGTH = 25
+
     class Meta:
         abstract = True
 
@@ -219,6 +222,28 @@ class TagGroup(models.Model):
     position = models.PositiveSmallIntegerField(
         default=0, blank=True, db_index=True, verbose_name=_('position'),
     )
+
+    # @todo #302:30m  Resolve slug code doubling.
+    #  See `TagGroup.slug` and `Tag._get_slug`.
+    @property
+    def slug(self) -> str:
+        """Make a slug from the name."""
+        # Translate all punctuation chars to "_".
+        # It doesn't conflict with `slugify`, which translate spaces to "-"
+        # and punctuation chars to "".
+        slug = slugify(unidecode(self.name.translate(
+            {ord(p): '_' for p in string.punctuation}
+        )))
+
+        # Keep the slug length less then SLUG_MAX_LENGTH
+        if len(slug) < self.SLUG_MAX_LENGTH:
+            return slug
+
+        slug_length = self.SLUG_MAX_LENGTH - self.SLUG_HASH_SIZE - 1
+        return randomize_slug(
+            slug[:slug_length],
+            hash_size=self.SLUG_HASH_SIZE
+        )
 
     def __str__(self):
         return self.name
@@ -401,14 +426,15 @@ class Tag(models.Model):
     def __str__(self):
         return self.name
 
-    def _slugify(self) -> None:
-        """Make a slug from the name."""
+    def _get_slug(self) -> str:
         # Translate all punctuation chars to "_".
         # It doesn't conflict with `slugify`, which translate spaces to "-"
         # and punctuation chars to "".
         slug = slugify(unidecode(self.name.translate(
             {ord(p): '_' for p in string.punctuation}
         )))
+
+        slug = '__'.join([self.group.slug, slug])
 
         # Keep the slug length less then SLUG_MAX_LENGTH
         if len(slug) < self.SLUG_MAX_LENGTH:
@@ -422,7 +448,7 @@ class Tag(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = self._slugify()
+            self.slug = self._get_slug()
         super(Tag, self).save(*args, **kwargs)
 
     # @todo #168:15m Move `Tags.parse_url_tags` Tags context.

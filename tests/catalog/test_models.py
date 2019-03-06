@@ -1,5 +1,6 @@
 """Defines tests for models in Catalog app."""
 import string
+import unittest
 
 from django.db import DataError
 from django.test import TestCase
@@ -249,14 +250,15 @@ class Tag(TestCase):
 
     def test_tag_doubled_save_slug_postfix(self):
         """Tag should preserve it's slug value after several saves."""
+        slug = '12-v'
         group = catalog_models.MockTagGroup.objects.create(name='Напряжение вход')
         tag = catalog_models.MockTag.objects.create(
             name='12 В',
             group=group
         )
-        self.assertEqual(tag.slug, '12-v')
+        self.assertEqual(tag.slug[-len(slug):], slug)
         tag.save()
-        self.assertEqual(tag.slug, '12-v')
+        self.assertEqual(tag.slug[-len(slug):], slug)
 
     def test_long_name(self):
         """
@@ -266,7 +268,7 @@ class Tag(TestCase):
         It may create problems for tag with long name.
         """
         name = 'Имя ' * 50
-        group = catalog_models.MockTagGroup.objects.first()
+        group = catalog_models.MockTagGroup.objects.create(name='Some group')
         try:
             tag = catalog_models.MockTag.objects.create(group=group, name=name)
             self.assertLessEqual(len(tag.slug), catalog.models.Tag.SLUG_MAX_LENGTH)
@@ -274,9 +276,33 @@ class Tag(TestCase):
             self.assertTrue(False, f'Tag has too long name. {e}')
 
     def test_slugify_conflicts(self):
+        group = catalog_models.MockTagGroup.objects.create(name='Some group')
+        slugs = [
+            catalog_models.MockTag.objects.create(group=group, name=name).slug
+            for name in ['11 A', '1/1 A', '1 1 A']
+        ]
+
+        self.assertEqual(len(slugs), len(set(slugs)), msg=slugs)
+
+    # @todo #302:30m  Process more special symbols for slugs.
+    @unittest.expectedFailure
+    def test_slug_special_symbols(self):
         slugs = [
             catalog_models.MockTag.objects.create(name=name).slug
-            for name in ['11 A', '1/1 A', '1 1 A']
+            for name in ['11 A', '1/1 A', '1 1 A', '1.1 A', '1-1 A', '1_1 A']
+        ]
+
+        self.assertEqual(len(slugs), len(set(slugs)), msg=slugs)
+
+    def test_slugs_for_cloned_tag_values(self):
+        groups = [
+            catalog_models.MockTagGroup.objects.create(name=name)
+            for name in ['Length', 'Width', 'Height']
+        ]
+        values = ['11 A']*3
+        slugs = [
+            catalog_models.MockTag.objects.create(group=group, name=value).slug
+            for group, value in zip(groups, values)
         ]
 
         self.assertEqual(len(slugs), len(set(slugs)), msg=slugs)
