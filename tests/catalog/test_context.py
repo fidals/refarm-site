@@ -5,10 +5,10 @@
 
 import unittest
 
-from django.test import TestCase, override_settings
 from django.http import Http404
+from django.test import TestCase, override_settings
 
-from catalog import newcontext as context
+from catalog import context as context
 from tests.catalog import models as catalog_models
 
 
