@@ -3,7 +3,7 @@ Views processing db based templates.
 This view are outside of MTV concept.
 Responsible only for rendering given context data with db preserved text template.
 """
-import typing
+from pages import typing
 
 
 class Page:
@@ -14,7 +14,7 @@ class Page:
     # Fields stored in DB. See class `pages.models.PageTemplate`
     STORED = ['name', 'h1', 'keywords', 'description', 'title', 'seo_text']
 
-    def __init__(self, page: 'pages.models.Page'=None, context: typing.Dict[str, typing.Any]=None):
+    def __init__(self, page: 'pages.models.Page'=None, context: typing.ContextDict=None):
         """
         Pass context at ctor, but not render method,
         because client code wants the same context for many different cases.
@@ -29,7 +29,7 @@ class Page:
             {'page': instance, **instance.__dict__.get(self.key, {})}
         )
 
-    def __set__(self, instance: 'pages.models.Page', value: typing.Dict[str, typing.Any]):
+    def __set__(self, instance: 'pages.models.Page', value: typing.ContextDict):
         self._page = instance
         instance.__dict__[self.key] = value
 

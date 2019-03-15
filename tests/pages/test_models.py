@@ -99,11 +99,6 @@ class TestPage(TestCase):
 
         self.assertTrue(page.slug)
 
-    # @todo #240:30m  Improve DB templates (and views) tests.
-    #  Move them to separated module.
-    #  Rename theirs `test_display` prefix.
-    #  Separate them on small pieces.
-    #  Add test for `display.Page` with passing context.
     def test_display_seo_fields(self):
         page_with_custom_fields = Page.objects.create(
             name='some page', slug='test', h1='test h1'
