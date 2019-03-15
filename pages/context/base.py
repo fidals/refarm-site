@@ -1,6 +1,7 @@
 import abc
 import collections
-import typing
+
+from pages import typing
 
 
 class Context(abc.ABC):
@@ -17,7 +18,7 @@ class Contexts(Context):
     def __init__(self, contexts: typing.List[Context]):
         self.contexts = contexts or []
 
-    def context(self):
+    def context(self) -> typing.ContextDict:
         return dict(collections.ChainMap(
             *[ctx.context() for ctx in self.contexts]
         ))

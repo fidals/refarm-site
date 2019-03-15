@@ -1,7 +1,7 @@
 from django.http import Http404
 
 from catalog import models
-from catalog.newcontext.context import Context, Tags
+from catalog.context.context import Context, Tags
 
 
 class TagsByProducts(Tags):

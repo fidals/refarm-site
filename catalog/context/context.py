@@ -1,9 +1,7 @@
 import abc
 
-
 from catalog import typing
-
-from pages.newcontext import Context
+from pages.context import Context
 
 
 class ModelContext(abc.ABC):
