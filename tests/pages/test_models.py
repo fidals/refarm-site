@@ -1,6 +1,6 @@
 from django.test import TestCase
 
-from pages.models import ModelPage, CustomPage, FlatPage, Page, PageTemplate
+from pages.models import ModelPage, CustomPage, FlatPage, Page
 from tests.models import MockEntity, MockEntityWithSync
 
 
@@ -98,61 +98,6 @@ class TestPage(TestCase):
         page = Page.objects.create(name='Test name')
 
         self.assertTrue(page.slug)
-
-    def test_display_seo_fields(self):
-        page_with_custom_fields = Page.objects.create(
-            name='some page', slug='test', h1='test h1'
-        )
-        self.assertEqual(page_with_custom_fields.display.h1, 'test h1')
-
-        custom_page_template = PageTemplate.objects.create(
-            name='test',
-            h1='{{ page.name }} - купить в СПб',
-        )
-
-        page = Page.objects.create(
-            name='different page', template=custom_page_template
-        )
-        self.assertEqual(page.display.h1, 'different page - купить в СПб')
-
-    def test_display_attribute_uses_template(self):
-        template = PageTemplate.objects.create(
-            name='test',
-            h1='{{ page.h1 }} - template',
-        )
-        page = Page.objects.create(
-            name='different page',
-            h1='page h1',
-            template=template,
-        )
-        self.assertEqual(page.display.h1, 'page h1 - template')
-
-    def test_display_has_unique_context(self):
-        """Two different pages should contain not overlapping display contexts."""
-        left_template = PageTemplate.objects.create(name='left', h1='{{ tag }}')
-        right_template = PageTemplate.objects.create(name='right', h1='{{ tag }}')
-        left = Page.objects.create(name='left', template=left_template)
-        right = Page.objects.create(name='right', template=right_template)
-
-        left.template.h1, right.template.h1 = '{{ tag }}', '{{ tag }}'
-        left.display, right.display = {'tag': 'A'}, {'tag': 'B'}
-
-        self.assertNotEqual(left.display.h1, right.display.h1)
-
-    def test_display_has_unique_template(self):
-        """Two different pages should contain not overlapping display contexts."""
-        left_template = PageTemplate.objects.create(name='left', h1='{{ tag }}')
-        right_template = PageTemplate.objects.create(
-            name='right', h1='different {{ tag }}'
-        )
-        left = Page.objects.create(name='left', template=left_template)
-        right = Page.objects.create(name='right', template=right_template)
-
-        left.template.h1 = '{{ tag }}'
-        right.template.h1 = 'different {{ tag }}'
-        left.display, right.display = {'tag': 'A'}, {'tag': 'A'}
-
-        self.assertNotEqual(left.display.h1, right.display.h1)
 
 
 class TestCustomPage(TestCase):
