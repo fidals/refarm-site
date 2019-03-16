@@ -4,7 +4,7 @@ from django import http
 from django.conf import settings
 
 from catalog import typing
-from catalog.context.context import Products, Tags
+from catalog.context.base import Products, Tags
 from images.models import ImageQuerySet
 from refarm_pagination.context import PaginationContext
 

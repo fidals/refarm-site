@@ -1,2 +1,2 @@
-from . import category, pages, products, tags
-
+from . import category, products, tags
+from .base import Context, ModelContext, Products, Tags
