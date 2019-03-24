@@ -142,25 +142,24 @@ class ProductManager(models.Manager.from_queryset(ProductQuerySet)):
         return self.get_queryset().tagged(tags)
 
 
-# @todo #257:30m  Document terms Product, Position and Option
-#  Seems the best way is to do it with subclassing.
-#  Such documentation will clarify types and will be obvious for programmers.
-#  But check the docs too. May be some of this terms are mentioned there.
-class AbstractProduct(models.Model, AdminTreeDisplayMixin):
+class Position(models.Model):
     """
-    Product model.
-    Defines basic functionality and primitives for Product in typical e-shop.
-    Has n:1 relation with Category.
-    """
-    objects = ProductManager()
+    The smallest unique catalog item.
 
+    By catalog semantics position has is the description of phisical product variation.
+    That means that only position can have price, vendor code,
+    be or not in stock and be presented as cart item.
+    Example:
+        1. If some shop sells only one iphone X variation,
+        this iphone X will be both Position and Product item.
+
+        2. If some shop sells two iphone X variations: red and black,
+        iphone X will Product item,
+        iphone X will be both and Position and Option item.
+    """
     class Meta:
         abstract = True
-        ordering = ['name']
-        verbose_name = _('Product')
-        verbose_name_plural = _('Products')
 
-    name = models.CharField(max_length=255, db_index=True, verbose_name=_('name'))
     price = models.FloatField(
         blank=True,
         default=0,
@@ -177,6 +176,34 @@ class AbstractProduct(models.Model, AdminTreeDisplayMixin):
         db_index=True,
         verbose_name=_('is popular'),
     )
+
+
+class AbstractOption(Position):
+    """
+    Product variation.
+
+    For example for product "iphone X" position can be "iphone X red".
+    Sites may use it as Position or may not use it all in favour of Product.
+    """
+    class Meta:
+        abstract = True
+
+
+class AbstractProduct(models.Model, AdminTreeDisplayMixin):
+    """
+    High level catalog item for product.
+
+    On sites side may contain options or may not.
+    """
+    objects = ProductManager()
+
+    class Meta:
+        abstract = True
+        ordering = ['name']
+        verbose_name = _('Product')
+        verbose_name_plural = _('Products')
+
+    name = models.CharField(max_length=255, db_index=True, verbose_name=_('name'))
 
     @property
     def url(self):
