@@ -142,6 +142,7 @@ class ProductManager(models.Manager.from_queryset(ProductQuerySet)):
         return self.get_queryset().tagged(tags)
 
 
+# @todo #261:60m  Use the new catalog arch at sites.
 class Position(models.Model):
     """
     The smallest unique catalog item.
