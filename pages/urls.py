@@ -9,6 +9,11 @@ app_name = 'pages'
 
 custom_page_url = partial(url, name=CustomPage.ROUTE)
 
+
+def reverse_custom_page(name):
+	return reverse(CustomPage.ROUTE, kwargs={'page': name})
+
+
 urlpatterns = [
     url(r'^$', views.FlatPageView.as_view(), name='index'),
     # /one/
