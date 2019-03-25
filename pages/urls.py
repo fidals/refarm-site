@@ -1,6 +1,7 @@
 from functools import partial
 
 from django.conf.urls import url
+from django.urls import reverse
 
 from pages import views
 from pages.models import CustomPage
