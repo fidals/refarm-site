@@ -54,3 +54,40 @@ class GATracker extends Tracker {
     this.transport(`${this.name}:${actionName}`, data);
   }
 }
+
+
+/**
+ * Reliable loader of Google Analytics scripts.
+ *
+ * Google Analytics scripts (GA) are loading by the Google tag manager (GTM).
+ * If GA is still not loaded, the function will delay execution until it is loaded.
+ */
+function loadGaTransport(onLoadName) {
+  var state = {
+    loaded: false,
+    delayed: [],
+  };
+
+  let load = () => {
+    ga('require', 'ecommerce');
+    state.loaded = true;
+  };
+
+  try {
+    load();
+  } catch (e) {
+    window.addEventListener(onLoadName, () => {
+      load();
+      // submit delayed transactions
+      state.delayed.forEach((args) => ga(...args));
+    });
+  }
+
+  return (...args) => {
+    if (state.loaded) {
+      ga(...args);
+    } else {
+      state.delayed.push(args);
+    }
+  };
+}
