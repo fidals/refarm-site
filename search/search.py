@@ -50,7 +50,6 @@ def field_type(model, field):
     """Determine a type name of Django field."""
     if '__' in field:
         # translate `product__name` to `name` and swap `model` to `Product`
-        splitted_field= field.split('__')
         model_name, field = field.split('__')
         model = model._meta.get_field(model_name).related_model
 
