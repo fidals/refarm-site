@@ -46,6 +46,21 @@ def trigram_search(query: str, queryset, fields: List[str]):
     return queryset.annotate(similarity=trigram_query).order_by('-similarity')
 
 
+def field_type(model, field):
+    """Determine a type name of Django field."""
+    if '__' in field:
+        # translate `product__name` to `name` and swap `model` to `Product`
+        splitted_field= field.split('__')
+        model_name, field = field.split('__')
+        model = model._meta.get_field(model_name).related_model
+
+    return (
+        model._meta
+        .get_field(field)
+        .get_internal_type()
+    )
+
+
 class Search:
     def __init__(
         self, name, qs, fields,
@@ -59,8 +74,8 @@ class Search:
         :param fields: list of query lookups
         :param template_fields: list fields for django templates
         :param min_similarity: used to trigram similarity search
-        :param redirect_field: when client search for this field, the result is 
-        redirected to custom page  
+        :param redirect_field: when client search for this field, the result is
+        redirected to custom page
         """
         self.name = name
         self.fields = fields
@@ -73,11 +88,7 @@ class Search:
         self.decimal_fields = []
 
         for field in fields:
-            field_type = (
-                self.qs.model._meta
-                .get_field(field.partition('__')[0])
-                .get_internal_type()
-            )
+            type_ = field_type(self.qs.model, field)
             if field_type in ['CharField', 'TextField']:
                 # Trigram similarity supports only these two entity types
                 self.trigram_fields.append(field)
@@ -86,9 +97,7 @@ class Search:
 
     def search(self, term: str):
         def _trigram_search(query):
-            """ 
-            Just a shortcut for trigram_search function call 
-            """
+            """Just a shortcut for trigram_search function call."""
             return trigram_search(query, self.qs, self.trigram_fields).filter(
                 similarity__gt=self.min_similarity
             )
