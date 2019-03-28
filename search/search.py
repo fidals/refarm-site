@@ -89,7 +89,7 @@ class Search:
 
         for field in fields:
             type_ = field_type(self.qs.model, field)
-            if field_type in ['CharField', 'TextField']:
+            if type_ in ['CharField', 'TextField']:
                 # Trigram similarity supports only these two entity types
                 self.trigram_fields.append(field)
             else:
