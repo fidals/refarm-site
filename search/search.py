@@ -46,8 +46,14 @@ def trigram_search(query: str, queryset, fields: List[str]):
     return queryset.annotate(similarity=trigram_query).order_by('-similarity')
 
 
-def field_type(model, field):
-    """Determine a type name of Django field."""
+def get_field_type(model, field):
+    """
+    Determine a type name of Django field.
+
+    @todo #stb-537:30m Create a class instead this function.
+     See there for details: https://github.com/fidals/refarm-site/pull/315/files#r270500698
+
+    """
     if '__' in field:
         # translate `product__name` to `name` and swap `model` to `Product`
         model_name, field = field.split('__')
@@ -87,7 +93,7 @@ class Search:
         self.decimal_fields = []
 
         for field in fields:
-            type_ = field_type(self.qs.model, field)
+            type_ = get_field_type(self.qs.model, field)
             if type_ in ['CharField', 'TextField']:
                 # Trigram similarity supports only these two entity types
                 self.trigram_fields.append(field)
