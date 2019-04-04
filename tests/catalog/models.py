@@ -25,7 +25,7 @@ class MockCategoryWithDefaultPage(catalog_models.AbstractCategory, SyncPageMixin
 
 
 class MockProduct(
-    catalog_models.Position,
+    catalog_models.AbstractPosition,
     catalog_models.AbstractProduct,
     SyncPageMixin
 ):
