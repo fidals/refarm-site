@@ -143,20 +143,19 @@ class ProductManager(models.Manager.from_queryset(ProductQuerySet)):
 
 
 # @todo #261:60m  Use the new catalog arch at sites.
-class Position(models.Model):
+class AbstractPosition(models.Model):
     """
     The smallest unique catalog item.
 
-    By catalog semantics position has is the description of phisical product variation.
-    That means that only position can have price, vendor code,
-    be or not in stock and be presented as cart item.
+    In catalog semantics position is a description of physical product variation.
+    Only position can have price, vendor code, in stock/cart presence.
     Example:
-        1. If some shop sells only one iphone X variation,
+        1. If a shop sells only one iphone X variation,
         this iphone X will be both Position and Product item.
 
         2. If some shop sells two iphone X variations: red and black,
-        iphone X will Product item,
-        iphone X will be both and Position and Option item.
+        "iphone X" will be Product item,
+        "iphone X red" will be both Position and Option item.
     """
     class Meta:
         abstract = True
@@ -179,11 +178,11 @@ class Position(models.Model):
     )
 
 
-class AbstractOption(Position):
+class AbstractOption(AbstractPosition):
     """
     Product variation.
 
-    For example for product "iphone X" position can be "iphone X red".
+    "iphone X red" can be an option of "iphone X" product.
     Sites may use it as Position or may not use it all in favour of Product.
     """
     class Meta:
