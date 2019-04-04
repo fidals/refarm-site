@@ -1,5 +1,5 @@
-from django.db import models
 from django.core.urlresolvers import reverse
+from django.db import models
 
 from catalog import models as catalog_models
 from pages.models import SyncPageMixin, CustomPage
@@ -24,7 +24,11 @@ class MockCategoryWithDefaultPage(catalog_models.AbstractCategory, SyncPageMixin
         return reverse('catalog:category', args=(self.page.slug, ))
 
 
-class MockProduct(catalog_models.AbstractProduct, SyncPageMixin):
+class MockProduct(
+    catalog_models.AbstractPosition,
+    catalog_models.AbstractProduct,
+    SyncPageMixin
+):
     category = models.ForeignKey(
         MockCategory, on_delete=models.CASCADE,
         default=None, related_name='products',

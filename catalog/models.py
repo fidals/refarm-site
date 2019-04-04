@@ -142,25 +142,24 @@ class ProductManager(models.Manager.from_queryset(ProductQuerySet)):
         return self.get_queryset().tagged(tags)
 
 
-# @todo #257:30m  Document terms Product, Position and Option
-#  Seems the best way is to do it with subclassing.
-#  Such documentation will clarify types and will be obvious for programmers.
-#  But check the docs too. May be some of this terms are mentioned there.
-class AbstractProduct(models.Model, AdminTreeDisplayMixin):
+# @todo #261:60m  Use the new catalog arch at sites.
+class AbstractPosition(models.Model):
     """
-    Product model.
-    Defines basic functionality and primitives for Product in typical e-shop.
-    Has n:1 relation with Category.
-    """
-    objects = ProductManager()
+    The smallest unique catalog item.
 
+    In catalog semantics position is a description of physical product variation.
+    Only position can have price, vendor code, in stock/cart presence.
+    Example:
+        1. If a shop sells only one iphone X variation,
+        this iphone X will be both Position and Product item.
+
+        2. If some shop sells two iphone X variations: red and black,
+        "iphone X" will be Product item,
+        "iphone X red" will be both Position and Option item.
+    """
     class Meta:
         abstract = True
-        ordering = ['name']
-        verbose_name = _('Product')
-        verbose_name_plural = _('Products')
 
-    name = models.CharField(max_length=255, db_index=True, verbose_name=_('name'))
     price = models.FloatField(
         blank=True,
         default=0,
@@ -177,6 +176,34 @@ class AbstractProduct(models.Model, AdminTreeDisplayMixin):
         db_index=True,
         verbose_name=_('is popular'),
     )
+
+
+class AbstractOption(AbstractPosition):
+    """
+    Product variation.
+
+    "iphone X red" can be an option of "iphone X" product.
+    Sites may use it as Position or may not use it all in favour of Product.
+    """
+    class Meta:
+        abstract = True
+
+
+class AbstractProduct(models.Model, AdminTreeDisplayMixin):
+    """
+    High level catalog item for product.
+
+    On sites side may contain options or may not.
+    """
+    objects = ProductManager()
+
+    class Meta:
+        abstract = True
+        ordering = ['name']
+        verbose_name = _('Product')
+        verbose_name_plural = _('Products')
+
+    name = models.CharField(max_length=255, db_index=True, verbose_name=_('name'))
 
     @property
     def url(self):
