@@ -60,34 +60,18 @@ class GATracker extends Tracker {
  * Reliable loader of Google Analytics scripts.
  *
  * Google Analytics scripts (GA) are loading by the Google tag manager (GTM).
- * If GA is still not loaded, the function will delay execution until it is loaded.
+ * If GA is still not loaded, the function will delay execution until it is loaded
+ * with GA command queue.
+ *
+ * See this for details about a command queue:
+ * http://bit.ly/rf-ga-command-queue
  */
-function loadGaTransport(onLoadName) {
-  var state = {
-    loaded: false,
-    delayed: [],
-  };
-
-  let load = () => {
-    ga('require', 'ecommerce');
-    state.loaded = true;
-  };
-
-  try {
-    load();
-  } catch (e) {
-    window.addEventListener(onLoadName, () => {
-      load();
-      // submit delayed transactions
-      state.delayed.forEach((args) => ga(...args));
-    });
+function loadGaTransport() {
+  if (!window['ga']) {
+    window.ga = (...args) => {
+      (ga.q = ga.q || []).push(args);
+    };
+    ga.l = 1*new Date();
   }
-
-  return (...args) => {
-    if (state.loaded) {
-      ga(...args);
-    } else {
-      state.delayed.push(args);
-    }
-  };
+  return ga;
 }
