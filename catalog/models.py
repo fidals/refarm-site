@@ -34,6 +34,14 @@ class AdminTreeDisplayMixin(object):
 
 
 class CategoryQuerySet(mptt.querysets.TreeQuerySet):
+    def bind_fields(self):
+        """Prefetch or select typical related fields to reduce sql queries count."""
+        return (
+            self.select_related('page')
+            .select_related('parent')
+            .prefetch_related('children')
+        )
+
     def active(self):
         return self.filter(page__is_active=True)
 
