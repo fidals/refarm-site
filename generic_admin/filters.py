@@ -8,19 +8,20 @@ class PriceRange(admin.SimpleListFilter):
     """https://goo.gl/IYojpl"""
     title = _('price')
     parameter_name = 'price'
+    price_lookup = 'price'
 
     def lookups(self, request, model_admin):
         price_segment = namedtuple('price_segment', ['name', 'size'])
         rub = _('rub')
         price_segment_list = [
             price_segment(
-                '{}'.format(i - 1),
-                '{} 000 - {} 000 {}.'.format(i - 1, i, rub)
+                f'{i - 1}',
+                f'{i - 1} 000 - {i} 000 {rub}.'
             ) for i in range(2, 11)
         ]
 
-        price_segment_list.insert(0, price_segment('0', '0 {}.'.format(rub)))
-        price_segment_list.append(price_segment('10', '10 000+ {}.'.format(rub)))
+        price_segment_list.insert(0, price_segment('0', f'0 {rub}.'))
+        price_segment_list.append(price_segment('10', f'10 000+ {rub}.'))
 
         return price_segment_list
 
@@ -28,18 +29,17 @@ class PriceRange(admin.SimpleListFilter):
         if not self.value():
             return
 
-        related_model_name = queryset.first().related_model_name
         if self.value() == '0':
-            return queryset.filter(**{'{}__price__exact'.format(related_model_name): 0})
+            return queryset.filter(**{f'{self.price_lookup}__exact': 0})
 
         if self.value() == '10':
-            return queryset.filter(**{'{}__price__gt'.format(related_model_name): 10000})
+            return queryset.filter(**{f'{self.price_lookup}__gt': 10000})
 
         price_ranges = {i: (i * 1000, (i + 1) * 1000)
                         for i in range(0, 10)}
         range_for_query = price_ranges[int(self.value())]
         return queryset.filter(**{
-            '{}__price__in'.format(related_model_name): range(*range_for_query)
+            f'{self.price_lookup}__in': range(*range_for_query)
         })
 
 
