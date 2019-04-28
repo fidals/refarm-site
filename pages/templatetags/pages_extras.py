@@ -43,8 +43,8 @@ def breadcrumbs_with_siblings(page: Page, separator='', include_self=False):
     def get_ancestors_crumbs() -> list:
         ancestors_query = (
             page
-            .select_related(page.related_model_name)
             .get_ancestors(include_self)
+            .select_related(page.related_model_name)
             .active()
         )
 
