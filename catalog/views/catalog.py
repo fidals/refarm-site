@@ -19,7 +19,7 @@ class CategoryTree(CustomPageView):
 
         return {
             **context,
-            'nodes': self.category_model.objects.all()
+            'nodes': self.category_model.objects.active()
         }
 
 

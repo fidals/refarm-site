@@ -198,7 +198,7 @@ class Page(mptt.models.MPTTModel, ImageMixin):
     def get_ancestors_fields(self, *args, include_self=True) -> [[models.Field] or models.Field]:
         fields = tuple(
             tuple(getattr(page, field) for field in args)
-            for page in self.get_ancestors(include_self=include_self)
+            for page in self.get_ancestors(include_self=include_self).active()
         )
 
         if len(args) == 1:

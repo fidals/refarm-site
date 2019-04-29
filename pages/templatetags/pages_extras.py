@@ -41,7 +41,12 @@ def breadcrumbs_with_siblings(page: Page, separator='', include_self=False):
         ]
 
     def get_ancestors_crumbs() -> list:
-        ancestors_query = page.get_ancestors(include_self).select_related(page.related_model_name)
+        ancestors_query = (
+            page
+            .get_ancestors(include_self)
+            .select_related(page.related_model_name)
+            .active()
+        )
 
         if not ancestors_query.exists():
             return []
