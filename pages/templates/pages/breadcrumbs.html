@@ -2,19 +2,18 @@
 
 <div class="breadcrumbs-wrapper" itemscope itemtype="http://schema.org/BreadcrumbList">
   {% for name, url in crumbs_list %}
-    <span class="breadcrumbs-item" itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
       {% if url %}
-        <a href="{{ base_url }}{{ url }}" itemscope itemtype="http://schema.org/Thing" itemprop="item"
-           class="breadcrumbs-link">
-          <span itemprop="name">{{ name }}</span>
-        </a>
+        <span class="breadcrumbs-item" itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
+          <a href="{{ base_url }}{{ url }}" itemprop="item" class="breadcrumbs-link">
+            <span itemprop="name">{{ name }}</span>
+          </a>
+          <meta itemprop="position" content="{{ forloop.counter }}">
+          {% if not forloop.last %}
+            <span class="breadcrumbs-separator">{{ separator }}</span>
+          {% endif %}
+        </span>
       {% else %}
-        <span itemprop="name">{{ name }}</span>
+        <span>{{ name }}</span>
       {% endif %}
-      <meta itemprop="position" content="{{ forloop.counter }}">
-      {% if not forloop.last %}
-        <span class="breadcrumbs-separator">{{ separator }}</span>
-      {% endif %}
-    </span>
   {% endfor %}
 </div>
