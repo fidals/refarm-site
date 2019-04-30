@@ -1,10 +1,10 @@
 {% load pages_extras %}
 
 <div class="breadcrumbs-wrapper" itemscope itemtype="http://schema.org/BreadcrumbList">
-  {% for name, slug in crumbs_list %}
+  {% for name, url in crumbs_list %}
     <span class="breadcrumbs-item" itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
-      {% if slug %}
-        <a href="{{ slug }}" itemscope itemtype="http://schema.org/Thing" itemprop="item"
+      {% if url %}
+        <a href="{{ base_url }}{{ url }}" itemscope itemtype="http://schema.org/Thing" itemprop="item"
            class="breadcrumbs-link">
           <span itemprop="name">{{ name }}</span>
         </a>

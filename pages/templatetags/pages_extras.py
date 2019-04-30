@@ -8,7 +8,7 @@ register = template.Library()
 
 
 @register.inclusion_tag('pages/breadcrumbs.html')
-def breadcrumbs(page: Page, separator=''):
+def breadcrumbs(page: Page, separator='', base_url=''):
     index = page.get_index()
 
     crumbs_list = (
@@ -20,6 +20,7 @@ def breadcrumbs(page: Page, separator=''):
     return {
         'crumbs_list': crumbs_list,
         'separator': separator,
+        'base_url': base_url,
     }
 
 
