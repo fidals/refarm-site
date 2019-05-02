@@ -10,10 +10,11 @@ register = template.Library()
 @register.inclusion_tag('pages/breadcrumbs.html')
 def breadcrumbs(page: Page, separator='', base_url=''):
     index = page.get_index()
+    ancestors = page.get_ancestors(include_self=False)
 
     crumbs_list = (
         (index.display_menu_title, index.url) if index else ('Main', '/'),
-        *page.get_ancestors_fields('display_menu_title', 'url', include_self=False),
+        *[(a.display_menu_title, a.url) for a in ancestors],
         (page.display_menu_title, '')
     )
 
