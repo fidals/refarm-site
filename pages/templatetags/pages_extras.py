@@ -25,7 +25,9 @@ def breadcrumbs(page: Page, separator='', base_url=''):
 
 
 @register.inclusion_tag('pages/breadcrumbs_with_siblings.html')
-def breadcrumbs_with_siblings(page: Page, separator='', include_self=False):
+def breadcrumbs_with_siblings(
+    page: Page, separator='', base_url='', include_self=False
+):
     def get_siblings(page):
         def is_node(page):
            return hasattr(page.model, 'children')
@@ -79,6 +81,7 @@ def breadcrumbs_with_siblings(page: Page, separator='', include_self=False):
         'index_slug': index.url if index else '/',
         'crumbs_list': crumbs_list,
         'separator': separator,
+        'base_url': base_url,
     }
 
 
