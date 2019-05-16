@@ -89,19 +89,12 @@ class FlatPageAdmin(mixins.PageWithoutModels, mixins.AutoCreateRedirects):
 
 class ProductPageAdmin(mixins.PageWithModels):
     category_page_model = None
-    list_filter = ['is_active', filters.PriceRange, filters.HasContent, filters.HasImages]
-    list_display = ['model_id', 'name', 'custom_parent', 'price', 'links', 'is_active']
+    list_filter = ['is_active', filters.HasContent, filters.HasImages]
+    list_display = ['model_id', 'name', 'custom_parent', 'links', 'is_active']
 
     def get_queryset(self, request):
-        qs = super(ProductPageAdmin, self).get_queryset(request)
-        return self.add_reference_to_field_on_related_model(
-            qs, _product_price='price', _product_id='id')
-
-    def price(self, obj):
-        return obj.model.price
-
-    price.short_description = _('Price')
-    price.admin_order_field = '_product_price'
+        qs = super().get_queryset(request)
+        return self.add_reference_to_field_on_related_model(qs, _product_id='id')
 
     def custom_parent(self, obj, urlconf=None):
         assert self.category_page_model, 'Define category_page_model attr, for order columns'
@@ -110,13 +103,13 @@ class ProductPageAdmin(mixins.PageWithModels):
             self.category_page_model._meta.app_label,
             self.category_page_model._meta.model_name
         )
-        return super(ProductPageAdmin, self).custom_parent(obj, urlconf)
+        return super().custom_parent(obj, urlconf)
 
     custom_parent.admin_order_field = 'parent__name'
     custom_parent.short_description = _('Parent')
 
     def model_id(self, obj):
-        return super(ProductPageAdmin, self).model_id(obj)
+        return super().model_id(obj)
 
     model_id.admin_order_field = '_product_id'
     model_id.short_description = _('Id')
