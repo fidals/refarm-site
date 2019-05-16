@@ -1,5 +1,13 @@
 """
 This is temporary module with the arch concept for the search.
+
+@todo #331:60m  Implement the new arch at the search app.
+ All you need is to implement ContextsStack class
+ and place the other classes to the relevant places.
+ `search.search` module will be fully rewritten.
+ You also can drop away starting_by_term functionality.
+ See "is_name_start_by_term" aggregation parameter
+ inside search.search.search function.
 """
 
 import abc
@@ -57,6 +65,7 @@ class ContextsStack:
         ...
 
 
+# it's some client code:
 class CategoryQuerySet(QuerySet):
     pass
 
@@ -65,7 +74,6 @@ class ProductQuerySet(QuerySet):
     pass
 
 
-# some views.py:
 def autocomplete(request, query):
     return JsonResponse(
         # we'll use django orm search based on postgresql.
