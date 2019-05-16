@@ -7,7 +7,7 @@ from pages import typing
 class Context(abc.ABC):
 
     @abc.abstractmethod
-    def context(self) -> typing.Dict[str, typing.Any]:
+    def context(self) -> typing.ContextDict:
         ...
 
 
