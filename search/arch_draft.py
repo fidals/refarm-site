@@ -11,13 +11,13 @@ This is temporary module with the arch concept for the search.
 """
 
 import abc
+from itertools import chain
 
 from django.db.models import QuerySet
 from django.http import JsonResponse
 
 from images.models import Image
 from pages import typing
-from pages.context import Context
 
 
 class Representable(abc.ABC):
@@ -38,31 +38,24 @@ class Result:
         self.price: float = getattr(item, 'price', 0.0)
 
 
-class ResultsContext(Context):
+class Results:
     def __init__(self, results_qs: QuerySet):
         """`results_qs` is QuerySet with already searched and sorted entities."""
         isinstance(results_qs.model, Representable)
         self.qs = results_qs
 
-    def context(self):
-        return {
-            'results': [Result(o) for o in self.qs],
-        }
+    def list(self) -> typing.List[Result]:
+        return [Result(o) for o in self.qs]
 
 
-class ContextsStack:
-    """Merge context dicts by different strategies."""
+class ResultsStack:
+    """Merge results by different strategies."""
 
-    def __init__(self, contexts: typing.Iterable[Context]):
-        self.contexts = list(contexts)
+    def __init__(self, result_sets: typing.Iterable[Results]):
+        self.sets = result_sets
 
-    def any(self) -> typing.ContextDict:
-        """Stack contexts with with disjunction principle."""
-        raise NotImplemented()
-
-    # don't implement it. Just for arch design demonstration
-    def all(self):
-        ...
+    def chain(self) -> typing.Iterator[Result]:
+        return chain(*self.sets)
 
 
 # it's some client code:
@@ -75,15 +68,15 @@ class ProductQuerySet(QuerySet):
 
 
 def autocomplete(request, query):
-    return JsonResponse(
-        # we'll use django orm search based on postgresql.
-        # Query sets will already contain searched entities.
-        ContextsStack([
-            ResultsContext(
+    # we'll use django orm search based on postgresql.
+    # Query sets will already contain searched entities.
+    return JsonResponse(list(
+        ResultsStack([
+            Results(
                 CategoryQuerySet().filter(name__search=query),
             ),
-            ResultsContext(
+            Results(
                 ProductQuerySet().filter(name__search=query),
             ),
-        ]).any()
-    )
+        ]).chain()
+    ))
