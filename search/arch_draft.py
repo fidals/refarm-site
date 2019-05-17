@@ -11,13 +11,13 @@ This is temporary module with the arch concept for the search.
 """
 
 import abc
+import typing
 from itertools import chain
 
 from django.db.models import QuerySet
 from django.http import JsonResponse
 
 from images.models import Image
-from pages import typing
 
 
 class Representable(abc.ABC):
