@@ -21,6 +21,8 @@ from images.models import Image
 
 
 class Representable(abc.ABC):
+    """Contract for objects that come as search results by different QuerySets."""
+
     @property
     def name(self):
         raise NotImplemented()
@@ -31,11 +33,19 @@ class Representable(abc.ABC):
 
 
 class Result:
-    def __init__(self, item: Representable):
-        self.name: str = item.name
-        self.url: str = item.url
-        self.image: Image = getattr(item, 'image', None)
-        self.price: float = getattr(item, 'price', 0.0)
+    """
+    One item in a search results list.
+
+    Casts given object to common and clear result interface.
+    In case of the search module object is model instance.
+    Different objects can have very different interfaces.
+    That's why the class unifies it.
+    """
+    def __init__(self, obj: Representable):
+        self.name: str = obj.name
+        self.url: str = obj.url
+        self.image: Image = getattr(obj, 'image', None)
+        self.price: float = getattr(obj, 'price', 0.0)
 
 
 class Results:
@@ -49,7 +59,7 @@ class Results:
 
 
 class ResultsStack:
-    """Merge results by different strategies."""
+    """Stack results with different merge strategies."""
 
     def __init__(self, result_sets: typing.Iterable[Results]):
         self.sets = result_sets
@@ -70,6 +80,7 @@ class ProductQuerySet(QuerySet):
 def autocomplete(request, query):
     # we'll use django orm search based on postgresql.
     # Query sets will already contain searched entities.
+    # https://docs.djangoproject.com/en/1.11/topics/db/search/
     return JsonResponse(list(
         ResultsStack([
             Results(
