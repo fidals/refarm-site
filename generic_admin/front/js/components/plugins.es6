@@ -1,5 +1,5 @@
 class AdminCommonPlugins {
-  constructor() {
+  constructor(pageTypes) {
     this.DOM = {
       searchFieldId: '#searchbar',
       saveAndContinueButton: 'input[name="_continue"]',
@@ -9,7 +9,7 @@ class AdminCommonPlugins {
       autocompleteURL: '/admin/autocomplete/',
       minChars: 3,
       currentPageType: document.location.pathname.split('/').slice(-2, -1)[0],
-      pagesType: { categorypage: 'category', productpage: 'product' },
+      pagesType: pageTypes || { categorypage: 'category', productpage: 'product' },
     };
 
     this.init();
