@@ -1,8 +1,8 @@
 import random
 import string
+import typing
 from collections import OrderedDict
 from itertools import chain
-from typing import Dict, Iterable, List
 from uuid import uuid4
 
 import mptt
@@ -146,7 +146,7 @@ class ProductManager(models.Manager.from_queryset(ProductQuerySet)):
     def active(self):
         return self.get_queryset().active()
 
-    def tagged(self, tags):
+    def tagged(self, tags: typing.Iterable['Tag']):
         return self.get_queryset().tagged(tags)
 
 
@@ -294,21 +294,21 @@ class TagQuerySet(models.QuerySet):
                 models.FloatField(),
         )).order_by('group__position', 'group__name', 'tag_name', 'tag_value')
 
-    def filter_by_products(self, products: Iterable[AbstractProduct]):
+    def filter_by_products(self, products: typing.Iterable[AbstractProduct]):
         return (
             self
             .filter(products__in=products)
             .distinct()
         )
 
-    def exclude_by_products(self, products: Iterable[AbstractProduct]):
+    def exclude_by_products(self, products: typing.Iterable[AbstractProduct]):
         return (
             self
             .exclude(products__in=products)
             .distinct()
         )
 
-    def group_tags(self) -> Dict[TagGroup, List['Tag']]:
+    def group_tags(self) -> typing.Dict[TagGroup, typing.List['Tag']]:
         """
         Return set of group_tag pairs with specific properties.
 
@@ -330,7 +330,7 @@ class TagQuerySet(models.QuerySet):
                 grouped[tag.group] = [tag]
         return grouped
 
-    def get_brands(self, products: Iterable[AbstractProduct]) -> Dict[AbstractProduct, 'Tag']:
+    def get_brands(self, products: typing.Iterable[AbstractProduct]) -> typing.Dict[AbstractProduct, 'Tag']:
         brand_tags = (
             self.filter(group__name=settings.BRAND_TAG_GROUP_NAME)
             .filter_by_products(products)
