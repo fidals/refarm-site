@@ -241,7 +241,6 @@ class Product(TestCase):
         for products_by_instance in products_by_instance:
             self.assertEqual(products_by_instance.category, self.category)
 
-    @unittest.expectedFailure
     def test_tagged_disjunction(self):
         # waiting #166 for tags fixtures creating
         groups = ['Length', 'Width']
@@ -249,7 +248,7 @@ class Product(TestCase):
         left_group = catalog_models.MockTagGroup.objects.create(name=groups[0])
         right_group = catalog_models.MockTagGroup.objects.create(name=groups[1])
         left = catalog_models.MockTag.objects.create(name=tags[0], group=left_group)
-        right = catalog_models.MockTag.objects.create(name=tags[0], group=right_group)
+        right = catalog_models.MockTag.objects.create(name=tags[1], group=right_group)
         to_find, to_exclude = catalog_models.MockProduct.objects.active()[:2]
         # tags from different groups
         to_find.tags.add(left)

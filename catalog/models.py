@@ -2,7 +2,8 @@ import random
 import string
 import typing
 from collections import OrderedDict
-from itertools import chain
+from functools import reduce
+from itertools import chain, groupby
 from uuid import uuid4
 
 import mptt
@@ -127,7 +128,13 @@ class ProductQuerySet(models.QuerySet):
         # See docs for details:
         # https://www.postgresql.org/docs/10/static/sql-select.html#SQL-DISTINCT
         # https://docs.djangoproject.com/en/2.1/ref/models/querysets/#django.db.models.query.QuerySet.distinct
-        return self.filter(tags__in=tags).distinct()
+        # Q expressions doesn't work for this case.
+        # That's why we use qs.filter reduce.
+        return reduce(
+            lambda accum, group: accum.filter(tags__in=group),
+            (group for _, group in groupby(tags, lambda t: t.group)),
+            self
+        ).distinct()
 
     def tagged_or_all(self, tags: 'TagQuerySet'):
         return (
