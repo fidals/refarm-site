@@ -1,8 +1,9 @@
 import random
 import string
+import typing
 from collections import OrderedDict
-from itertools import chain
-from typing import Dict, Iterable, List
+from functools import reduce
+from itertools import chain, groupby
 from uuid import uuid4
 
 import mptt
@@ -127,7 +128,15 @@ class ProductQuerySet(models.QuerySet):
         # See docs for details:
         # https://www.postgresql.org/docs/10/static/sql-select.html#SQL-DISTINCT
         # https://docs.djangoproject.com/en/2.1/ref/models/querysets/#django.db.models.query.QuerySet.distinct
-        return self.filter(tags__in=tags).distinct()
+        # Q expressions doesn't work for this case.
+        # That's why we use qs.filter reduce.
+        return reduce(
+            lambda accum, group: accum.filter(tags__in=group),
+            (group for _, group in groupby(
+                tags.order_by('group'), lambda tag: tag.group
+            )),
+            self
+        ).distinct()
 
     def tagged_or_all(self, tags: 'TagQuerySet'):
         return (
@@ -146,7 +155,7 @@ class ProductManager(models.Manager.from_queryset(ProductQuerySet)):
     def active(self):
         return self.get_queryset().active()
 
-    def tagged(self, tags):
+    def tagged(self, tags: typing.Iterable['Tag']):
         return self.get_queryset().tagged(tags)
 
 
@@ -294,21 +303,21 @@ class TagQuerySet(models.QuerySet):
                 models.FloatField(),
         )).order_by('group__position', 'group__name', 'tag_name', 'tag_value')
 
-    def filter_by_products(self, products: Iterable[AbstractProduct]):
+    def filter_by_products(self, products: typing.Iterable[AbstractProduct]):
         return (
             self
             .filter(products__in=products)
             .distinct()
         )
 
-    def exclude_by_products(self, products: Iterable[AbstractProduct]):
+    def exclude_by_products(self, products: typing.Iterable[AbstractProduct]):
         return (
             self
             .exclude(products__in=products)
             .distinct()
         )
 
-    def group_tags(self) -> Dict[TagGroup, List['Tag']]:
+    def group_tags(self) -> typing.Dict[TagGroup, typing.List['Tag']]:
         """
         Return set of group_tag pairs with specific properties.
 
@@ -330,7 +339,7 @@ class TagQuerySet(models.QuerySet):
                 grouped[tag.group] = [tag]
         return grouped
 
-    def get_brands(self, products: Iterable[AbstractProduct]) -> Dict[AbstractProduct, 'Tag']:
+    def get_brands(self, products: typing.Iterable[AbstractProduct]) -> typing.Dict[AbstractProduct, 'Tag']:
         brand_tags = (
             self.filter(group__name=settings.BRAND_TAG_GROUP_NAME)
             .filter_by_products(products)

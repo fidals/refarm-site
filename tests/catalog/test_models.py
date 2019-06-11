@@ -10,7 +10,7 @@ from pages.models import CustomPage
 from tests.catalog import models as catalog_models
 
 
-class TestCategoryTree(TestCase):
+class CategoryTree(TestCase):
     """Test suite for category operations"""
 
     def setUp(self):
@@ -138,7 +138,7 @@ class CategoryToPageRelationTests(TestCase):
         self.assertEqual(category.page.parent, self.root_category.page)
 
 
-class TestProductToPageRelation(TestCase):
+class ProductToPageRelation(TestCase):
 
     @classmethod
     def setUpClass(cls):
@@ -193,7 +193,7 @@ class TestProductToPageRelation(TestCase):
         self.assertEqual(product.page.parent, self.root_category.page)
 
 
-class TestProduct(TestCase):
+class Product(TestCase):
 
     @classmethod
     def setUpClass(cls):
@@ -240,6 +240,25 @@ class TestProduct(TestCase):
 
         for products_by_instance in products_by_instance:
             self.assertEqual(products_by_instance.category, self.category)
+
+    def test_tagged_disjunction(self):
+        # waiting #166 for tags fixtures creating
+        groups = ['Length', 'Width']
+        tags = ['1 m', '2 m']
+        left_group = catalog_models.MockTagGroup.objects.create(name=groups[0])
+        right_group = catalog_models.MockTagGroup.objects.create(name=groups[1])
+        left = catalog_models.MockTag.objects.create(name=tags[0], group=left_group)
+        right = catalog_models.MockTag.objects.create(name=tags[1], group=right_group)
+        to_find, to_exclude = catalog_models.MockProduct.objects.active()[:2]
+        # tags from different groups
+        to_find.tags.add(left)
+        to_find.tags.add(right)
+        to_exclude.tags.add(left)
+        products = catalog_models.MockProduct.objects.tagged(
+            catalog_models.MockTag.objects.filter(id__in=[left.id, right.id])
+        )
+        self.assertTrue(to_find in products)
+        self.assertTrue(to_exclude not in products)
 
 
 class Tag(TestCase):

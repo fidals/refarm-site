@@ -24,6 +24,16 @@ class MockCategoryWithDefaultPage(catalog_models.AbstractCategory, SyncPageMixin
         return reverse('catalog:category', args=(self.page.slug, ))
 
 
+class MockTagGroup(catalog_models.TagGroup):
+    pass
+
+
+class MockTag(catalog_models.Tag):
+    group = models.ForeignKey(
+        MockTagGroup, on_delete=models.CASCADE, null=True, related_name='tags',
+    )
+
+
 class MockProduct(
     catalog_models.AbstractPosition,
     catalog_models.AbstractProduct,
@@ -42,12 +52,9 @@ class MockProduct(
     def image(self):
         return 'no-image-right-now'
 
-
-class MockTagGroup(catalog_models.TagGroup):
-    pass
-
-
-class MockTag(catalog_models.Tag):
-    group = models.ForeignKey(
-        MockTagGroup, on_delete=models.CASCADE, null=True, related_name='tags',
+    tags = models.ManyToManyField(
+        MockTag,
+        related_name='products',
+        blank=True,
+        verbose_name='tags',
     )

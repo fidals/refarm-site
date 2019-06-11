@@ -1,17 +1,12 @@
 import hashlib
 import os
 
-from django.db import models
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
+from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from sorl import thumbnail
 from sorl.thumbnail import delete
-
-
-# stayed here for migrations compatibility
-def model_directory_path(*args, **kwargs):
-    return ''
 
 
 class ImageField(thumbnail.ImageField):
