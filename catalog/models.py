@@ -133,7 +133,7 @@ class ProductQuerySet(models.QuerySet):
         return reduce(
             lambda accum, group: accum.filter(tags__in=group),
             (group for _, group in groupby(
-                tags.order_by('group'), lambda t: t.group
+                tags.order_by('group'), lambda tag: tag.group
             )),
             self
         ).distinct()

@@ -254,7 +254,9 @@ class Product(TestCase):
         to_find.tags.add(left)
         to_find.tags.add(right)
         to_exclude.tags.add(left)
-        products = catalog_models.MockProduct.objects.tagged([left, right])
+        products = catalog_models.MockProduct.objects.tagged(
+            catalog_models.MockTag.objects.filter(id__in=[left.id, right.id])
+        )
         self.assertTrue(to_find in products)
         self.assertTrue(to_exclude not in products)
 
