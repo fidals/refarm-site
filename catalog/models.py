@@ -132,7 +132,9 @@ class ProductQuerySet(models.QuerySet):
         # That's why we use qs.filter reduce.
         return reduce(
             lambda accum, group: accum.filter(tags__in=group),
-            (group for _, group in groupby(tags, lambda t: t.group)),
+            (group for _, group in groupby(
+                tags.order_by('group'), lambda t: t.group
+            )),
             self
         ).distinct()
 
