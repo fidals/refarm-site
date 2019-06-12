@@ -52,13 +52,28 @@ class ChangeItemsStateActions(admin.ModelAdmin):
 
 class AutoCreateRedirects(admin.ModelAdmin):
     """Create new redirect link after slug field change."""
-    def save_model(self, request, obj, form, change):
-        if change and 'slug' in form.changed_data:
-            old_obj = type(obj).objects.get(id=obj.id)
-            Redirect.objects.create(
-                site=get_current_site(request), old_path=old_obj.url, new_path=obj.url)
 
-        super(AutoCreateRedirects, self).save_model(request, obj, form, change)
+    def save_model(self, request, obj, form, change):
+        if change and 'slug' in form.changed_data and obj.slug in obj.url:
+            old_obj = type(obj).objects.get(id=obj.id)
+            redirect, created = Redirect.objects.get_or_create(
+                site=get_current_site(request),
+                old_path=old_obj.url,
+                defaults={'new_path': obj.url},
+            )
+
+            if not created:
+                obj.slug = old_obj.slug
+
+                self.message_user(
+                    request,
+                    _(
+                        'The slug field wasn\'t saved. Can\'t create a redirect'
+                        ' for new slug, because it is already occupied by:'
+                    ) + f' {redirect.old_path} -> {redirect.new_path}',
+                )
+
+        super().save_model(request, obj, form, change)
 
 
 class AbstractPage(ChangeItemsStateActions):
