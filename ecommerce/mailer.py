@@ -35,7 +35,11 @@ def send_order(
     template will receive only order instance.
     """
 
-    template_context = {'order': order, **extra_context}
+    template_context = {
+        'order': order,
+        'base_url': settings.BASE_URL,
+        **extra_context
+    }
     email_template = render_to_string(template, template_context)
     recipients = []
 
