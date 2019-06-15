@@ -80,6 +80,9 @@ class Position(models.Model):
     name = models.CharField(max_length=255)
     quantity = models.PositiveSmallIntegerField(default=0)
     price = models.FloatField(blank=True, null=True)
+    code = models.CharField(max_length=255, default='')
+    catalog_name = models.CharField(max_length=2**10 - 1, default='')
+    url = models.CharField(max_length=2**10 - 1, default='')
 
     @property
     def total_price(self):
