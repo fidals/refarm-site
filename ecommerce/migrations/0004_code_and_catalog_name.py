@@ -15,7 +15,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='position',
             name='catalog_name',
-            field=models.CharField(default='', max_length=2047),
+            field=models.CharField(default='', max_length=2**10 - 1),
         ),
         migrations.AddField(
             model_name='position',
@@ -25,6 +25,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='position',
             name='url',
-            field=models.CharField(default='', max_length=2047),
+            field=models.CharField(default='', max_length=2**10 - 1),
         ),
     ]
