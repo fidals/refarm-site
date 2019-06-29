@@ -46,7 +46,6 @@ class RefarmTestRunner(DiscoverRunner):
         result = super().run_suite(suite, **kwargs)
 
         if self.rerun_failed > 0 and self.suite_result(suite, result) > 0:
-            # @todo #stb-505:15m Decide whether we should rerun tests with errors or not.
             self.tests_to_rerun = (
                 [f[0].id() for f in result.failures]
                 + [e[0].id() for e in result.errors]
@@ -75,8 +74,8 @@ class RefarmTestRunner(DiscoverRunner):
     def run_tests(self, test_labels, extra_tests=None, **kwargs):
         suite_result = super().run_tests(test_labels, extra_tests, **kwargs)
         if self.tests_to_rerun:
-            delimiter = '\n\t- '
             self.rerun_failed -= 1
+            delimiter = '\n\t- '
             print(f'\nRerun tries left: {self.rerun_failed}')
             print(f'Rerun these failed tests:{delimiter}{delimiter.join(self.tests_to_rerun)}\n')
             suite_result = self.run_tests(self.tests_to_rerun, **kwargs)
