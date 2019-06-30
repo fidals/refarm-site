@@ -9,7 +9,7 @@ from refarm_test_utils.results import TimedResult
 class RefarmTestRunner(DiscoverRunner):
     """Check every test is tagged and show slowest tests table."""
 
-    def __init__(self, *args, top_slow=0, check_tags=True, rerun_failed=0,**kwargs):
+    def __init__(self, *args, top_slow=0, check_tags=True, rerun_failed=0, **kwargs):
         super().__init__(*args, **kwargs)
         self.top_slow = top_slow
         self.check_tags = check_tags
