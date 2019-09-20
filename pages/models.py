@@ -137,12 +137,6 @@ class Page(mptt.models.MPTTModel, ImageMixin):
         verbose_name=_('page template')
     )
 
-    # @todo #345:15m  Remove `models.Page.get_index` method.
-    #  Use direct query `CustomPage.objects.get(slug='index')` instead.
-    @classmethod
-    def get_index(cls):
-        return Page.objects.filter(type=cls.CUSTOM_TYPE, slug=cls.INDEX_PAGE_SLUG).first()
-
     @property
     def url(self):
         return self.get_absolute_url()

@@ -2,45 +2,31 @@ from django import template
 from django.conf import settings
 from django.core.urlresolvers import reverse
 
+from pages import logic
 from pages.models import CustomPage, FlatPage, Page
 
 register = template.Library()
 
 
-@register.inclusion_tag('pages/breadcrumbs.html')
-def breadcrumbs(page: Page, separator='', base_url=''):
-    index = page.get_index()
-
-    crumbs_list = (
-        (index.display_menu_title, index.url) if index else ('Main', '/'),
-        *page.get_ancestors_fields('display_menu_title', 'url', include_self=False),
-        (page.display_menu_title, '')
-    )
-
+def base_breadcrumbs(page: Page, separator=''):
     return {
-        'crumbs_list': crumbs_list,
+        'breadcrumbs': [
+            logic.Page(model=CustomPage.objects.get(slug='')),
+            logic.Page(model=CustomPage.objects.get(slug='catalog')),
+            *list(logic.Page(model=page).breadcrumbs)
+        ],
         'separator': separator,
-        'base_url': base_url,
     }
+
+
+@register.inclusion_tag('pages/breadcrumbs.html')
+def breadcrumbs(page: Page, separator=''):
+    return base_breadcrumbs(page, separator)
 
 
 @register.inclusion_tag('pages/breadcrumbs_with_siblings.html')
-def breadcrumbs_with_siblings(
-    page: Page, separator='', base_url='', include_self=False
-):
-    index = page.get_index()
-
-    breadcrumbs = [
-        (index.display_menu_title, index.url, []) if index else ('Main', '/', []),
-        *list(Page(model=page).breadcrumbs)
-    ]
-
-    return {
-        'index_slug': index.url if index else '/',
-        'breadcrumbs': breadcrumbs,
-        'separator': separator,
-        'base_url': base_url,
-    }
+def breadcrumbs_with_siblings(page: Page, separator=''):
+    return base_breadcrumbs(page, separator)
 
 
 @register.inclusion_tag('pages/accordion.html')
