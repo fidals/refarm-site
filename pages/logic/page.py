@@ -41,3 +41,4 @@ class Breadcrumbs:
 
     def list_with_self(self) -> list:
         return self.list(include_self=True)
+
