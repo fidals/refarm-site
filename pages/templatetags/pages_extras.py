@@ -2,6 +2,7 @@ from django import template
 from django.conf import settings
 from django.core.urlresolvers import reverse
 
+from pages import logic
 from pages.models import CustomPage, FlatPage, Page
 
 register = template.Library()
@@ -28,21 +29,6 @@ def breadcrumbs(page: Page, separator='', base_url=''):
 def breadcrumbs_with_siblings(
     page: Page, separator='', base_url='', include_self=False
 ):
-    def get_siblings(page):
-        def is_node(page):
-           return hasattr(page.model, 'children')
-
-        if not is_node(page):
-            return []
-
-        siblings = page.get_siblings().select_related(page.related_model_name)
-
-        return [
-            sibling
-            for sibling in siblings
-            if is_node(sibling)
-        ]
-
     def get_ancestors_crumbs() -> list:
         ancestors_query = (
             page
@@ -56,16 +42,14 @@ def breadcrumbs_with_siblings(
 
         catalog, *ancestors = ancestors_query
 
-        siblings = [
-            get_siblings(ancestor)
-            for ancestor in ancestors
-        ]
-
         return [
             (catalog.display_menu_title, catalog.url, []),
             *[
-                (crumb.display_menu_title, crumb.url, crumb_links)
-                for crumb, crumb_links in zip(ancestors, siblings)
+                (
+                    crumb.display_menu_title,
+                    crumb.url,
+                    list(logic.Page(page).siblings)
+                ) for crumb in ancestors
             ],
         ]
 
@@ -74,7 +58,7 @@ def breadcrumbs_with_siblings(
     crumbs_list = [
         (index.display_menu_title, index.url, []) if index else ('Main', '/', []),
         *get_ancestors_crumbs(),
-        (page.display_menu_title, '', get_siblings(page))
+        (page.display_menu_title, '', logic.Page(page).siblings)
     ]
 
     return {
