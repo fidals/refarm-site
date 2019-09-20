@@ -8,25 +8,22 @@ from pages.models import CustomPage, FlatPage, Page
 register = template.Library()
 
 
-def base_breadcrumbs(page: Page, separator=''):
+@register.inclusion_tag('pages/breadcrumbs.html')
+def breadcrumbs(page: Page, separator='', show_siblings=False):
     return {
         'breadcrumbs': [
-            logic.Page(model=CustomPage.objects.get(slug='')),
+            # @todo #345:60m  Refold catalog pages in DB.
+            #  In both fixtures and local DB.
+            #  Implement this pages structure:
+            #  - each(category_roots).parent == CustomPage.get('catalog')
+            #  - CustomPage.get('catalog').parent == CustomPage.get('index')
+            logic.Page(model=CustomPage.objects.get(slug='')),  # index page
             logic.Page(model=CustomPage.objects.get(slug='catalog')),
             *list(logic.Page(model=page).breadcrumbs)
         ],
         'separator': separator,
+        'show_siblings': show_siblings,
     }
-
-
-@register.inclusion_tag('pages/breadcrumbs.html')
-def breadcrumbs(page: Page, separator=''):
-    return base_breadcrumbs(page, separator)
-
-
-@register.inclusion_tag('pages/breadcrumbs_with_siblings.html')
-def breadcrumbs_with_siblings(page: Page, separator=''):
-    return base_breadcrumbs(page, separator)
 
 
 @register.inclusion_tag('pages/accordion.html')

@@ -1,11 +1,10 @@
 """
 Defines tests for views in Catalog app
 """
-from django.test import TestCase
 from django.core.urlresolvers import reverse
+from django.test import TestCase
 
 from pages.models import CustomPage
-
 from tests.catalog.models import MockCategory, MockProduct
 
 
@@ -87,6 +86,7 @@ class TestView(TestCase):
         response = self.client.get(self.test_product.url)
         self.assertEqual(response.status_code, 200)
 
+    # @todo #345:30m  Test crumbs siblings.
     def test_category_crumbs(self):
         """Category should have valid crumbs"""
         page = self.test_last.page
