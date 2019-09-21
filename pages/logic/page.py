@@ -18,12 +18,7 @@ class Page:
 
     @property
     def breadcrumbs(self) -> 'Pages':
-        return Pages(
-            self.model
-            .get_ancestors(include_self=True)
-            .select_related(self.model.related_model_name)
-            .active()
-        )
+        return Pages(self.model.get_ancestors(include_self=True).active())
 
 
 class Pages:
