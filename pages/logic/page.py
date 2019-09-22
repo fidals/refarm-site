@@ -12,6 +12,9 @@ class Page:
     def __str__(self):
         return f'<logic.Page: {str(self.model)}>'
 
+    def __repr__(self):
+        return f'<logic.Page: {str(self.model)}>'
+
     @property
     def siblings(self) -> models.PageQuerySet:
         return self.model.parent.children.exclude(id=self.model.id)

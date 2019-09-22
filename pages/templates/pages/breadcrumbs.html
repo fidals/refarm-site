@@ -6,15 +6,15 @@
       {% if not forloop.last %}
         <a href="{{ logic_page.model.url }}" itemscope itemtype="http://schema.org/Thing" itemprop="item"
            class="breadcrumbs-link">
-          <span itemprop="name">{{ logic_page.model.name }}</span>
+          <span itemprop="name">{{ logic_page.model.display_menu_title }}</span>
         </a>
       {% else %}
-        <span itemprop="name">{{ logic_page.model.name }}</span>
+        <span itemprop="name">{{ logic_page.model.display_menu_title }}</span>
       {% endif %}
 
-      {% if with_siblings and logic_page.siblings %}
+      {% if show_siblings and logic_page.siblings %}
         <ul class="breadcrumbs-siblings-links list-white">
-          {% for page in siblings %}
+          {% for page in logic_page.siblings %}
             <li>
               <a href="{{ page.url }}" class="list-white-link">
                 {{ page.display_menu_title }}

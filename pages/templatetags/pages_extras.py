@@ -18,7 +18,6 @@ def breadcrumbs(page: Page, separator='', show_siblings=False):
             #  - each(category_roots).parent == CustomPage.get('catalog')
             #  - CustomPage.get('catalog').parent == CustomPage.get('index')
             logic.Page(model=CustomPage.objects.get(slug='')),  # index page
-            logic.Page(model=CustomPage.objects.get(slug='catalog')),
             *list(logic.Page(model=page).breadcrumbs)
         ],
         'separator': separator,
