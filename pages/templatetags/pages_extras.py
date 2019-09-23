@@ -8,8 +8,7 @@ from pages.models import CustomPage, FlatPage, Page
 register = template.Library()
 
 
-@register.inclusion_tag('pages/breadcrumbs.html')
-def breadcrumbs(page: Page, separator='', show_siblings=False):
+def _base_breadcrumbs(page: Page, separator='', *, show_siblings=False):
     return {
         'breadcrumbs': [
             # @todo #345:60m  Refold catalog pages in DB.
@@ -23,6 +22,16 @@ def breadcrumbs(page: Page, separator='', show_siblings=False):
         'separator': separator,
         'show_siblings': show_siblings,
     }
+
+
+@register.inclusion_tag('pages/breadcrumbs.html')
+def breadcrumbs(page: Page, separator=''):
+    return _base_breadcrumbs(page, separator, show_siblings=False)
+
+
+@register.inclusion_tag('pages/breadcrumbs.html')
+def breadcrumbs_with_siblings(page: Page, separator=''):
+    return _base_breadcrumbs(page, separator, show_siblings=True)
 
 
 @register.inclusion_tag('pages/accordion.html')

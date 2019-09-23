@@ -17,7 +17,7 @@ class Page:
 
     @property
     def siblings(self) -> models.PageQuerySet:
-        return self.model.parent.children.exclude(id=self.model.id)
+        return self.model.parent.children.active().exclude(id=self.model.id)
 
     @property
     def breadcrumbs(self) -> 'Pages':
