@@ -137,10 +137,6 @@ class Page(mptt.models.MPTTModel, ImageMixin):
         verbose_name=_('page template')
     )
 
-    @classmethod
-    def get_index(cls):
-        return Page.objects.filter(type=cls.CUSTOM_TYPE, slug=cls.INDEX_PAGE_SLUG).first()
-
     @property
     def url(self):
         return self.get_absolute_url()

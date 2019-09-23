@@ -9,36 +9,25 @@ class Page:
         # But "model" is Django standard.
         self.model = model
 
-    def breadcrumbs(self) -> 'Breadcrumbs':
-        pass
+    def __str__(self):
+        return f'<logic.Page: {str(self.model)}>'
+
+    def __repr__(self):
+        return f'<logic.Page: {str(self.model)}>'
 
     @property
     def siblings(self) -> models.PageQuerySet:
-        return self.model.parent.children.exclude(id=self.model.id)
+        return self.model.parent.children.active().exclude(id=self.model.id)
+
+    @property
+    def breadcrumbs(self) -> 'Pages':
+        return Pages(self.model.get_ancestors(include_self=True).active())
 
 
-# @todo #343:60m  Implement Breadcrumbs class.
-#  Use it instead of monolithic logic at the `breadcrumbs_with_siblings`.
-#  Create Breadcrumb class or named tuple to specify crumb data structure.
-class Breadcrumbs:
-    def __init__(self, page_model: models.Page):
-        self.model = page_model
+class Pages:
+    def __init__(self, models: typing.Iterable[models.Page]):
+        self.models = models
 
-    def query(self, include_self: bool) -> models.PageQuerySet:
-        return (
-            self.model
-            .get_ancestors(include_self)
-            .select_related(self.model.related_model_name)
-            .active()
-        )
-
-    def list(self, include_self=False) -> typing.List[typing.Tuple[str, str]]:
-        """Breadcrumbs list consists of current page ancestors."""
-        return [
-            (crumb.display_menu_title, crumb.url)
-            for crumb in self.query(include_self).iterator()
-        ]
-
-    def list_with_self(self) -> list:
-        return self.list(include_self=True)
-
+    def __iter__(self):
+        for model in self.models:
+            yield Page(model)

@@ -8,65 +8,30 @@ from pages.models import CustomPage, FlatPage, Page
 register = template.Library()
 
 
+def _base_breadcrumbs(page: Page, separator='', *, show_siblings=False):
+    return {
+        'breadcrumbs': [
+            # @todo #345:60m  Refold catalog pages in DB.
+            #  In both fixtures and local DB.
+            #  Implement this pages structure:
+            #  - each(category_roots).parent == CustomPage.get('catalog')
+            #  - CustomPage.get('catalog').parent == CustomPage.get('index')
+            logic.Page(model=CustomPage.objects.get(slug='')),  # index page
+            *list(logic.Page(model=page).breadcrumbs)
+        ],
+        'separator': separator,
+        'show_siblings': show_siblings,
+    }
+
+
 @register.inclusion_tag('pages/breadcrumbs.html')
-def breadcrumbs(page: Page, separator='', base_url=''):
-    index = page.get_index()
-
-    crumbs_list = (
-        (index.display_menu_title, index.url) if index else ('Main', '/'),
-        *page.get_ancestors_fields('display_menu_title', 'url', include_self=False),
-        (page.display_menu_title, '')
-    )
-
-    return {
-        'crumbs_list': crumbs_list,
-        'separator': separator,
-        'base_url': base_url,
-    }
+def breadcrumbs(page: Page, separator=''):
+    return _base_breadcrumbs(page, separator, show_siblings=False)
 
 
-@register.inclusion_tag('pages/breadcrumbs_with_siblings.html')
-def breadcrumbs_with_siblings(
-    page: Page, separator='', base_url='', include_self=False
-):
-    def get_ancestors_crumbs() -> list:
-        ancestors_query = (
-            page
-            .get_ancestors(include_self)
-            .select_related(page.related_model_name)
-            .active()
-        )
-
-        if not ancestors_query.exists():
-            return []
-
-        catalog, *ancestors = ancestors_query
-
-        return [
-            (catalog.display_menu_title, catalog.url, []),
-            *[
-                (
-                    crumb.display_menu_title,
-                    crumb.url,
-                    list(logic.Page(page).siblings)
-                ) for crumb in ancestors
-            ],
-        ]
-
-    index = page.get_index()
-
-    crumbs_list = [
-        (index.display_menu_title, index.url, []) if index else ('Main', '/', []),
-        *get_ancestors_crumbs(),
-        (page.display_menu_title, '', logic.Page(page).siblings)
-    ]
-
-    return {
-        'index_slug': index.url if index else '/',
-        'crumbs_list': crumbs_list,
-        'separator': separator,
-        'base_url': base_url,
-    }
+@register.inclusion_tag('pages/breadcrumbs.html')
+def breadcrumbs_with_siblings(page: Page, separator=''):
+    return _base_breadcrumbs(page, separator, show_siblings=True)
 
 
 @register.inclusion_tag('pages/accordion.html')
