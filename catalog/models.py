@@ -93,15 +93,6 @@ class AbstractCategory(mptt.models.MPTTModel, AdminTreeDisplayMixin):
     def url(self):
         return self.get_absolute_url()
 
-    def get_children_sorted_by_position(self):
-        """Get active category's children and sort them by Position field"""
-        return (
-            self.get_children()
-                .filter(page__is_active=True)
-                .order_by('page__position', 'name')
-                .select_related('page')
-        )
-
 
 class ProductQuerySet(models.QuerySet):
 
