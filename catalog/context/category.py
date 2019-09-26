@@ -13,6 +13,6 @@ class Context(BaseContext):
                 self.category.get_children()
                 .bind_fields()
                 .active()
-                .order_by('page__position', 'name')
+                .order_by('name')
             ),
         }
