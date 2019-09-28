@@ -9,5 +9,10 @@ class Context(BaseContext):
     def context(self):
         return {
             'category': self.category,
-            'children': self.category.get_children(),
+            'children': (
+                self.category.get_children()
+                .bind_fields()
+                .active()
+                .order_by('name')
+            ),
         }
