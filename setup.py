@@ -32,7 +32,7 @@ setup(
         'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
     ],
     install_requires=[
-        'celery==4.2.1',
+        'celery==5.2.2',
         'Django~=1.11.19',  # python 3.7 compatible
         'django-mptt==0.9.1',
         'sorl-thumbnail==12.5.0',
