@@ -39,6 +39,6 @@ setup(
         'Django-Select2==5.11.1',
         'unidecode',
         'psycopg2-binary==2.7.7',
-        'Pillow==6.2.0',
+        'Pillow==9.0.0',
     ],
 )
